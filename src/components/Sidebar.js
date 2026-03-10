@@ -17,9 +17,7 @@ const navItems = [
         icon: Building2,
         children: [
             { to: "/dashboard/create-hostel", label: "Create Hostel", icon: PlusCircle },
-            { to: "/dashboard/properties", label: "All Hostels", icon: List },
-            { to: "/dashboard/properties/featured", label: "Featured", icon: Star },
-            { to: "/dashboard/properties/views", label: "Views & Stats", icon: Eye },
+            { to: "/dashboard/hostels", label: "All Hostels", icon: List },
         ],
     },
     {

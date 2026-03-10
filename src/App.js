@@ -13,6 +13,8 @@ import CreateBanner from "./views/banners/CreateBanner";
 import Login from "./views/Login";
 import Category from "./views/Category";
 import Banners from "./views/banners/CreateBanner";
+import SingleHostel from "./views/hostels/SingleHostel";
+import Hostels from "./views/hostels/Hostels";
 
 const App = () => {
   return (
@@ -26,14 +28,15 @@ const App = () => {
 
         <Route index element={<Dashboard />} />
 
-        <Route path="category" element={<Category/>}/>
+        <Route path="category" element={<Category />} />
 
-        <Route path="properties" element={<Properties />} />
         <Route path="agents" element={<Agents />} />
         <Route path="customers" element={<Customers />} />
         <Route path="enquiries" element={<Enquiries />} />
 
         <Route path="create-hostel" element={<CreateHostel />} />
+        <Route path="hostels" element={<Hostels />} />
+        <Route path="hostels/:id" element={<SingleHostel />} />
         <Route path="banners" element={<Banners />} />
 
       </Route>
