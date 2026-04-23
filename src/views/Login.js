@@ -19,7 +19,7 @@ const Login = () => {
       setError("");
 
       const res = await axios.post(
-        "http://31.97.206.144:2003/api/Admin/login",
+        "http://187.127.146.52:2003/api/Admin/login",
         {
           email,
           password

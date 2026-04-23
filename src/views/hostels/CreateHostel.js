@@ -15,17 +15,17 @@ const HOSTEL_TYPES = ["AC", "Non-AC", "Semi-AC"];
 
 const Field = ({ label, icon: Icon, children, required }) => (
   <div className="flex flex-col gap-1.5">
-    <label className="text-sm font-bold text-gray-600 flex items-center gap-1.5 tracking-wide">
-      {Icon && <Icon size={13} className="text-red-500" />}
-      {label} {required && <span className="text-red-500">*</span>}
+    <label className="text-sm font-bold text-gray-300 flex items-center gap-1.5 tracking-wide">
+      {Icon && <Icon size={13} className="text-emerald-400" />}
+      {label} {required && <span className="text-emerald-400">*</span>}
     </label>
     {children}
   </div>
 );
 
-const inputClass = `w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm text-gray-800
-  outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/15 transition-all
-  placeholder:text-gray-300 font-medium`;
+const inputClass = `w-full px-3.5 py-2.5 rounded-xl border border-white/10 bg-white/5 text-sm text-white
+  outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all
+  placeholder:text-gray-500 font-medium`;
 
 const CreateHostel = () => {
   const fileRef = useRef();
@@ -60,7 +60,7 @@ const CreateHostel = () => {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append("sharings", JSON.stringify(sharings));
       images.forEach(({ file }) => fd.append("images", file));
-      const res = await fetch("http://31.97.206.144:2003/api/Admin/createHostel", { method: "POST", body: fd });
+      const res = await fetch("http://187.127.146.52:2003/api/Admin/createHostel", { method: "POST", body: fd });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       showToast("Hostel created successfully! 🎉");
       setForm({ categoryId: "", name: "", type: "AC", rating: "", latitude: "", longitude: "", address: "", monthlyAdvance: "" });
@@ -77,10 +77,10 @@ const CreateHostel = () => {
       {/* Toast */}
       {toast && (
         <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-2xl text-white text-sm
-          font-bold flex items-center gap-2
+          font-bold flex items-center gap-2 backdrop-blur-sm
           ${toast.type === "error"
-            ? "bg-gradient-to-r from-gray-800 to-gray-900"
-            : "bg-gradient-to-r from-red-500 to-yellow-500 shadow-[0_8px_32px_rgba(255,0,0,0.4)]"
+            ? "bg-red-500/90 border border-red-400"
+            : "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_8px_32px_rgba(16,185,129,0.3)]"
           }`}>
           {toast.type === "error" ? "⚠️" : "✅"} {toast.msg}
         </div>
@@ -88,12 +88,12 @@ const CreateHostel = () => {
 
       {/* Page header */}
       <div className="mb-7 flex items-center gap-4">
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500 text-white shadow-[0_4px_16px_rgba(255,0,0,0.4)]">
+        <div className="p-3 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/10">
           <Building2 size={22} />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">Create Hostel</h1>
-          <p className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 mt-0.5 font-medium">
+          <h1 className="text-2xl font-black text-white tracking-tight">Create Hostel</h1>
+          <p className="text-sm text-emerald-400 mt-0.5 font-medium">
             Fill in the details to list a new hostel property
           </p>
         </div>
@@ -142,25 +142,25 @@ const CreateHostel = () => {
         {/* Sharing Plans */}
         <Section title="Sharing Plans">
           <div className="space-y-3">
-            <div className="hidden sm:grid grid-cols-12 gap-2 px-3 text-[11px] font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase tracking-widest">
+            <div className="hidden sm:grid grid-cols-12 gap-2 px-3 text-[11px] font-black text-emerald-400 uppercase tracking-widest">
               <div className="col-span-4">Share Type</div>
               <div className="col-span-3">Monthly (₹)</div>
               <div className="col-span-3">Daily (₹)</div>
               <div className="col-span-2" />
             </div>
             {sharings.map((s, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2 items-center bg-gradient-to-r from-red-50 to-yellow-50 rounded-xl p-2 border border-red-200">
+              <div key={i} className="grid grid-cols-12 gap-2 items-center bg-white/5 rounded-xl p-2 border border-white/10">
                 <div className="col-span-12 sm:col-span-4">
-                  <input className={`${inputClass} bg-white`} placeholder="e.g. 2 Share" value={s.shareType} onChange={(e) => updateSharing(i, "shareType", e.target.value)} />
+                  <input className={`${inputClass} bg-white/10`} placeholder="e.g. 2 Share" value={s.shareType} onChange={(e) => updateSharing(i, "shareType", e.target.value)} />
                 </div>
                 <div className="col-span-5 sm:col-span-3">
-                  <input className={`${inputClass} bg-white`} type="number" placeholder="Monthly ₹" value={s.monthlyPrice} onChange={(e) => updateSharing(i, "monthlyPrice", +e.target.value)} />
+                  <input className={`${inputClass} bg-white/10`} type="number" placeholder="Monthly ₹" value={s.monthlyPrice} onChange={(e) => updateSharing(i, "monthlyPrice", +e.target.value)} />
                 </div>
                 <div className="col-span-5 sm:col-span-3">
-                  <input className={`${inputClass} bg-white`} type="number" placeholder="Daily ₹" value={s.dailyPrice} onChange={(e) => updateSharing(i, "dailyPrice", +e.target.value)} />
+                  <input className={`${inputClass} bg-white/10`} type="number" placeholder="Daily ₹" value={s.dailyPrice} onChange={(e) => updateSharing(i, "dailyPrice", +e.target.value)} />
                 </div>
                 <div className="col-span-2 flex justify-end">
-                  <button onClick={() => removeSharing(i)} className="p-2 rounded-lg text-red-400 hover:bg-red-100 transition-colors">
+                  <button onClick={() => removeSharing(i)} className="p-2 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors">
                     <Trash2 size={15} />
                   </button>
                 </div>
@@ -169,7 +169,7 @@ const CreateHostel = () => {
             <button
               onClick={addSharing}
               className="flex items-center gap-2 text-sm font-bold px-4 py-2 rounded-xl border-2
-                border-dashed border-red-400/40 text-red-500 hover:bg-red-50 transition-colors"
+                border-dashed border-emerald-400/40 text-emerald-400 hover:bg-white/10 transition-colors"
             >
               <Plus size={15} /> Add Sharing Plan
             </button>
@@ -181,32 +181,31 @@ const CreateHostel = () => {
           <input ref={fileRef} type="file" multiple accept="image/*" className="hidden" onChange={onImages} />
           <div
             onClick={() => fileRef.current.click()}
-            className="border-2 border-dashed border-red-400/30 rounded-2xl p-8 flex flex-col items-center
-              justify-center gap-3 cursor-pointer hover:bg-gradient-to-r hover:from-red-50 hover:to-yellow-50 
-              hover:border-red-500/60 transition-all"
+            className="border-2 border-dashed border-emerald-400/30 rounded-2xl p-8 flex flex-col items-center
+              justify-center gap-3 cursor-pointer hover:bg-white/10 hover:border-emerald-400/60 transition-all"
           >
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500 text-white 
-              shadow-[0_4px_16px_rgba(255,0,0,0.35)]">
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white 
+              shadow-[0_4px_16px_rgba(0,0,0,0.35)] border border-white/10">
               <Upload size={22} />
             </div>
             <div className="text-center">
-              <p className="font-bold text-gray-700">Click to upload images</p>
-              <p className="text-xs text-gray-400 mt-0.5">PNG, JPG, WEBP — multiple allowed</p>
+              <p className="font-bold text-white">Click to upload images</p>
+              <p className="text-xs text-gray-500 mt-0.5">PNG, JPG, WEBP — multiple allowed</p>
             </div>
           </div>
           {images.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4">
               {images.map((img, i) => (
                 <div key={i} className="relative group rounded-xl overflow-hidden aspect-square
-                  border border-red-200 shadow-[0_2px_12px_rgba(255,0,0,0.1)]">
+                  border border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
                   <img src={img.url} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100
                     transition-opacity flex items-center justify-center">
-                    <button onClick={() => removeImage(i)} className="p-1.5 bg-gradient-to-br from-red-500 to-yellow-500 rounded-full text-white">
+                    <button onClick={() => removeImage(i)} className="p-1.5 bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] rounded-full text-white border border-white/20">
                       <X size={14} />
                     </button>
                   </div>
-                  <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                  <div className="absolute bottom-1 left-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded-md flex items-center gap-1 backdrop-blur-sm">
                     <Image size={10} /> {i + 1}
                   </div>
                 </div>
@@ -221,8 +220,8 @@ const CreateHostel = () => {
             onClick={handleSubmit}
             disabled={loading}
             className="flex items-center gap-2.5 px-8 py-3 rounded-2xl text-white font-black text-sm
-              bg-gradient-to-r from-red-500 to-yellow-500 shadow-[0_4px_24px_rgba(255,0,0,0.4)]
-              hover:shadow-[0_8px_40px_rgba(255,0,0,0.5)] hover:scale-[1.02]
+              bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_4px_24px_rgba(16,185,129,0.4)]
+              hover:shadow-[0_8px_40px_rgba(16,185,129,0.5)] hover:scale-[1.02]
               active:scale-95 disabled:opacity-60 transition-all"
           >
             {loading ? (
@@ -241,9 +240,9 @@ const CreateHostel = () => {
 };
 
 const Section = ({ title, children }) => (
-  <div className="bg-white rounded-2xl border border-red-200 overflow-hidden
-    shadow-[0_4px_24px_rgba(255,0,0,0.08)] hover:shadow-[0_6px_32px_rgba(255,0,0,0.15)] transition-shadow">
-    <div className="px-5 py-3 bg-gradient-to-r from-red-500 to-yellow-500 flex items-center gap-2">
+  <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden
+    shadow-[0_4px_24px_rgba(0,0,0,0.3)] hover:shadow-[0_6px_32px_rgba(0,0,0,0.4)] transition-shadow">
+    <div className="px-5 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center gap-2">
       <h2 className="text-xs font-black text-white tracking-widest uppercase">{title}</h2>
     </div>
     <div className="p-5">{children}</div>

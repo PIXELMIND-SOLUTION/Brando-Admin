@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom";
 
 const AdminLayout = () => {
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-red-50 to-yellow-50">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617]">
       {/* Sidebar — fixed, never scrolls */}
       <Sidebar />
 

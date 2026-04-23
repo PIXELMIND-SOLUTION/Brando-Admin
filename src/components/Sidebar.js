@@ -37,15 +37,24 @@ const navItems = [
 const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
     const [open, setOpen] = useState(false);
 
+    // Check if any child route is active
+    const isChildActive = (children) => {
+        const currentPath = window.location.pathname;
+        return children.some(child => currentPath === child.to);
+    };
+
+    const hasActiveChild = isChildActive(item.children);
+
     return (
         <div className="relative group">
             <button
                 onClick={() => !collapsed && setOpen(!open)}
                 title={collapsed ? item.label : undefined}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-semibold
-          hover:bg-white/20
-          ${open && !collapsed ? "bg-white/25" : ""}
-          ${collapsed ? "justify-center" : ""}`}
+          ${collapsed ? "justify-center" : ""}
+          ${open && !collapsed ? "bg-white/20" : ""}
+          ${hasActiveChild && !collapsed && !open ? "bg-white/10 ring-1 ring-white/30" : ""}
+          hover:bg-white/20`}
             >
                 <item.icon size={18} className="flex-shrink-0" />
                 {!collapsed && (
@@ -62,8 +71,8 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
             {/* Collapsed flyout */}
             {collapsed && (
                 <div className="absolute left-full top-0 ml-3 z-50 hidden group-hover:block">
-                    <div className="bg-gradient-to-br from-red-500 to-yellow-500 rounded-2xl shadow-[0_8px_32px_rgba(255,0,0,0.4)] py-2 w-48 border border-white/20">
-                        <p className="px-4 py-2 text-[10px] font-black text-white/70 uppercase tracking-widest border-b border-white/20 mb-1">
+                    <div className="bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] py-2 w-48 border border-white/20 backdrop-blur-sm">
+                        <p className="px-4 py-2 text-[10px] font-black text-emerald-400 uppercase tracking-widest border-b border-white/20 mb-1">
                             {item.label}
                         </p>
                         {item.children.map(({ to, label, icon: Icon }) => (
@@ -74,7 +83,9 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
                                 onClick={() => setMobileOpen(false)}
                                 className={({ isActive }) =>
                                     `flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold transition-all
-                  ${isActive ? "bg-white/30 text-white" : "text-white/80 hover:text-white hover:bg-white/20"}`
+                  ${isActive 
+                      ? "bg-emerald-500/30 text-white border-l-2 border-emerald-400" 
+                      : "text-white/80 hover:text-white hover:bg-white/10"}`
                                 }
                             >
                                 <Icon size={13} />
@@ -90,7 +101,7 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out
           ${open ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}
                 >
-                    <div className="ml-4 mt-1 space-y-0.5 border-l-2 border-white/40 pl-3 pb-1">
+                    <div className="ml-4 mt-1 space-y-0.5 border-l-2 border-white/20 pl-3 pb-1">
                         {item.children.map(({ to, label, icon: Icon }) => (
                             <NavLink
                                 key={to}
@@ -100,8 +111,8 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
                                 className={({ isActive }) =>
                                     `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all
                   ${isActive
-                                        ? "bg-white/30 text-white ring-1 ring-white/40"
-                                        : "text-white/80 hover:text-white hover:bg-white/20"
+                                        ? "bg-emerald-500/30 text-white border-l-2 border-emerald-400"
+                                        : "text-white/80 hover:text-white hover:bg-white/10"
                                     }`
                                 }
                             >
@@ -122,33 +133,33 @@ const Sidebar = () => {
     const [collapsed, setCollapsed] = useState(false);
 
     const sidebarContent = (isCollapsed) => (
-        <div className="flex flex-col h-full bg-gradient-to-b from-red-600 to-yellow-600 text-white">
+        <div className="flex flex-col h-full bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white shadow-xl">
 
             {/* Logo */}
-            <div className={`flex items-center flex-shrink-0 border-b border-white/20
+            <div className={`flex items-center flex-shrink-0 border-b border-white/10
         ${isCollapsed ? "justify-center p-4" : "justify-between px-5 py-[18px]"}`}
             >
                 {!isCollapsed && (
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                            <Building2 size={18} className="text-red-500" />
+                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
+                            <Building2 size={18} className="text-white" />
                         </div>
                         <div>
                             <span className="text-base font-black tracking-tight text-white">Brando</span>
-                            <span className="block text-[10px] text-yellow-200 font-medium -mt-0.5 tracking-widest uppercase">Admin Panel</span>
+                            <span className="block text-[10px] text-emerald-400 font-medium -mt-0.5 tracking-widest uppercase">Admin Panel</span>
                         </div>
                     </div>
                 )}
                 {isCollapsed && (
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-lg">
-                        <Building2 size={18} className="text-red-500" />
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
+                        <Building2 size={18} className="text-white" />
                     </div>
                 )}
 
                 <button
                     onClick={() => setCollapsed(!isCollapsed)}
                     className="hidden md:flex items-center justify-center w-7 h-7 rounded-full
-            bg-white/20 hover:bg-white/30 transition-colors flex-shrink-0 text-white"
+            bg-white/10 hover:bg-white/20 transition-colors flex-shrink-0 text-white hover:scale-110"
                     title={isCollapsed ? "Expand" : "Collapse"}
                 >
                     {isCollapsed ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
@@ -156,7 +167,7 @@ const Sidebar = () => {
             </div>
 
             {/* Nav */}
-            <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto overflow-x-hidden">
+            <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {navItems.map((item) =>
                     item.children ? (
                         <DropdownItem
@@ -169,15 +180,15 @@ const Sidebar = () => {
                         <NavLink
                             key={item.to}
                             to={item.to}
-                            end={item.to === "/"}
+                            end={item.to === "/dashboard"}
                             onClick={() => setMobileOpen(false)}
                             title={isCollapsed ? item.label : undefined}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-semibold tracking-wide
                 ${isCollapsed ? "justify-center" : ""}
                 ${isActive
-                                    ? "bg-white/30 text-white shadow-inner ring-1 ring-white/30"
-                                    : "text-white/80 hover:text-white hover:bg-white/20"
+                                    ? "bg-emerald-500/30 text-white ring-1 ring-emerald-400/50"
+                                    : "text-white/70 hover:text-white hover:bg-white/10"
                                 }`
                             }
                         >
@@ -189,17 +200,17 @@ const Sidebar = () => {
             </nav>
 
             {/* Footer */}
-            <div className="flex-shrink-0 border-t border-white/20 p-3">
-                <div className={`flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-xl p-2.5
-          ${isCollapsed ? "justify-center" : ""}`}
+            <div className="flex-shrink-0 border-t border-white/10 p-3">
+                <div className={`flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-xl p-2.5
+          ${isCollapsed ? "justify-center" : ""} hover:bg-white/10 transition-colors`}
                 >
-                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-300 to-red-400 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
                         <span className="text-white text-sm font-black">A</span>
                     </div>
                     {!isCollapsed && (
                         <div className="overflow-hidden">
                             <p className="text-sm font-bold leading-tight truncate text-white">Admin User</p>
-                            <p className="text-[11px] text-yellow-200 truncate">Super Admin</p>
+                            <p className="text-[11px] text-emerald-400 truncate">Super Admin</p>
                         </div>
                     )}
                 </div>
@@ -212,7 +223,7 @@ const Sidebar = () => {
         <>
             {/* Mobile hamburger */}
             <button
-                className="fixed top-4 left-4 z-50 md:hidden p-2.5 rounded-xl text-white bg-gradient-to-r from-red-500 to-yellow-500 shadow-[0_4px_16px_rgba(255,0,0,0.4)]"
+                className="fixed top-4 left-4 z-50 md:hidden p-2.5 rounded-xl text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
                 onClick={() => setMobileOpen(!mobileOpen)}
             >
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -221,7 +232,7 @@ const Sidebar = () => {
             {/* Mobile backdrop */}
             {mobileOpen && (
                 <div
-                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 md:hidden"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
@@ -230,6 +241,7 @@ const Sidebar = () => {
             <div className={`
         fixed top-0 left-0 h-full w-64 z-40 md:hidden
         transform transition-transform duration-300 ease-in-out
+        shadow-2xl
         ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
                 {sidebarContent(false)}
@@ -249,6 +261,24 @@ const Sidebar = () => {
         hidden md:block flex-shrink-0 transition-all duration-300
         ${collapsed ? "w-16" : "w-64"}
       `} />
+
+            {/* Custom scrollbar styles */}
+            <style jsx>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-radius: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 255, 255, 0.3);
+                }
+            `}</style>
         </>
     );
 };

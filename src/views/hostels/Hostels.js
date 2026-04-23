@@ -6,23 +6,145 @@ import {
   Building2, Eye, Trash2, Calendar, MapPin, 
   Star, IndianRupee, Users, Image as ImageIcon,
   Filter, Sparkles, LayoutGrid, X, Table2,
-  Grid3x3, ChevronDown, Download, RefreshCw,
+  Grid3x3, Download, RefreshCw,
   SortAsc, SortDesc, Search, TrendingUp,
-  BadgeCheck, Clock, Home, Tag, Hash
+  BadgeCheck, Clock, Home, Tag, ChevronLeft,
+  ChevronRight, ChevronsLeft, ChevronsRight
 } from "lucide-react";
 
-const API = "http://31.97.206.144:2003/api/Admin";
+const API = "http://187.127.146.52:2003/api/Admin";
 
-// SweetAlert config
+// SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({
   icon, title, text, timer,
-  background: '#fff',
+  background: '#0f172a',
+  color: '#fff',
   customClass: {
     popup: 'rounded-2xl',
     title: 'text-lg font-bold',
-    confirmButton: 'bg-gradient-to-r from-red-500 to-yellow-500 text-white px-6 py-2 rounded-xl font-semibold'
+    confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold border-none'
   }
 });
+
+// Pagination Component with Ellipsis
+const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, totalItems, onItemsPerPageChange }) => {
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    const ellipsisThreshold = 7;
+
+    if (totalPages <= maxVisible + 2) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= maxVisible; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - (maxVisible - 1); i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-white/10">
+      {/* Items per page selector */}
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <span>Show</span>
+        <select
+          value={itemsPerPage}
+          onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+          className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:border-emerald-500 outline-none"
+        >
+          {[10, 20, 30, 50].map(size => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
+        <span>entries</span>
+        <span className="ml-4">
+          Showing {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+        </span>
+      </div>
+
+      {/* Pagination buttons */}
+      <div className="flex items-center gap-1">
+        {/* First page */}
+        <button
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          <ChevronsLeft size={16} />
+        </button>
+
+        {/* Previous page */}
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        {/* Page numbers */}
+        <div className="flex items-center gap-1">
+          {getPageNumbers().map((page, index) => (
+            page === '...' ? (
+              <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-400">...</span>
+            ) : (
+              <button
+                key={page}
+                onClick={() => onPageChange(page)}
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${
+                  currentPage === page
+                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                    : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
+                }`}
+              >
+                {page}
+              </button>
+            )
+          ))}
+        </div>
+
+        {/* Next page */}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          <ChevronRight size={16} />
+        </button>
+
+        {/* Last page */}
+        <button
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
+          <ChevronsRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const Hostels = () => {
   const navigate = useNavigate();
@@ -30,17 +152,20 @@ const Hostels = () => {
   const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [error, setError] = useState("");
   const [filter, setFilter] = useState('All');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'table'
+  const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [selectedHostels, setSelectedHostels] = useState([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
-  // Fetch all hostels
   const fetchHostels = async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
       setError("");
-      const { data } = await axios.get(`${API}/getallHostels`);
+      const { data } = await axios.get(`${API}/hostels`);
       setHostels(data.hostels || []);
     } catch (error) {
       console.error(error);
@@ -53,19 +178,24 @@ const Hostels = () => {
 
   useEffect(() => { fetchHostels(); }, []);
 
-  // Delete hostel
+  // Reset to first page when filter/search/sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchTerm, sortConfig]);
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
       icon: 'warning',
       showCancelButton: true,
-      background: '#fff',
+      background: '#0f172a',
+      color: '#fff',
       customClass: {
         popup: 'rounded-2xl',
         title: 'text-lg font-bold',
-        confirmButton: 'bg-gradient-to-r from-red-500 to-yellow-500 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold'
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
 
@@ -86,7 +216,6 @@ const Hostels = () => {
     }
   };
 
-  // Bulk delete
   const handleBulkDelete = async () => {
     if (selectedHostels.length === 0) {
       showAlert('warning', 'No selection', 'Please select hostels to delete');
@@ -98,12 +227,13 @@ const Hostels = () => {
       text: `You are about to delete ${selectedHostels.length} hostels`,
       icon: 'warning',
       showCancelButton: true,
-      background: '#fff',
+      background: '#0f172a',
+      color: '#fff',
       customClass: {
         popup: 'rounded-2xl',
         title: 'text-lg font-bold',
-        confirmButton: 'bg-gradient-to-r from-red-500 to-yellow-500 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold'
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
 
@@ -112,7 +242,6 @@ const Hostels = () => {
     try {
       setLoading(prev => ({ ...prev, delete: true }));
       
-      // Delete sequentially
       for (const id of selectedHostels) {
         await axios.delete(`${API}/deleteHostel/${id}`);
       }
@@ -128,12 +257,10 @@ const Hostels = () => {
     }
   };
 
-  // View hostel details
   const viewHostel = (id) => {
     navigate(`/dashboard/hostels/${id}`);
   };
 
-  // Filter and sort hostels
   const getUniqueCategories = () => {
     return ['All', ...new Set(hostels.map(h => h.categoryId?.name).filter(Boolean))];
   };
@@ -143,7 +270,6 @@ const Hostels = () => {
       ? hostels 
       : hostels.filter(h => h.categoryId?.name === filter);
 
-    // Apply search
     if (searchTerm) {
       filtered = filtered.filter(h => 
         h.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -152,7 +278,6 @@ const Hostels = () => {
       );
     }
 
-    // Apply sorting
     return filtered.sort((a, b) => {
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
@@ -166,6 +291,9 @@ const Hostels = () => {
       } else if (sortConfig.key === 'sharings') {
         aVal = a.sharings?.length || 0;
         bVal = b.sharings?.length || 0;
+      } else if (sortConfig.key === 'createdAt') {
+        aVal = new Date(a.createdAt).getTime();
+        bVal = new Date(b.createdAt).getTime();
       }
 
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -173,6 +301,20 @@ const Hostels = () => {
       return 0;
     });
   };
+
+  // Get paginated data
+  const getPaginatedData = () => {
+    const filtered = filteredAndSortedHostels();
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return {
+      data: filtered.slice(start, end),
+      totalItems: filtered.length,
+      totalPages: Math.ceil(filtered.length / itemsPerPage)
+    };
+  };
+
+  const { data: paginatedHostels, totalItems, totalPages } = getPaginatedData();
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -182,10 +324,10 @@ const Hostels = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedHostels.length === filteredAndSortedHostels().length) {
+    if (selectedHostels.length === paginatedHostels.length) {
       setSelectedHostels([]);
     } else {
-      setSelectedHostels(filteredAndSortedHostels().map(h => h._id));
+      setSelectedHostels(paginatedHostels.map(h => h._id));
     }
   };
 
@@ -195,7 +337,6 @@ const Hostels = () => {
     );
   };
 
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -204,7 +345,6 @@ const Hostels = () => {
     }).format(amount);
   };
 
-  // Export to CSV
   const exportToCSV = () => {
     const data = filteredAndSortedHostels();
     const headers = ['Name', 'Category', 'Rating', 'Address', 'Advance', 'Sharing Options', 'Images', 'Created'];
@@ -229,24 +369,23 @@ const Hostels = () => {
     a.click();
   };
 
-  // Premium Components
   const PageHeader = ({ icon: Icon, title, subtitle, actions }) => (
     <div className="relative mb-8">
-      <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-yellow-500/5 rounded-3xl -z-10 blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-emerald-500/5 rounded-3xl -z-10 blur-3xl" />
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-yellow-500 rounded-2xl blur-xl opacity-50 animate-pulse" />
-            <div className="relative p-3 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500 text-white shadow-[0_10px_40px_rgba(255,0,0,0.3)]">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl blur-xl opacity-50 animate-pulse" />
+            <div className="relative p-3 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/10">
               <Icon size={24} />
             </div>
           </div>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center gap-2">
               {title}
-              <BadgeCheck size={20} className="text-yellow-500" />
+              <BadgeCheck size={20} className="text-emerald-400" />
             </h1>
-            <p className="text-sm text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 font-medium flex items-center gap-2">
+            <p className="text-sm text-emerald-400 font-medium flex items-center gap-2">
               <TrendingUp size={14} />
               {subtitle}
             </p>
@@ -259,26 +398,26 @@ const Hostels = () => {
 
   const StatsCard = () => {
     const stats = [
-      { label: 'Total Hostels', value: hostels.length, icon: Building2, color: 'from-red-500 to-yellow-500' },
+      { label: 'Total Hostels', value: hostels.length, icon: Building2, color: 'from-emerald-500 to-emerald-600' },
       { label: 'Categories', value: getUniqueCategories().length - 1, icon: Tag, color: 'from-blue-500 to-indigo-500' },
       { label: 'Total Images', value: hostels.reduce((acc, h) => acc + (h.images?.length || 0), 0), icon: ImageIcon, color: 'from-purple-500 to-pink-500' },
-      { label: 'Avg Rating', value: (hostels.reduce((acc, h) => acc + (h.rating || 0), 0) / hostels.length || 0).toFixed(1), icon: Star, color: 'from-green-500 to-emerald-500' }
+      { label: 'Avg Rating', value: (hostels.reduce((acc, h) => acc + (h.rating || 0), 0) / hostels.length || 0).toFixed(1), icon: Star, color: 'from-yellow-500 to-orange-500' }
     ];
 
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl border border-red-100 p-4 
-            shadow-[0_4px_20px_rgba(255,0,0,0.08)] hover:shadow-xl transition-all group">
+          <div key={idx} className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-4 
+            shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:shadow-xl transition-all group">
             <div className="flex items-center justify-between mb-2">
               <div className={`p-2 rounded-lg bg-gradient-to-br ${stat.color} text-white 
                 group-hover:scale-110 transition-transform`}>
                 <stat.icon size={16} />
               </div>
-              <Sparkles size={16} className="text-yellow-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Sparkles size={16} className="text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <p className="text-2xl font-black text-gray-800">{stat.value}</p>
-            <p className="text-xs text-gray-500 mt-1">{stat.label}</p>
+            <p className="text-2xl font-black text-white">{stat.value}</p>
+            <p className="text-xs text-gray-400 mt-1">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -286,13 +425,13 @@ const Hostels = () => {
   };
 
   const ViewToggle = () => (
-    <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-xl">
+    <div className="flex items-center gap-2 p-1 bg-white/10 rounded-xl">
       <button
         onClick={() => setViewMode('grid')}
         className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
           viewMode === 'grid' 
-            ? 'bg-white text-red-500 shadow-md' 
-            : 'text-gray-500 hover:text-gray-700'
+            ? 'bg-white/20 text-emerald-400 shadow-md' 
+            : 'text-gray-400 hover:text-white'
         }`}
       >
         <Grid3x3 size={18} />
@@ -302,8 +441,8 @@ const Hostels = () => {
         onClick={() => setViewMode('table')}
         className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
           viewMode === 'table' 
-            ? 'bg-white text-red-500 shadow-md' 
-            : 'text-gray-500 hover:text-gray-700'
+            ? 'bg-white/20 text-emerald-400 shadow-md' 
+            : 'text-gray-400 hover:text-white'
         }`}
       >
         <Table2 size={18} />
@@ -320,14 +459,14 @@ const Hostels = () => {
         placeholder="Search hostels by name, address, category..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-red-100 bg-white/50 
-          focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all
-          placeholder:text-gray-400 text-sm"
+        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
+          focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all
+          placeholder:text-gray-500 text-sm text-white"
       />
       {searchTerm && (
         <button
           onClick={() => setSearchTerm('')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
         >
           <X size={16} />
         </button>
@@ -339,9 +478,9 @@ const Hostels = () => {
     const categories = getUniqueCategories();
     
     return (
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Filter size={16} className="text-red-400" />
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Filter size={16} className="text-emerald-400" />
           <span className="font-medium">Filter:</span>
         </div>
         {categories.map(cat => (
@@ -350,8 +489,8 @@ const Hostels = () => {
             onClick={() => setFilter(cat)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap
               ${filter === cat 
-                ? 'bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-lg' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' 
+                : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
           >
             {cat}
@@ -377,14 +516,14 @@ const Hostels = () => {
         )}
         <button
           onClick={exportToCSV}
-          className="p-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+          className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
           title="Export to CSV"
         >
           <Download size={18} />
         </button>
         <button
           onClick={fetchHostels}
-          className="p-2.5 rounded-xl bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
+          className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
           title="Refresh"
         >
           <RefreshCw size={18} className={loading.fetch ? 'animate-spin' : ''} />
@@ -400,27 +539,25 @@ const Hostels = () => {
   };
 
   const TableView = () => (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-red-100 shadow-lg overflow-hidden">
+    <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gradient-to-r from-red-50 to-yellow-50 border-b-2 border-red-200">
+            <tr className="bg-white/10 border-b border-white/10">
               <th className="px-4 py-4 w-12">
                 <input
                   type="checkbox"
-                  checked={selectedHostels.length === filteredAndSortedHostels().length}
+                  checked={selectedHostels.length === paginatedHostels.length && paginatedHostels.length > 0}
                   onChange={toggleSelectAll}
-                  className="w-4 h-4 rounded border-red-300 text-red-500 focus:ring-red-500"
+                  className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
               </th>
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('name')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Home size={14} className="text-red-400" />
+                  <Home size={14} />
                   Hostel Name
                   <SortIcon column="name" />
                 </button>
@@ -428,11 +565,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('categoryId')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Tag size={14} className="text-red-400" />
+                  <Tag size={14} />
                   Category
                   <SortIcon column="categoryId" />
                 </button>
@@ -440,11 +575,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('rating')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Star size={14} className="text-red-400" />
+                  <Star size={14} />
                   Rating
                   <SortIcon column="rating" />
                 </button>
@@ -452,11 +585,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('address')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <MapPin size={14} className="text-red-400" />
+                  <MapPin size={14} />
                   Address
                   <SortIcon column="address" />
                 </button>
@@ -464,11 +595,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('price')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <IndianRupee size={14} className="text-red-400" />
+                  <IndianRupee size={14} />
                   Advance
                   <SortIcon column="price" />
                 </button>
@@ -476,11 +605,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('sharings')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Users size={14} className="text-red-400" />
+                  <Users size={14} />
                   Sharing
                   <SortIcon column="sharings" />
                 </button>
@@ -488,11 +615,9 @@ const Hostels = () => {
               <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('createdAt')}
-                  className="flex items-center gap-2 text-xs font-black text-transparent 
-                    bg-clip-text bg-gradient-to-r from-red-600 to-yellow-600 uppercase 
-                    tracking-wider group"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Calendar size={14} className="text-red-400" />
+                  <Calendar size={14} />
                   Created
                   <SortIcon column="createdAt" />
                 </button>
@@ -501,60 +626,57 @@ const Hostels = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedHostels().map((hostel) => (
+            {paginatedHostels.map((hostel) => (
               <tr 
                 key={hostel._id} 
-                className="border-b border-red-50 hover:bg-gradient-to-r hover:from-red-50/30 
-                  hover:to-yellow-50/30 transition-all duration-300 group"
+                className="border-b border-white/5 hover:bg-white/10 transition-all duration-300 group"
               >
                 <td className="px-4 py-4">
                   <input
                     type="checkbox"
                     checked={selectedHostels.includes(hostel._id)}
                     onChange={() => toggleSelect(hostel._id)}
-                    className="w-4 h-4 rounded border-red-300 text-red-500 focus:ring-red-500"
+                    className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                   />
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-100 to-yellow-100 
-                      flex items-center justify-center overflow-hidden">
-                      {hostel.images[0] ? (
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
+                      {hostel.images?.[0] ? (
                         <img src={hostel.images[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <Building2 size={14} className="text-red-400" />
+                        <Building2 size={14} className="text-emerald-400" />
                       )}
                     </div>
-                    <span className="font-semibold text-gray-800">{hostel.name}</span>
+                    <span className="font-semibold text-white">{hostel.name}</span>
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  <span className="px-2 py-1 bg-gradient-to-r from-red-100 to-yellow-100 
-                    rounded-lg text-xs font-semibold text-red-600">
+                  <span className="px-2 py-1 bg-white/10 rounded-lg text-xs font-semibold text-emerald-400">
                     {hostel.categoryId?.name || 'N/A'}
                   </span>
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-1">
                     <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                    <span className="font-medium">{hostel.rating}</span>
+                    <span className="font-medium text-white">{hostel.rating}</span>
                   </div>
                 </td>
                 <td className="px-4 py-4 max-w-xs">
-                  <p className="text-sm text-gray-600 truncate">{hostel.address}</p>
+                  <p className="text-sm text-gray-400 truncate">{hostel.address}</p>
                 </td>
-                <td className="px-4 py-4 font-semibold text-gray-800">
+                <td className="px-4 py-4 font-semibold text-white">
                   {formatCurrency(hostel.monthlyAdvance)}
                 </td>
                 <td className="px-4 py-4">
-                  <div className="flex items-center gap-1">
-                    <Users size={12} className="text-red-400" />
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <Users size={12} />
                     <span>{hostel.sharings?.length || 0}</span>
                   </div>
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-500">
+                <td className="px-4 py-4 text-sm text-gray-400">
                   <div className="flex items-center gap-1">
-                    <Calendar size={12} className="text-red-400" />
+                    <Calendar size={12} />
                     {new Date(hostel.createdAt).toLocaleDateString()}
                   </div>
                 </td>
@@ -585,13 +707,12 @@ const Hostels = () => {
         </table>
       </div>
       
-      {/* Table Footer */}
-      <div className="px-4 py-3 bg-gradient-to-r from-red-50 to-yellow-50 border-t border-red-100 
+      <div className="px-4 py-3 bg-white/10 border-t border-white/10 
         flex items-center justify-between text-sm">
-        <span className="text-gray-600">
-          Showing {filteredAndSortedHostels().length} of {hostels.length} hostels
+        <span className="text-gray-400">
+          Showing {paginatedHostels.length} of {totalItems} hostels
         </span>
-        <span className="text-gray-500">
+        <span className="text-gray-400">
           {selectedHostels.length} selected
         </span>
       </div>
@@ -599,85 +720,87 @@ const Hostels = () => {
   );
 
   const GridView = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {filteredAndSortedHostels().map(hostel => (
-        <div key={hostel._id} className="bg-white rounded-xl border border-red-100 overflow-hidden 
-          hover:shadow-xl transition-all group relative">
-          <div className="absolute top-2 left-2 z-10">
-            <input
-              type="checkbox"
-              checked={selectedHostels.includes(hostel._id)}
-              onChange={() => toggleSelect(hostel._id)}
-              className="w-4 h-4 rounded border-red-300 text-red-500 focus:ring-red-500"
-            />
-          </div>
-          <div className="relative h-40 sm:h-48 bg-gray-100">
-            <img 
-              src={hostel.images[0]} 
-              alt={hostel.name} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute top-2 right-2 flex gap-1.5">
-              <button onClick={() => viewHostel(hostel._id)}
-                className="p-1.5 sm:p-2 bg-white/90 backdrop-blur-sm rounded-lg text-blue-600 hover:bg-white">
-                <Eye size={14} className="sm:w-4 sm:h-4" />
-              </button>
-              <button onClick={() => handleDelete(hostel._id)}
-                disabled={loading.delete}
-                className="p-1.5 sm:p-2 bg-white/90 backdrop-blur-sm rounded-lg text-red-600 hover:bg-white">
-                <Trash2 size={14} className="sm:w-4 sm:h-4" />
-              </button>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {paginatedHostels.map(hostel => (
+          <div key={hostel._id} className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden 
+            hover:shadow-xl transition-all group relative">
+            <div className="absolute top-2 left-2 z-10">
+              <input
+                type="checkbox"
+                checked={selectedHostels.includes(hostel._id)}
+                onChange={() => toggleSelect(hostel._id)}
+                className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
+              />
             </div>
-            <div className="absolute top-2 left-8 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
-              <Star size={12} className="text-yellow-400" />
-              {hostel.rating}
-            </div>
-            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
-              <ImageIcon size={10} /> {hostel.images.length}
-            </div>
-          </div>
-          
-          <div className="p-3 sm:p-4">
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <h3 className="font-bold text-gray-800 line-clamp-1">{hostel.name}</h3>
-              <span className="text-xs px-2 py-1 bg-gradient-to-r from-red-100 to-yellow-100 rounded-full text-red-600 font-semibold whitespace-nowrap">
-                {hostel.categoryId?.name || 'N/A'}
-              </span>
-            </div>
-            
-            <div className="space-y-2 text-xs text-gray-500">
-              <div className="flex items-center gap-1.5">
-                <MapPin size={12} className="text-red-400 flex-shrink-0" />
-                <span className="line-clamp-1">{hostel.address}</span>
+            <div className="relative h-40 sm:h-48 bg-white/5">
+              <img 
+                src={hostel.images?.[0]} 
+                alt={hostel.name} 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute top-2 right-2 flex gap-1.5">
+                <button onClick={() => viewHostel(hostel._id)}
+                  className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80">
+                  <Eye size={14} className="sm:w-4 sm:h-4" />
+                </button>
+                <button onClick={() => handleDelete(hostel._id)}
+                  disabled={loading.delete}
+                  className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80">
+                  <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                </button>
               </div>
-              
-              <div className="flex items-center gap-1.5">
-                <IndianRupee size={12} className="text-red-400 flex-shrink-0" />
-                <span>Advance: {formatCurrency(hostel.monthlyAdvance)}</span>
+              <div className="absolute top-2 left-8 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                <Star size={12} className="text-yellow-400" />
+                {hostel.rating}
               </div>
-              
-              <div className="flex items-center gap-1.5">
-                <Users size={12} className="text-red-400 flex-shrink-0" />
-                <span>{hostel.sharings?.length} sharing options</span>
+              <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                <ImageIcon size={10} /> {hostel.images?.length || 0}
               </div>
             </div>
             
-            <div className="mt-3 pt-3 border-t border-red-50 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-1.5 text-gray-400">
-                <Calendar size={10} />
-                {new Date(hostel.createdAt).toLocaleDateString()}
+            <div className="p-3 sm:p-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-bold text-white line-clamp-1">{hostel.name}</h3>
+                <span className="text-xs px-2 py-1 bg-white/10 rounded-full text-emerald-400 font-semibold whitespace-nowrap">
+                  {hostel.categoryId?.name || 'N/A'}
+                </span>
               </div>
-              <button 
-                onClick={() => viewHostel(hostel._id)}
-                className="text-red-500 hover:text-red-600 font-semibold"
-              >
-                View Details →
-              </button>
+              
+              <div className="space-y-2 text-xs text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={12} className="text-emerald-400 flex-shrink-0" />
+                  <span className="line-clamp-1">{hostel.address}</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5">
+                  <IndianRupee size={12} className="text-emerald-400 flex-shrink-0" />
+                  <span>Advance: {formatCurrency(hostel.monthlyAdvance)}</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5">
+                  <Users size={12} className="text-emerald-400 flex-shrink-0" />
+                  <span>{hostel.sharings?.length} sharing options</span>
+                </div>
+              </div>
+              
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  <Calendar size={10} />
+                  {new Date(hostel.createdAt).toLocaleDateString()}
+                </div>
+                <button 
+                  onClick={() => viewHostel(hostel._id)}
+                  className="text-emerald-400 hover:text-emerald-300 font-semibold"
+                >
+                  View Details →
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 
   return (
@@ -696,26 +819,25 @@ const Hostels = () => {
       {loading.fetch ? (
         <div className="flex justify-center py-20">
           <div className="relative">
-            <div className="w-16 h-16 border-4 border-red-200 border-t-red-500 rounded-full animate-spin" />
+            <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Building2 size={20} className="text-red-400 animate-pulse" />
+              <Building2 size={20} className="text-emerald-400 animate-pulse" />
             </div>
           </div>
         </div>
-      ) : filteredAndSortedHostels().length === 0 ? (
-        <div className="text-center py-20 bg-white/80 backdrop-blur-sm rounded-2xl border border-red-100">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-100 to-yellow-100 
-            flex items-center justify-center">
-            <Building2 size={32} className="text-red-400" />
+      ) : paginatedHostels.length === 0 ? (
+        <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">
+            <Building2 size={32} className="text-emerald-400" />
           </div>
-          <p className="text-gray-600 font-bold text-lg mb-2">No hostels found</p>
+          <p className="text-white font-bold text-lg mb-2">No hostels found</p>
           <p className="text-sm text-gray-400">
             {searchTerm ? 'Try adjusting your search' : filter !== 'All' ? 'Try a different category' : ''}
           </p>
           {(searchTerm || filter !== 'All') && (
             <button 
               onClick={() => { setSearchTerm(''); setFilter('All'); }}
-              className="mt-4 px-4 py-2 bg-gradient-to-r from-red-500 to-yellow-500 text-white 
+              className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
                 rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
             >
               Clear filters
@@ -726,19 +848,31 @@ const Hostels = () => {
         <>
           {viewMode === 'grid' ? <GridView /> : <TableView />}
           
-          {/* Stats Card */}
-          <div className="mt-6 bg-gradient-to-br from-red-50 to-yellow-50 rounded-xl p-4 
-            border border-red-200 flex items-center justify-between">
+          {/* Pagination Component */}
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            itemsPerPage={itemsPerPage}
+            totalItems={totalItems}
+            onItemsPerPageChange={(newSize) => {
+              setItemsPerPage(newSize);
+              setCurrentPage(1);
+            }}
+          />
+          
+          {/* Summary Stats Card */}
+          <div className="mt-6 bg-white/10 rounded-xl p-4 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-yellow-500 
-                flex items-center justify-center text-white font-bold text-lg">
-                {filteredAndSortedHostels().length}
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
+                flex items-center justify-center text-white font-bold text-lg border border-white/20">
+                {totalItems}
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-bold text-white">
                   {filter === 'All' ? 'Total Hostels' : `${filter} Hostels`}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   {filter === 'All' ? 'Across all categories' : `Filtered by category`}
                   {searchTerm && ` • Search: "${searchTerm}"`}
                 </p>
@@ -746,13 +880,13 @@ const Hostels = () => {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-xs text-gray-500">Avg. Rating</p>
-                <p className="font-bold text-gray-800">
-                  {(filteredAndSortedHostels().reduce((acc, h) => acc + (h.rating || 0), 0) / 
-                    filteredAndSortedHostels().length || 0).toFixed(1)}
+                <p className="text-xs text-gray-400">Avg. Rating</p>
+                <p className="font-bold text-white">
+                  {(paginatedHostels.reduce((acc, h) => acc + (h.rating || 0), 0) / 
+                    paginatedHostels.length || 0).toFixed(1)}
                 </p>
               </div>
-              <Sparkles size={20} className="text-yellow-500" />
+              <Sparkles size={20} className="text-emerald-400" />
             </div>
           </div>
         </>
