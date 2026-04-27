@@ -5,7 +5,8 @@ import {
     MessageSquare, X, Menu, ChevronDown,
     List, PlusCircle, Eye, Star, Briefcase, UserPlus,
     ChevronLeft, ChevronRight,
-    ImagesIcon
+    ImagesIcon,
+    BookMarked
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
 
@@ -21,15 +22,30 @@ const navItems = [
         ],
     },
     {
-        label: "Agents",
+        label: "Vendors",
         icon: UserCircle,
         children: [
-            { to: "/dashboard/agents", label: "All Agents", icon: List },
-            { to: "/dashboard/agents/add", label: "Add Agent", icon: UserPlus },
-            { to: "/dashboard/agents/active", label: "Active", icon: Briefcase },
+            { to: "/dashboard/vendors", label: "All Vendors", icon: List },
+            { to: "/dashboard/vendors/add", label: "Add Vendor", icon: UserPlus },
+            { to: "/dashboard/vendors/pending", label: "Pending", icon: Eye }
         ],
     },
-    { to: "/dashboard/banners", label: "Banners", icon: ImagesIcon },
+    {
+        label: "Bookings",
+        icon: BookMarked,
+        children: [
+            { to: "/dashboard/bookings", label: "All Bookings", icon: PlusCircle },
+            { to: "/dashboard/hostels", label: "Vendor Bookings", icon: List },
+        ],
+    },
+    {
+        label: "Banners",
+        icon: ImagesIcon,
+        children: [
+            { to: "/dashboard/banners", label: "All Banners", icon: PlusCircle },
+            { to: "/dashboard/vendor-banners", label: "Vendor Banners", icon: List },
+        ],
+    },
     { to: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
 ];
 
@@ -83,9 +99,9 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
                                 onClick={() => setMobileOpen(false)}
                                 className={({ isActive }) =>
                                     `flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold transition-all
-                  ${isActive 
-                      ? "bg-emerald-500/30 text-white border-l-2 border-emerald-400" 
-                      : "text-white/80 hover:text-white hover:bg-white/10"}`
+                  ${isActive
+                                        ? "bg-emerald-500/30 text-white border-l-2 border-emerald-400"
+                                        : "text-white/80 hover:text-white hover:bg-white/10"}`
                                 }
                             >
                                 <Icon size={13} />
