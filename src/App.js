@@ -9,13 +9,19 @@ import Customers from "./pages/Customers";
 import Enquiries from "./pages/Enquiries";
 
 import CreateHostel from "./views/hostels/CreateHostel";
-import CreateBanner from "./views/banners/CreateBanner";
 import Login from "./views/Login";
 import Category from "./views/Category";
-import Banners from "./views/banners/CreateBanner";
 import SingleHostel from "./views/hostels/SingleHostel";
 import Hostels from "./views/hostels/Hostels";
 import PendingVendors from "./views/Vendors/PendingVendors";
+import UserBanners from "./views/banners/UserBanners";
+import VendorBanners from "./views/banners/VendorBaners";
+import AllVendors from "./views/Vendors/AllVendors";
+import EditVendor from "./views/Vendors/EditVendor";
+import SingleVendorDetails from "./views/Vendors/SingleVendorDetails";
+import AllBookings from "./views/Bookings/AllBookings";
+import SingleBooking from "./views/Bookings/SingleBooking";
+import VendorBookings from "./views/Bookings/VendorBookings";
 
 const App = () => {
   return (
@@ -35,12 +41,21 @@ const App = () => {
         <Route path="customers" element={<Customers />} />
         <Route path="enquiries" element={<Enquiries />} />
 
-        <Route path="create-hostel" element={<CreateHostel />} />
+        {/* <Route path="create-hostel" element={<CreateHostel />} /> */}
         <Route path="hostels" element={<Hostels />} />
         <Route path="hostels/:id" element={<SingleHostel />} />
-        <Route path="banners" element={<Banners />} />
+
+        <Route path="banners" element={<UserBanners />} />
+        <Route path="vendor-banners" element={<VendorBanners />} />
 
         <Route path="vendors/pending" element={<PendingVendors />} />
+        <Route path="vendors" element={<AllVendors />} />
+        <Route path="vendors/:id" element={<SingleVendorDetails />} />
+        <Route path="vendors/edit/:id" element={<EditVendor />} />
+
+        <Route path="bookings" element={<AllBookings />} />
+        <Route path="bookings/:id" element={<SingleBooking />} />
+        <Route path="/dashboard/vendors/:id/bookings" element={<VendorBookings />} />
 
       </Route>
 

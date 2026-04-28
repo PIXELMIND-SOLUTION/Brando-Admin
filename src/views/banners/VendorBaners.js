@@ -6,7 +6,7 @@ import {
   Plus, Calendar, Sparkles, LayoutGrid, ChevronLeft
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/Admin";
+const API = "http://187.127.146.52:2003/api/vendor";
 
 // SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({
@@ -20,7 +20,7 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
   }
 });
 
-const Banners = () => {
+const VendorBanners = () => {
   // State management
   const [images, setImages] = useState([]);
   const [preview, setPreview] = useState([]);
@@ -500,4 +500,4 @@ const Banners = () => {
   );
 };
 
-export default Banners;
+export default VendorBanners;

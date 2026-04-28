@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { 
-  MessageCircle, Eye, Trash2, Calendar, User, 
-  Sparkles, Filter, X, Table2, CheckCircle,
-  Grid3x3, Download, RefreshCw, CheckCircle as CheckCircleIcon,
+import {
+  Calendar, Eye, Trash2, Building2, Users,
+  Sparkles, Filter, X, Table2, CreditCard,
+  Grid3x3, Download, RefreshCw, CheckCircle, XCircle,
   SortAsc, SortDesc, Search, TrendingUp,
   BadgeCheck, Clock, Home, Tag, ChevronLeft,
   ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
-  Mail, Phone, Building2, Edit, XCircle
+  IndianRupee, Phone, Mail, User
 } from "lucide-react";
 
 const API = "http://187.127.146.52:2003/api/admin";
@@ -104,11 +104,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${
-                  currentPage === page
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
                     : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -134,77 +133,39 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
   );
 };
 
-const Enquiries = () => {
+const AllBookings = () => {
   const navigate = useNavigate();
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState({ fetch: false, update: false, delete: false });
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
-  const [selectedTickets, setSelectedTickets] = useState([]);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  
-  // Pagination state
+  const [selectedBookings, setSelectedBookings] = useState([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
-  const fetchTickets = async () => {
+  const fetchBookings = async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      const { data } = await axios.get(`${API}/getalltickets`);
-      setTickets(data.data || []);
+      const { data } = await axios.get(`${API}/getallbookings`);
+      setBookings(data.data || []);
     } catch (error) {
       console.error(error);
-      showAlert('error', 'Oops...', 'Failed to fetch tickets');
+      showAlert('error', 'Oops...', 'Failed to fetch bookings');
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
   };
 
-  useEffect(() => { fetchTickets(); }, []);
+  useEffect(() => { fetchBookings(); }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, searchTerm, sortConfig]);
 
-  const handleUpdateStatus = async (ticketId, newStatus) => {
-    const result = await Swal.fire({
-      title: 'Update Status?',
-      text: `Are you sure you want to mark this ticket as ${newStatus}?`,
-      icon: 'question',
-      showCancelButton: true,
-      background: '#0f172a',
-      color: '#fff',
-      customClass: {
-        popup: 'rounded-2xl',
-        title: 'text-lg font-bold',
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
-      }
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setLoading(prev => ({ ...prev, update: true }));
-      await axios.put(`${API}/updateticket/${ticketId}`, { status: newStatus });
-      
-      showAlert('success', 'Updated!', `Ticket marked as ${newStatus}`, 2000);
-      fetchTickets();
-      if (selectedTicket && selectedTicket._id === ticketId) {
-        setSelectedTicket(prev => ({ ...prev, status: newStatus }));
-      }
-    } catch (error) {
-      console.error(error);
-      showAlert('error', 'Update failed', error.response?.data?.message || "Could not update ticket");
-    } finally {
-      setLoading(prev => ({ ...prev, update: false }));
-    }
-  };
-
-  const handleDelete = async (ticketId) => {
+  const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -224,85 +185,40 @@ const Enquiries = () => {
 
     try {
       setLoading(prev => ({ ...prev, delete: true }));
-      await axios.delete(`${API}/deleteticket/${ticketId}`);
-      
-      showAlert('success', 'Deleted!', 'Ticket has been deleted', 2000);
-      fetchTickets();
-      setSelectedTickets(prev => prev.filter(selectedId => selectedId !== ticketId));
-      if (selectedTicket && selectedTicket._id === ticketId) {
-        setShowModal(false);
-        setSelectedTicket(null);
-      }
+      // Note: You may need to add a delete booking endpoint
+      await axios.delete(`${API}/deletebooking/${id}`);
+
+      showAlert('success', 'Deleted!', 'Booking has been deleted', 2000);
+      fetchBookings();
+      setSelectedBookings(prev => prev.filter(selectedId => selectedId !== id));
     } catch (error) {
       console.error(error);
-      showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete ticket");
+      showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete booking");
     } finally {
       setLoading(prev => ({ ...prev, delete: false }));
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedTickets.length === 0) {
-      showAlert('warning', 'No selection', 'Please select tickets to delete');
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: 'Delete Selected?',
-      text: `You are about to delete ${selectedTickets.length} tickets`,
-      icon: 'warning',
-      showCancelButton: true,
-      background: '#0f172a',
-      color: '#fff',
-      customClass: {
-        popup: 'rounded-2xl',
-        title: 'text-lg font-bold',
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
-      }
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setLoading(prev => ({ ...prev, delete: true }));
-      
-      for (const id of selectedTickets) {
-        await axios.delete(`${API}/deleteticket/${id}`);
-      }
-      
-      showAlert('success', 'Deleted!', `${selectedTickets.length} tickets deleted`, 2000);
-      fetchTickets();
-      setSelectedTickets([]);
-    } catch (error) {
-      console.error(error);
-      showAlert('error', 'Delete failed', 'Could not delete some tickets');
-    } finally {
-      setLoading(prev => ({ ...prev, delete: false }));
-    }
-  };
-
-  const viewTicket = (ticket) => {
-    setSelectedTicket(ticket);
-    setShowModal(true);
+  const viewBooking = (id) => {
+    navigate(`/dashboard/bookings/${id}`);
   };
 
   const getUniqueFilters = () => {
-    const statuses = ['All', ...new Set(tickets.map(t => t.status).filter(Boolean))];
+    const statuses = ['All', ...new Set(bookings.map(b => b.status).filter(Boolean))];
     return statuses;
   };
 
-  const filteredAndSortedTickets = () => {
-    let filtered = filter === 'All' 
-      ? tickets 
-      : tickets.filter(t => t.status === filter);
+  const filteredAndSortedBookings = () => {
+    let filtered = filter === 'All'
+      ? bookings
+      : bookings.filter(b => b.status === filter);
 
     if (searchTerm) {
-      filtered = filtered.filter(t => 
-        (t.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.message || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.status || '').toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(b =>
+        (b.bookingReference || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.hostelId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.vendorId?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -310,12 +226,21 @@ const Enquiries = () => {
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
 
-      if (sortConfig.key === 'userId') {
+      if (sortConfig.key === 'hostelId') {
+        aVal = a.hostelId?.name || '';
+        bVal = b.hostelId?.name || '';
+      } else if (sortConfig.key === 'userId') {
         aVal = a.userId?.name || '';
         bVal = b.userId?.name || '';
+      } else if (sortConfig.key === 'totalAmount') {
+        aVal = a.totalAmount || 0;
+        bVal = b.totalAmount || 0;
       } else if (sortConfig.key === 'createdAt') {
         aVal = new Date(a.createdAt).getTime();
         bVal = new Date(b.createdAt).getTime();
+      } else if (sortConfig.key === 'startDate') {
+        aVal = new Date(a.startDate).getTime();
+        bVal = new Date(b.startDate).getTime();
       }
 
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -325,7 +250,7 @@ const Enquiries = () => {
   };
 
   const getPaginatedData = () => {
-    const filtered = filteredAndSortedTickets();
+    const filtered = filteredAndSortedBookings();
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return {
@@ -335,7 +260,7 @@ const Enquiries = () => {
     };
   };
 
-  const { data: paginatedTickets, totalItems, totalPages } = getPaginatedData();
+  const { data: paginatedBookings, totalItems, totalPages } = getPaginatedData();
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -345,30 +270,35 @@ const Enquiries = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedTickets.length === paginatedTickets.length) {
-      setSelectedTickets([]);
+    if (selectedBookings.length === paginatedBookings.length) {
+      setSelectedBookings([]);
     } else {
-      setSelectedTickets(paginatedTickets.map(t => t._id));
+      setSelectedBookings(paginatedBookings.map(b => b._id));
     }
   };
 
   const toggleSelect = (id) => {
-    setSelectedTickets(prev =>
+    setSelectedBookings(prev =>
       prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
     );
   };
 
   const exportToCSV = () => {
-    const data = filteredAndSortedTickets();
-    const headers = ['Title', 'Customer', 'Message', 'Status', 'Created Date', 'Last Updated'];
-    
-    const csvData = data.map(t => [
-      t.title || 'N/A',
-      t.userId?.name || 'N/A',
-      t.message || 'N/A',
-      t.status || 'N/A',
-      new Date(t.createdAt).toLocaleString(),
-      new Date(t.updatedAt).toLocaleString()
+    const data = filteredAndSortedBookings();
+    const headers = ['Booking Ref', 'Hostel', 'Customer', 'Vendor', 'Room Type', 'Share Type', 'Booking Type', 'Total Amount', 'Status', 'Booking Date', 'Start Date'];
+
+    const csvData = data.map(b => [
+      b.bookingReference || 'N/A',
+      b.hostelId?.name || 'N/A',
+      b.userId?.name || 'N/A',
+      b.vendorId?.name || 'N/A',
+      b.roomType || 'N/A',
+      b.shareType || 'N/A',
+      b.bookingType || 'N/A',
+      b.totalAmount || 0,
+      b.status || 'N/A',
+      new Date(b.createdAt).toLocaleDateString(),
+      b.startDate ? new Date(b.startDate).toLocaleDateString() : 'N/A'
     ]);
 
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -376,7 +306,7 @@ const Enquiries = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tickets_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `bookings_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
 
@@ -409,10 +339,10 @@ const Enquiries = () => {
 
   const StatsCard = () => {
     const stats = [
-      { label: 'Total Tickets', value: tickets.length, icon: MessageCircle, color: 'from-emerald-500 to-emerald-600' },
-      { label: 'Open', value: tickets.filter(t => t.status === 'open').length, icon: AlertCircle, color: 'from-yellow-500 to-orange-500' },
-      { label: 'In Progress', value: tickets.filter(t => t.status === 'in-progress').length, icon: Clock, color: 'from-blue-500 to-indigo-500' },
-      { label: 'Resolved', value: tickets.filter(t => t.status === 'resolved').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' }
+      { label: 'Total Bookings', value: bookings.length, icon: Calendar, color: 'from-emerald-500 to-emerald-600' },
+      { label: 'Pending', value: bookings.filter(b => b.status === 'pending').length, icon: Clock, color: 'from-yellow-500 to-orange-500' },
+      { label: 'Confirmed', value: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
+      { label: 'Completed', value: bookings.filter(b => b.status === 'completed').length, icon: CreditCard, color: 'from-blue-500 to-indigo-500' }
     ];
 
     return (
@@ -439,11 +369,10 @@ const Enquiries = () => {
     <div className="flex items-center gap-2 p-1 bg-white/10 rounded-xl">
       <button
         onClick={() => setViewMode('table')}
-        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
-          viewMode === 'table' 
-            ? 'bg-white/20 text-emerald-400 shadow-md' 
+        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${viewMode === 'table'
+            ? 'bg-white/20 text-emerald-400 shadow-md'
             : 'text-gray-400 hover:text-white'
-        }`}
+          }`}
       >
         <Table2 size={18} />
         <span className="text-sm font-medium hidden sm:inline">Table</span>
@@ -456,7 +385,7 @@ const Enquiries = () => {
       <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
       <input
         type="text"
-        placeholder="Search by title, message, customer..."
+        placeholder="Search by booking ref, hostel, customer, vendor..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
@@ -476,12 +405,13 @@ const Enquiries = () => {
 
   const FilterBar = () => {
     const filters = getUniqueFilters();
-    
+
     const getFilterIcon = (filter) => {
-      switch(filter) {
-        case 'open': return <AlertCircle size={14} />;
-        case 'in-progress': return <Clock size={14} />;
-        case 'resolved': return <CheckCircleIcon size={14} />;
+      switch (filter) {
+        case 'confirmed': return <CheckCircle size={14} />;
+        case 'pending': return <Clock size={14} />;
+        case 'completed': return <CreditCard size={14} />;
+        case 'cancelled': return <XCircle size={14} />;
         default: return <Filter size={14} />;
       }
     };
@@ -497,13 +427,13 @@ const Enquiries = () => {
             key={status}
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
-              ${filter === status 
-                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' 
+              ${filter === status
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
                 : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
           >
             {getFilterIcon(status)}
-            {status === 'in-progress' ? 'In Progress' : status}
+            {status}
           </button>
         ))}
       </div>
@@ -514,16 +444,6 @@ const Enquiries = () => {
     <div className="flex flex-wrap items-center gap-3 mb-6">
       <SearchBar />
       <div className="flex items-center gap-2 ml-auto">
-        {selectedTickets.length > 0 && (
-          <button
-            onClick={handleBulkDelete}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white 
-              font-medium text-sm hover:bg-red-600 transition-all shadow-lg"
-          >
-            <Trash2 size={16} />
-            Delete ({selectedTickets.length})
-          </button>
-        )}
         <button
           onClick={exportToCSV}
           className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
@@ -532,7 +452,7 @@ const Enquiries = () => {
           <Download size={18} />
         </button>
         <button
-          onClick={fetchTickets}
+          onClick={fetchBookings}
           className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
           title="Refresh"
         >
@@ -550,13 +470,15 @@ const Enquiries = () => {
 
   const StatusBadge = ({ status }) => {
     const config = {
-      open: { icon: AlertCircle, color: 'text-yellow-400 bg-yellow-500/10', label: 'Open' },
-      'in-progress': { icon: Clock, color: 'text-blue-400 bg-blue-500/10', label: 'In Progress' },
-      resolved: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10', label: 'Resolved' }
+      confirmed: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10', label: 'Confirmed' },
+      pending: { icon: Clock, color: 'text-yellow-400 bg-yellow-500/10', label: 'Pending' },
+      completed: { icon: CreditCard, color: 'text-blue-400 bg-blue-500/10', label: 'Completed' },
+      cancelled: { icon: XCircle, color: 'text-red-400 bg-red-500/10', label: 'Cancelled' },
+      form_submitted: { icon: AlertCircle, color: 'text-purple-400 bg-purple-500/10', label: 'Form Submitted' }
     };
-    
+
     const { icon: Icon, color, label } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10', label: status || 'Unknown' };
-    
+
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${color}`}>
         <Icon size={12} />
@@ -574,23 +496,33 @@ const Enquiries = () => {
               <th className="px-4 py-4 w-12">
                 <input
                   type="checkbox"
-                  checked={selectedTickets.length === paginatedTickets.length && paginatedTickets.length > 0}
+                  checked={selectedBookings.length === paginatedBookings.length && paginatedBookings.length > 0}
                   onChange={toggleSelectAll}
                   className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('title')}
+                <button
+                  onClick={() => handleSort('bookingReference')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
                   <Tag size={14} />
-                  Title
-                  <SortIcon column="title" />
+                  Booking Ref
+                  <SortIcon column="bookingReference" />
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
+                <button
+                  onClick={() => handleSort('hostelId')}
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
+                >
+                  <Building2 size={14} />
+                  Hostel
+                  <SortIcon column="hostelId" />
+                </button>
+              </th>
+              <th className="px-4 py-4 text-left">
+                <button
                   onClick={() => handleSort('userId')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
@@ -600,17 +532,27 @@ const Enquiries = () => {
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('message')}
+                <button
+                  onClick={() => handleSort('roomType')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <MessageCircle size={14} />
-                  Message
-                  <SortIcon column="message" />
+                  <Home size={14} />
+                  Room
+                  <SortIcon column="roomType" />
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
+                <button
+                  onClick={() => handleSort('totalAmount')}
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
+                >
+                  <IndianRupee size={14} />
+                  Amount
+                  <SortIcon column="totalAmount" />
+                </button>
+              </th>
+              <th className="px-4 py-4 text-left">
+                <button
                   onClick={() => handleSort('status')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
@@ -620,12 +562,12 @@ const Enquiries = () => {
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
+                <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
                   <Calendar size={14} />
-                  Created
+                  Booked On
                   <SortIcon column="createdAt" />
                 </button>
               </th>
@@ -633,64 +575,91 @@ const Enquiries = () => {
             </tr>
           </thead>
           <tbody>
-            {paginatedTickets.map((ticket) => (
-              <tr 
-                key={ticket._id} 
+            {paginatedBookings.map((booking) => (
+              <tr
+                key={booking._id}
                 className="border-b border-white/5 hover:bg-white/10 transition-all duration-300 group"
               >
                 <td className="px-4 py-4">
                   <input
                     type="checkbox"
-                    checked={selectedTickets.includes(ticket._id)}
-                    onChange={() => toggleSelect(ticket._id)}
+                    checked={selectedBookings.includes(booking._id)}
+                    onChange={() => toggleSelect(booking._id)}
                     className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                   />
-                 </td>
+                </td>
                 <td className="px-4 py-4">
                   <div>
-                    <p className="font-semibold text-white">{ticket.title || 'N/A'}</p>
+                    <span className="font-mono text-sm font-semibold text-white">
+                      {booking.bookingReference || 'N/A'}
+                    </span>
+                    <p className="text-xs text-gray-500">
+                      {booking.bookingType}
+                    </p>
                   </div>
-                 </td>
+                </td>
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
+                      {booking.hostelId?.images?.[0] ? (
+                        <img src={`http://187.127.146.52:2003/${booking.hostelId.images[0]}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Building2 size={14} className="text-emerald-400" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white text-sm">{booking.hostelId?.name || 'N/A'}</p>
+                      <p className="text-xs text-gray-500">{booking.hostelId?.address}</p>
+                    </div>
+                  </div>
+                </td>
                 <td className="px-4 py-4">
                   <div>
-                    <p className="font-medium text-white text-sm">{ticket.userId?.name || 'Guest User'}</p>
+                    <p className="font-medium text-white text-sm">{booking.userId?.name || 'Guest User'}</p>
+                    {booking.vendorId && (
+                      <p className="text-xs text-gray-500">Vendor: {booking.vendorId.name}</p>
+                    )}
                   </div>
-                 </td>
-                <td className="px-4 py-4 max-w-md">
-                  <p className="text-sm text-gray-300 line-clamp-2">{ticket.message || 'N/A'}</p>
-                 </td>
+                </td>
                 <td className="px-4 py-4">
-                  <StatusBadge status={ticket.status} />
-                 </td>
+                  <div>
+                    <p className="text-sm text-white">{booking.roomType || 'N/A'}</p>
+                    <p className="text-xs text-gray-500">{booking.shareType || 'N/A'}</p>
+                  </div>
+                </td>
+                <td className="px-4 py-4">
+                  <p className="font-semibold text-white">₹{booking.totalAmount?.toLocaleString() || 0}</p>
+                  {booking.monthlyAdvance > 0 && (
+                    <p className="text-xs text-gray-500">Advance: ₹{booking.monthlyAdvance}</p>
+                  )}
+                </td>
+                <td className="px-4 py-4">
+                  <StatusBadge status={booking.status} />
+                </td>
                 <td className="px-4 py-4 text-sm text-gray-400">
                   <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    {new Date(ticket.createdAt).toLocaleDateString()}
+                    {new Date(booking.createdAt).toLocaleDateString()}
                   </div>
-                 </td>
+                  {booking.startDate && (
+                    <div className="flex items-center gap-1 text-xs mt-1">
+                      <Clock size={10} />
+                      Start: {new Date(booking.startDate).toLocaleDateString()}
+                    </div>
+                  )}
+                </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => viewTicket(ticket)}
+                      onClick={() => viewBooking(booking._id)}
                       className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 
                         text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
                       title="View details"
                     >
                       <Eye size={14} />
                     </button>
-                    {ticket.status !== 'resolved' && (
-                      <button
-                        onClick={() => handleUpdateStatus(ticket._id, 'resolved')}
-                        disabled={loading.update}
-                        className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 
-                          text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
-                        title="Mark as Resolved"
-                      >
-                        <CheckCircleIcon size={14} />
-                      </button>
-                    )}
                     <button
-                      onClick={() => handleDelete(ticket._id)}
+                      onClick={() => handleDelete(booking._id)}
                       disabled={loading.delete}
                       className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 
                         text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
@@ -699,166 +668,58 @@ const Enquiries = () => {
                       <Trash2 size={14} />
                     </button>
                   </div>
-                 </td>
-               </tr>
+                </td>
+              </tr>
             ))}
           </tbody>
-         </table>
+        </table>
       </div>
-      
+
       <div className="px-4 py-3 bg-white/10 border-t border-white/10 
         flex items-center justify-between text-sm">
         <span className="text-gray-400">
-          Showing {paginatedTickets.length} of {totalItems} tickets
+          Showing {paginatedBookings.length} of {totalItems} bookings
         </span>
         <span className="text-gray-400">
-          {selectedTickets.length} selected
+          {selectedBookings.length} selected
         </span>
       </div>
     </div>
   );
 
-  // Ticket Details Modal
-  const TicketModal = () => {
-    if (!selectedTicket) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-           onClick={() => setShowModal(false)}>
-        <div className="bg-gradient-to-br from-[#0f172a] to-[#020617] rounded-2xl border border-white/20 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-             onClick={(e) => e.stopPropagation()}>
-          <div className="sticky top-0 bg-[#0f172a] border-b border-white/10 p-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <MessageCircle size={20} className="text-emerald-400" />
-              Ticket Details
-            </h2>
-            <button
-              onClick={() => setShowModal(false)}
-              className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 transition-all"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          
-          <div className="p-6 space-y-4">
-            {/* Ticket Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Ticket ID</p>
-                <p className="font-mono text-white font-semibold">{selectedTicket._id}</p>
-              </div>
-              <StatusBadge status={selectedTicket.status} />
-            </div>
-            
-            {/* Title */}
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Title</p>
-              <p className="text-white font-semibold text-lg">{selectedTicket.title}</p>
-            </div>
-            
-            {/* Customer Info */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-sm text-gray-400 mb-2">Customer Information</p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 
-                  flex items-center justify-center text-white font-bold">
-                  {selectedTicket.userId?.name?.charAt(0) || 'U'}
-                </div>
-                <div>
-                  <p className="text-white font-semibold">{selectedTicket.userId?.name || 'Guest User'}</p>
-                  <p className="text-xs text-gray-400">User ID: {selectedTicket.userId?._id || 'N/A'}</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Message */}
-            <div>
-              <p className="text-sm text-gray-400 mb-2">Message</p>
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-gray-300 whitespace-pre-wrap">{selectedTicket.message}</p>
-              </div>
-            </div>
-            
-            {/* Timestamps */}
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div>
-                <p className="text-sm text-gray-400">Created At</p>
-                <p className="text-white text-sm">{new Date(selectedTicket.createdAt).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Last Updated</p>
-                <p className="text-white text-sm">{new Date(selectedTicket.updatedAt).toLocaleString()}</p>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-white/10">
-              {selectedTicket.status !== 'resolved' && (
-                <button
-                  onClick={() => {
-                    handleUpdateStatus(selectedTicket._id, 'resolved');
-                    setShowModal(false);
-                  }}
-                  disabled={loading.update}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 
-                    text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <CheckCircleIcon size={18} />
-                  Mark as Resolved
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  handleDelete(selectedTicket._id);
-                  setShowModal(false);
-                }}
-                disabled={loading.delete}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 
-                  text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Trash2 size={18} />
-                Delete Ticket
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      <PageHeader 
-        icon={MessageCircle} 
-        title="Enquiries Management" 
-        subtitle={`${tickets.length} total tickets • ${tickets.filter(t => t.status === 'open').length} open`}
+      <PageHeader
+        icon={Calendar}
+        title="Booking Management"
+        subtitle={`${bookings.length} total bookings • ₹${bookings.reduce((acc, b) => acc + (b.totalAmount || 0), 0).toLocaleString()} total revenue`}
       />
 
       <StatsCard />
       <ActionBar />
       <FilterBar />
-     
-      
+
+
       {loading.fetch ? (
         <div className="flex justify-center py-20">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <MessageCircle size={20} className="text-emerald-400 animate-pulse" />
+              <Calendar size={20} className="text-emerald-400 animate-pulse" />
             </div>
           </div>
         </div>
-      ) : paginatedTickets.length === 0 ? (
+      ) : paginatedBookings.length === 0 ? (
         <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">
-            <MessageCircle size={32} className="text-emerald-400" />
+            <Calendar size={32} className="text-emerald-400" />
           </div>
-          <p className="text-white font-bold text-lg mb-2">No tickets found</p>
+          <p className="text-white font-bold text-lg mb-2">No bookings found</p>
           <p className="text-sm text-gray-400">
             {searchTerm ? 'Try adjusting your search' : filter !== 'All' ? 'Try a different filter' : ''}
           </p>
           {(searchTerm || filter !== 'All') && (
-            <button 
+            <button
               onClick={() => { setSearchTerm(''); setFilter('All'); }}
               className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
                 rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
@@ -870,8 +731,8 @@ const Enquiries = () => {
       ) : (
         <>
           <TableView />
-          
-          <Pagination 
+
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -882,7 +743,7 @@ const Enquiries = () => {
               setCurrentPage(1);
             }}
           />
-          
+
           <div className="mt-6 bg-white/10 rounded-xl p-4 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
@@ -891,7 +752,7 @@ const Enquiries = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Tickets' : `${filter} Tickets`}
+                  {filter === 'All' ? 'Total Bookings' : `${filter} Bookings`}
                 </p>
                 <p className="text-xs text-gray-400">
                   {filter === 'All' ? 'Across all statuses' : `Filtered by status`}
@@ -899,15 +760,20 @@ const Enquiries = () => {
                 </p>
               </div>
             </div>
-            <Sparkles size={20} className="text-emerald-400" />
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Total Revenue</p>
+                <p className="font-bold text-white">
+                  ₹{paginatedBookings.reduce((acc, b) => acc + (b.totalAmount || 0), 0).toLocaleString()}
+                </p>
+              </div>
+              <Sparkles size={20} className="text-emerald-400" />
+            </div>
           </div>
         </>
       )}
-      
-      {/* Ticket Details Modal */}
-      {showModal && <TicketModal />}
     </div>
   );
 };
 
-export default Enquiries;
+export default AllBookings;

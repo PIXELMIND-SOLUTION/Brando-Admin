@@ -152,7 +152,7 @@ const Hostels = () => {
   const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [error, setError] = useState("");
   const [filter, setFilter] = useState('All');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
   const [selectedHostels, setSelectedHostels] = useState([]);

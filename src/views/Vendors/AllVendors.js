@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { 
-  MessageCircle, Eye, Trash2, Calendar, User, 
-  Sparkles, Filter, X, Table2, CheckCircle,
-  Grid3x3, Download, RefreshCw, CheckCircle as CheckCircleIcon,
+import {
+  Users, Eye, Trash2, Calendar, Mail, Phone,
+  Building2, Sparkles, Filter, X, Table2,
+  Grid3x3, Download, RefreshCw, CheckCircle, XCircle,
   SortAsc, SortDesc, Search, TrendingUp,
   BadgeCheck, Clock, Home, Tag, ChevronLeft,
-  ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
-  Mail, Phone, Building2, Edit, XCircle
+  ChevronRight, ChevronsLeft, ChevronsRight, UserCheck,
+  UserX, Shield, AlertCircle, Edit
 } from "lucide-react";
 
 const API = "http://187.127.146.52:2003/api/admin";
@@ -104,11 +104,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${
-                  currentPage === page
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
-                }`}
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
+                  }`}
               >
                 {page}
               </button>
@@ -134,77 +133,39 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
   );
 };
 
-const Enquiries = () => {
+const AllVendors = () => {
   const navigate = useNavigate();
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState({ fetch: false, update: false, delete: false });
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
-  const [selectedTickets, setSelectedTickets] = useState([]);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
+  const [selectedVendors, setSelectedVendors] = useState([]);
 
-  const fetchTickets = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+
+  const fetchVendors = async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      const { data } = await axios.get(`${API}/getalltickets`);
-      setTickets(data.data || []);
+      const { data } = await axios.get(`${API}/getallvendors`);
+      setVendors(data.data || []);
     } catch (error) {
       console.error(error);
-      showAlert('error', 'Oops...', 'Failed to fetch tickets');
+      showAlert('error', 'Oops...', 'Failed to fetch vendors');
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
   };
 
-  useEffect(() => { fetchTickets(); }, []);
+  useEffect(() => { fetchVendors(); }, []);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, searchTerm, sortConfig]);
 
-  const handleUpdateStatus = async (ticketId, newStatus) => {
-    const result = await Swal.fire({
-      title: 'Update Status?',
-      text: `Are you sure you want to mark this ticket as ${newStatus}?`,
-      icon: 'question',
-      showCancelButton: true,
-      background: '#0f172a',
-      color: '#fff',
-      customClass: {
-        popup: 'rounded-2xl',
-        title: 'text-lg font-bold',
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
-      }
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      setLoading(prev => ({ ...prev, update: true }));
-      await axios.put(`${API}/updateticket/${ticketId}`, { status: newStatus });
-      
-      showAlert('success', 'Updated!', `Ticket marked as ${newStatus}`, 2000);
-      fetchTickets();
-      if (selectedTicket && selectedTicket._id === ticketId) {
-        setSelectedTicket(prev => ({ ...prev, status: newStatus }));
-      }
-    } catch (error) {
-      console.error(error);
-      showAlert('error', 'Update failed', error.response?.data?.message || "Could not update ticket");
-    } finally {
-      setLoading(prev => ({ ...prev, update: false }));
-    }
-  };
-
-  const handleDelete = async (ticketId) => {
+  const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -224,32 +185,28 @@ const Enquiries = () => {
 
     try {
       setLoading(prev => ({ ...prev, delete: true }));
-      await axios.delete(`${API}/deleteticket/${ticketId}`);
-      
-      showAlert('success', 'Deleted!', 'Ticket has been deleted', 2000);
-      fetchTickets();
-      setSelectedTickets(prev => prev.filter(selectedId => selectedId !== ticketId));
-      if (selectedTicket && selectedTicket._id === ticketId) {
-        setShowModal(false);
-        setSelectedTicket(null);
-      }
+      await axios.delete(`${API}/deletevendor/${id}`);
+
+      showAlert('success', 'Deleted!', 'Vendor has been deleted', 2000);
+      fetchVendors();
+      setSelectedVendors(prev => prev.filter(selectedId => selectedId !== id));
     } catch (error) {
       console.error(error);
-      showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete ticket");
+      showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete vendor");
     } finally {
       setLoading(prev => ({ ...prev, delete: false }));
     }
   };
 
   const handleBulkDelete = async () => {
-    if (selectedTickets.length === 0) {
-      showAlert('warning', 'No selection', 'Please select tickets to delete');
+    if (selectedVendors.length === 0) {
+      showAlert('warning', 'No selection', 'Please select vendors to delete');
       return;
     }
 
     const result = await Swal.fire({
       title: 'Delete Selected?',
-      text: `You are about to delete ${selectedTickets.length} tickets`,
+      text: `You are about to delete ${selectedVendors.length} vendors`,
       icon: 'warning',
       showCancelButton: true,
       background: '#0f172a',
@@ -266,43 +223,45 @@ const Enquiries = () => {
 
     try {
       setLoading(prev => ({ ...prev, delete: true }));
-      
-      for (const id of selectedTickets) {
-        await axios.delete(`${API}/deleteticket/${id}`);
+
+      for (const id of selectedVendors) {
+        await axios.delete(`${API}/deletevendor/${id}`);
       }
-      
-      showAlert('success', 'Deleted!', `${selectedTickets.length} tickets deleted`, 2000);
-      fetchTickets();
-      setSelectedTickets([]);
+
+      showAlert('success', 'Deleted!', `${selectedVendors.length} vendors deleted`, 2000);
+      fetchVendors();
+      setSelectedVendors([]);
     } catch (error) {
       console.error(error);
-      showAlert('error', 'Delete failed', 'Could not delete some tickets');
+      showAlert('error', 'Delete failed', 'Could not delete some vendors');
     } finally {
       setLoading(prev => ({ ...prev, delete: false }));
     }
   };
 
-  const viewTicket = (ticket) => {
-    setSelectedTicket(ticket);
-    setShowModal(true);
+  const viewVendor = (id) => {
+    navigate(`/dashboard/vendors/${id}`);
+  };
+
+  const editVendor = (id) => {
+    navigate(`/dashboard/vendors/edit/${id}`);
   };
 
   const getUniqueFilters = () => {
-    const statuses = ['All', ...new Set(tickets.map(t => t.status).filter(Boolean))];
+    const statuses = ['All', ...new Set(vendors.map(v => v.approvalStatus).filter(Boolean))];
     return statuses;
   };
 
-  const filteredAndSortedTickets = () => {
-    let filtered = filter === 'All' 
-      ? tickets 
-      : tickets.filter(t => t.status === filter);
+  const filteredAndSortedVendors = () => {
+    let filtered = filter === 'All'
+      ? vendors
+      : vendors.filter(v => v.approvalStatus === filter);
 
     if (searchTerm) {
-      filtered = filtered.filter(t => 
-        (t.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.message || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (t.status || '').toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(v =>
+        (v.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (v.mobileNumber || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (v.email || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -310,12 +269,16 @@ const Enquiries = () => {
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
 
-      if (sortConfig.key === 'userId') {
-        aVal = a.userId?.name || '';
-        bVal = b.userId?.name || '';
+      if (sortConfig.key === 'totalHostels') {
+        aVal = a.totalHostels || 0;
+        bVal = b.totalHostels || 0;
       } else if (sortConfig.key === 'createdAt') {
         aVal = new Date(a.createdAt).getTime();
         bVal = new Date(b.createdAt).getTime();
+      } else if (sortConfig.key === 'approvalStatus') {
+        const statusOrder = { approved: 3, pending: 2, rejected: 1 };
+        aVal = statusOrder[a.approvalStatus] || 0;
+        bVal = statusOrder[b.approvalStatus] || 0;
       }
 
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -325,7 +288,7 @@ const Enquiries = () => {
   };
 
   const getPaginatedData = () => {
-    const filtered = filteredAndSortedTickets();
+    const filtered = filteredAndSortedVendors();
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return {
@@ -335,7 +298,7 @@ const Enquiries = () => {
     };
   };
 
-  const { data: paginatedTickets, totalItems, totalPages } = getPaginatedData();
+  const { data: paginatedVendors, totalItems, totalPages } = getPaginatedData();
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -345,30 +308,32 @@ const Enquiries = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedTickets.length === paginatedTickets.length) {
-      setSelectedTickets([]);
+    if (selectedVendors.length === paginatedVendors.length) {
+      setSelectedVendors([]);
     } else {
-      setSelectedTickets(paginatedTickets.map(t => t._id));
+      setSelectedVendors(paginatedVendors.map(v => v._id));
     }
   };
 
   const toggleSelect = (id) => {
-    setSelectedTickets(prev =>
+    setSelectedVendors(prev =>
       prev.includes(id) ? prev.filter(selectedId => selectedId !== id) : [...prev, id]
     );
   };
 
   const exportToCSV = () => {
-    const data = filteredAndSortedTickets();
-    const headers = ['Title', 'Customer', 'Message', 'Status', 'Created Date', 'Last Updated'];
-    
-    const csvData = data.map(t => [
-      t.title || 'N/A',
-      t.userId?.name || 'N/A',
-      t.message || 'N/A',
-      t.status || 'N/A',
-      new Date(t.createdAt).toLocaleString(),
-      new Date(t.updatedAt).toLocaleString()
+    const data = filteredAndSortedVendors();
+    const headers = ['Name', 'Mobile', 'Email', 'Status', 'OTP Verified', 'Total Hostels', 'Created', 'Last Updated'];
+
+    const csvData = data.map(v => [
+      v.name || 'N/A',
+      v.mobileNumber || 'N/A',
+      v.email || 'N/A',
+      v.approvalStatus || 'N/A',
+      v.otpVerified ? 'Yes' : 'No',
+      v.totalHostels || 0,
+      new Date(v.createdAt).toLocaleDateString(),
+      new Date(v.updatedAt).toLocaleDateString()
     ]);
 
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -376,7 +341,7 @@ const Enquiries = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tickets_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `vendors_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   };
 
@@ -409,10 +374,10 @@ const Enquiries = () => {
 
   const StatsCard = () => {
     const stats = [
-      { label: 'Total Tickets', value: tickets.length, icon: MessageCircle, color: 'from-emerald-500 to-emerald-600' },
-      { label: 'Open', value: tickets.filter(t => t.status === 'open').length, icon: AlertCircle, color: 'from-yellow-500 to-orange-500' },
-      { label: 'In Progress', value: tickets.filter(t => t.status === 'in-progress').length, icon: Clock, color: 'from-blue-500 to-indigo-500' },
-      { label: 'Resolved', value: tickets.filter(t => t.status === 'resolved').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' }
+      { label: 'Total Vendors', value: vendors.length, icon: Users, color: 'from-emerald-500 to-emerald-600' },
+      { label: 'Approved', value: vendors.filter(v => v.approvalStatus === 'approved').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
+      { label: 'Pending', value: vendors.filter(v => v.approvalStatus === 'pending').length, icon: Clock, color: 'from-yellow-500 to-orange-500' },
+      { label: 'Rejected', value: vendors.filter(v => v.approvalStatus === 'rejected').length, icon: XCircle, color: 'from-red-500 to-rose-500' }
     ];
 
     return (
@@ -438,12 +403,21 @@ const Enquiries = () => {
   const ViewToggle = () => (
     <div className="flex items-center gap-2 p-1 bg-white/10 rounded-xl">
       <button
+        onClick={() => setViewMode('grid')}
+        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${viewMode === 'grid'
+          ? 'bg-white/20 text-emerald-400 shadow-md'
+          : 'text-gray-400 hover:text-white'
+          }`}
+      >
+        <Grid3x3 size={18} />
+        <span className="text-sm font-medium hidden sm:inline">Grid</span>
+      </button>
+      <button
         onClick={() => setViewMode('table')}
-        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
-          viewMode === 'table' 
-            ? 'bg-white/20 text-emerald-400 shadow-md' 
-            : 'text-gray-400 hover:text-white'
-        }`}
+        className={`p-2 rounded-lg transition-all flex items-center gap-2 ${viewMode === 'table'
+          ? 'bg-white/20 text-emerald-400 shadow-md'
+          : 'text-gray-400 hover:text-white'
+          }`}
       >
         <Table2 size={18} />
         <span className="text-sm font-medium hidden sm:inline">Table</span>
@@ -456,7 +430,7 @@ const Enquiries = () => {
       <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
       <input
         type="text"
-        placeholder="Search by title, message, customer..."
+        placeholder="Search vendors by name, mobile, email..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
@@ -476,12 +450,12 @@ const Enquiries = () => {
 
   const FilterBar = () => {
     const filters = getUniqueFilters();
-    
+
     const getFilterIcon = (filter) => {
-      switch(filter) {
-        case 'open': return <AlertCircle size={14} />;
-        case 'in-progress': return <Clock size={14} />;
-        case 'resolved': return <CheckCircleIcon size={14} />;
+      switch (filter) {
+        case 'approved': return <CheckCircle size={14} />;
+        case 'rejected': return <XCircle size={14} />;
+        case 'pending': return <Clock size={14} />;
         default: return <Filter size={14} />;
       }
     };
@@ -497,13 +471,13 @@ const Enquiries = () => {
             key={status}
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
-              ${filter === status 
-                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' 
+              ${filter === status
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
                 : 'bg-white/10 text-gray-300 hover:bg-white/20'
               }`}
           >
             {getFilterIcon(status)}
-            {status === 'in-progress' ? 'In Progress' : status}
+            {status}
           </button>
         ))}
       </div>
@@ -514,14 +488,14 @@ const Enquiries = () => {
     <div className="flex flex-wrap items-center gap-3 mb-6">
       <SearchBar />
       <div className="flex items-center gap-2 ml-auto">
-        {selectedTickets.length > 0 && (
+        {selectedVendors.length > 0 && (
           <button
             onClick={handleBulkDelete}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white 
               font-medium text-sm hover:bg-red-600 transition-all shadow-lg"
           >
             <Trash2 size={16} />
-            Delete ({selectedTickets.length})
+            Delete ({selectedVendors.length})
           </button>
         )}
         <button
@@ -532,7 +506,7 @@ const Enquiries = () => {
           <Download size={18} />
         </button>
         <button
-          onClick={fetchTickets}
+          onClick={fetchVendors}
           className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all"
           title="Refresh"
         >
@@ -550,17 +524,17 @@ const Enquiries = () => {
 
   const StatusBadge = ({ status }) => {
     const config = {
-      open: { icon: AlertCircle, color: 'text-yellow-400 bg-yellow-500/10', label: 'Open' },
-      'in-progress': { icon: Clock, color: 'text-blue-400 bg-blue-500/10', label: 'In Progress' },
-      resolved: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10', label: 'Resolved' }
+      approved: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10' },
+      rejected: { icon: XCircle, color: 'text-red-400 bg-red-500/10' },
+      pending: { icon: Clock, color: 'text-yellow-400 bg-yellow-500/10' }
     };
-    
-    const { icon: Icon, color, label } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10', label: status || 'Unknown' };
-    
+
+    const { icon: Icon, color } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10' };
+
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${color}`}>
         <Icon size={12} />
-        {label}
+        {status || 'Unknown'}
       </span>
     );
   };
@@ -574,58 +548,58 @@ const Enquiries = () => {
               <th className="px-4 py-4 w-12">
                 <input
                   type="checkbox"
-                  checked={selectedTickets.length === paginatedTickets.length && paginatedTickets.length > 0}
+                  checked={selectedVendors.length === paginatedVendors.length && paginatedVendors.length > 0}
                   onChange={toggleSelectAll}
                   className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('title')}
+                <button
+                  onClick={() => handleSort('name')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <Tag size={14} />
-                  Title
-                  <SortIcon column="title" />
+                  <Users size={14} />
+                  Vendor Name
+                  <SortIcon column="name" />
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('userId')}
+                <button
+                  onClick={() => handleSort('mobileNumber')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <User size={14} />
-                  Customer
-                  <SortIcon column="userId" />
+                  <Phone size={14} />
+                  Contact
+                  <SortIcon column="mobileNumber" />
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('message')}
+                <button
+                  onClick={() => handleSort('approvalStatus')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
-                  <MessageCircle size={14} />
-                  Message
-                  <SortIcon column="message" />
-                </button>
-              </th>
-              <th className="px-4 py-4 text-left">
-                <button 
-                  onClick={() => handleSort('status')}
-                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
-                >
-                  <CheckCircle size={14} />
+                  <Shield size={14} />
                   Status
-                  <SortIcon column="status" />
+                  <SortIcon column="approvalStatus" />
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button 
+                <button
+                  onClick={() => handleSort('totalHostels')}
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
+                >
+                  <Building2 size={14} />
+                  Hostels
+                  <SortIcon column="totalHostels" />
+                </button>
+              </th>
+              <th className="px-4 py-4 text-left">
+                <button
                   onClick={() => handleSort('createdAt')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
                   <Calendar size={14} />
-                  Created
+                  Registered
                   <SortIcon column="createdAt" />
                 </button>
               </th>
@@ -633,64 +607,91 @@ const Enquiries = () => {
             </tr>
           </thead>
           <tbody>
-            {paginatedTickets.map((ticket) => (
-              <tr 
-                key={ticket._id} 
+            {paginatedVendors.map((vendor) => (
+              <tr
+                key={vendor._id}
                 className="border-b border-white/5 hover:bg-white/10 transition-all duration-300 group"
               >
                 <td className="px-4 py-4">
                   <input
                     type="checkbox"
-                    checked={selectedTickets.includes(ticket._id)}
-                    onChange={() => toggleSelect(ticket._id)}
+                    checked={selectedVendors.includes(vendor._id)}
+                    onChange={() => toggleSelect(vendor._id)}
                     className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                   />
-                 </td>
+                </td>
                 <td className="px-4 py-4">
-                  <div>
-                    <p className="font-semibold text-white">{ticket.title || 'N/A'}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
+                      {vendor.hostelImage ? (
+                        <img src={`http://187.127.146.52:2003/${vendor.hostelImage}`} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Users size={14} className="text-emerald-400" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-white">{vendor.name || 'Unknown'}</span>
+                      {vendor.email && (
+                        <p className="text-xs text-gray-400">{vendor.email}</p>
+                      )}
+                    </div>
                   </div>
-                 </td>
+                </td>
                 <td className="px-4 py-4">
-                  <div>
-                    <p className="font-medium text-white text-sm">{ticket.userId?.name || 'Guest User'}</p>
+                  <div className="flex items-center gap-1 text-gray-300">
+                    <Phone size={12} className="text-emerald-400" />
+                    <span className="text-sm">{vendor.mobileNumber || 'N/A'}</span>
                   </div>
-                 </td>
-                <td className="px-4 py-4 max-w-md">
-                  <p className="text-sm text-gray-300 line-clamp-2">{ticket.message || 'N/A'}</p>
-                 </td>
+                  {!vendor.otpVerified && (
+                    <span className="text-xs text-yellow-400 flex items-center gap-1 mt-1">
+                      <AlertCircle size={10} />
+                      OTP not verified
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-4">
-                  <StatusBadge status={ticket.status} />
-                 </td>
+                  <StatusBadge status={vendor.approvalStatus} />
+                </td>
+                <td className="px-4 py-4">
+                  <div className="flex items-center gap-1 text-gray-300">
+                    <Building2 size={12} className="text-emerald-400" />
+                    <span className="font-semibold text-white">{vendor.totalHostels || 0}</span>
+                  </div>
+                </td>
                 <td className="px-4 py-4 text-sm text-gray-400">
                   <div className="flex items-center gap-1">
                     <Calendar size={12} />
-                    {new Date(ticket.createdAt).toLocaleDateString()}
+                    {new Date(vendor.createdAt).toLocaleDateString()}
                   </div>
-                 </td>
+                </td>
                 <td className="px-4 py-4">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => viewTicket(ticket)}
+                      onClick={() => navigate(`/dashboard/vendors/${vendor._id}/bookings`)}
+                      className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500
+                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                      title="View bookings"
+                    >
+                      <Home size={14} />
+                    </button>
+                    <button
+                      onClick={() => viewVendor(vendor._id)}
                       className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 
                         text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
                       title="View details"
                     >
                       <Eye size={14} />
                     </button>
-                    {ticket.status !== 'resolved' && (
-                      <button
-                        onClick={() => handleUpdateStatus(ticket._id, 'resolved')}
-                        disabled={loading.update}
-                        className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 
-                          text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
-                        title="Mark as Resolved"
-                      >
-                        <CheckCircleIcon size={14} />
-                      </button>
-                    )}
                     <button
-                      onClick={() => handleDelete(ticket._id)}
+                      onClick={() => editVendor(vendor._id)}
+                      className="p-2 rounded-lg bg-gradient-to-r from-yellow-500 to-orange-500 
+                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                      title="Edit vendor"
+                    >
+                      <Edit size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vendor._id)}
                       disabled={loading.delete}
                       className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 
                         text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
@@ -699,166 +700,150 @@ const Enquiries = () => {
                       <Trash2 size={14} />
                     </button>
                   </div>
-                 </td>
-               </tr>
+                </td>
+              </tr>
             ))}
           </tbody>
-         </table>
+        </table>
       </div>
-      
+
       <div className="px-4 py-3 bg-white/10 border-t border-white/10 
         flex items-center justify-between text-sm">
         <span className="text-gray-400">
-          Showing {paginatedTickets.length} of {totalItems} tickets
+          Showing {paginatedVendors.length} of {totalItems} vendors
         </span>
         <span className="text-gray-400">
-          {selectedTickets.length} selected
+          {selectedVendors.length} selected
         </span>
       </div>
     </div>
   );
 
-  // Ticket Details Modal
-  const TicketModal = () => {
-    if (!selectedTicket) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-           onClick={() => setShowModal(false)}>
-        <div className="bg-gradient-to-br from-[#0f172a] to-[#020617] rounded-2xl border border-white/20 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-             onClick={(e) => e.stopPropagation()}>
-          <div className="sticky top-0 bg-[#0f172a] border-b border-white/10 p-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <MessageCircle size={20} className="text-emerald-400" />
-              Ticket Details
-            </h2>
-            <button
-              onClick={() => setShowModal(false)}
-              className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 transition-all"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          
-          <div className="p-6 space-y-4">
-            {/* Ticket Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-400">Ticket ID</p>
-                <p className="font-mono text-white font-semibold">{selectedTicket._id}</p>
-              </div>
-              <StatusBadge status={selectedTicket.status} />
+  const GridView = () => (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {paginatedVendors.map(vendor => (
+          <div key={vendor._id} className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden 
+            hover:shadow-xl transition-all group relative">
+            <div className="absolute top-2 left-2 z-10">
+              <input
+                type="checkbox"
+                checked={selectedVendors.includes(vendor._id)}
+                onChange={() => toggleSelect(vendor._id)}
+                className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
+              />
             </div>
-            
-            {/* Title */}
-            <div>
-              <p className="text-sm text-gray-400 mb-1">Title</p>
-              <p className="text-white font-semibold text-lg">{selectedTicket.title}</p>
-            </div>
-            
-            {/* Customer Info */}
-            <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-sm text-gray-400 mb-2">Customer Information</p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 
-                  flex items-center justify-center text-white font-bold">
-                  {selectedTicket.userId?.name?.charAt(0) || 'U'}
-                </div>
-                <div>
-                  <p className="text-white font-semibold">{selectedTicket.userId?.name || 'Guest User'}</p>
-                  <p className="text-xs text-gray-400">User ID: {selectedTicket.userId?._id || 'N/A'}</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Message */}
-            <div>
-              <p className="text-sm text-gray-400 mb-2">Message</p>
-              <div className="bg-white/5 rounded-xl p-4">
-                <p className="text-gray-300 whitespace-pre-wrap">{selectedTicket.message}</p>
-              </div>
-            </div>
-            
-            {/* Timestamps */}
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div>
-                <p className="text-sm text-gray-400">Created At</p>
-                <p className="text-white text-sm">{new Date(selectedTicket.createdAt).toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Last Updated</p>
-                <p className="text-white text-sm">{new Date(selectedTicket.updatedAt).toLocaleString()}</p>
-              </div>
-            </div>
-            
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 pt-4 border-t border-white/10">
-              {selectedTicket.status !== 'resolved' && (
-                <button
-                  onClick={() => {
-                    handleUpdateStatus(selectedTicket._id, 'resolved');
-                    setShowModal(false);
-                  }}
-                  disabled={loading.update}
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 
-                    text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <CheckCircleIcon size={18} />
-                  Mark as Resolved
+            <div className="relative h-40 sm:h-48 bg-white/5">
+              <img
+                src={vendor.hostelImage ? `http://187.127.146.52:2003/${vendor.hostelImage}` : '/api/placeholder/400/300'}
+                alt={vendor.name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute top-2 right-2 flex gap-1.5">
+                <button onClick={() => viewVendor(vendor._id)}
+                  className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80">
+                  <Eye size={14} className="sm:w-4 sm:h-4" />
                 </button>
-              )}
-              <button
-                onClick={() => {
-                  handleDelete(selectedTicket._id);
-                  setShowModal(false);
-                }}
-                disabled={loading.delete}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 
-                  text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Trash2 size={18} />
-                Delete Ticket
-              </button>
+                <button onClick={() => editVendor(vendor._id)}
+                  className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-yellow-400 hover:bg-black/80">
+                  <Edit size={14} className="sm:w-4 sm:h-4" />
+                </button>
+                <button onClick={() => handleDelete(vendor._id)}
+                  disabled={loading.delete}
+                  className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80">
+                  <Trash2 size={14} className="sm:w-4 sm:h-4" />
+                </button>
+              </div>
+              <div className="absolute top-2 left-8 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                <Building2 size={12} className="text-emerald-400" />
+                {vendor.totalHostels || 0} Hostels
+              </div>
+              <div className="absolute bottom-2 left-2">
+                <StatusBadge status={vendor.approvalStatus} />
+              </div>
+            </div>
+
+            <div className="p-3 sm:p-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-bold text-white line-clamp-1">{vendor.name || 'Unknown Vendor'}</h3>
+                {!vendor.otpVerified && (
+                  <span className="text-xs px-2 py-1 bg-yellow-500/20 rounded-full text-yellow-400 font-semibold whitespace-nowrap">
+                    OTP Pending
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2 text-xs text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <Phone size={12} className="text-emerald-400 flex-shrink-0" />
+                  <span>{vendor.mobileNumber || 'N/A'}</span>
+                </div>
+
+                {vendor.email && (
+                  <div className="flex items-center gap-1.5">
+                    <Mail size={12} className="text-emerald-400 flex-shrink-0" />
+                    <span className="truncate">{vendor.email}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5">
+                  <Building2 size={12} className="text-emerald-400 flex-shrink-0" />
+                  <span>Total Hostels: {vendor.totalHostels || 0}</span>
+                </div>
+              </div>
+
+              <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  <Calendar size={10} />
+                  {new Date(vendor.createdAt).toLocaleDateString()}
+                </div>
+                <button
+                  onClick={() => viewVendor(vendor._id)}
+                  className="text-emerald-400 hover:text-emerald-300 font-semibold"
+                >
+                  View Details →
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
-    );
-  };
+    </>
+  );
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-      <PageHeader 
-        icon={MessageCircle} 
-        title="Enquiries Management" 
-        subtitle={`${tickets.length} total tickets • ${tickets.filter(t => t.status === 'open').length} open`}
+      <PageHeader
+        icon={Users}
+        title="Vendor Management"
+        subtitle={`${vendors.length} total vendors • ${vendors.filter(v => v.approvalStatus === 'approved').length} approved`}
       />
 
       <StatsCard />
       <ActionBar />
       <FilterBar />
-     
-      
+
+
       {loading.fetch ? (
         <div className="flex justify-center py-20">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <MessageCircle size={20} className="text-emerald-400 animate-pulse" />
+              <Users size={20} className="text-emerald-400 animate-pulse" />
             </div>
           </div>
         </div>
-      ) : paginatedTickets.length === 0 ? (
+      ) : paginatedVendors.length === 0 ? (
         <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/10 flex items-center justify-center">
-            <MessageCircle size={32} className="text-emerald-400" />
+            <Users size={32} className="text-emerald-400" />
           </div>
-          <p className="text-white font-bold text-lg mb-2">No tickets found</p>
+          <p className="text-white font-bold text-lg mb-2">No vendors found</p>
           <p className="text-sm text-gray-400">
             {searchTerm ? 'Try adjusting your search' : filter !== 'All' ? 'Try a different filter' : ''}
           </p>
           {(searchTerm || filter !== 'All') && (
-            <button 
+            <button
               onClick={() => { setSearchTerm(''); setFilter('All'); }}
               className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white 
                 rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
@@ -869,9 +854,9 @@ const Enquiries = () => {
         </div>
       ) : (
         <>
-          <TableView />
-          
-          <Pagination 
+          {viewMode === 'grid' ? <GridView /> : <TableView />}
+
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -882,7 +867,7 @@ const Enquiries = () => {
               setCurrentPage(1);
             }}
           />
-          
+
           <div className="mt-6 bg-white/10 rounded-xl p-4 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
@@ -891,7 +876,7 @@ const Enquiries = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Tickets' : `${filter} Tickets`}
+                  {filter === 'All' ? 'Total Vendors' : `${filter} Vendors`}
                 </p>
                 <p className="text-xs text-gray-400">
                   {filter === 'All' ? 'Across all statuses' : `Filtered by status`}
@@ -899,15 +884,20 @@ const Enquiries = () => {
                 </p>
               </div>
             </div>
-            <Sparkles size={20} className="text-emerald-400" />
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-xs text-gray-400">Total Hostels</p>
+                <p className="font-bold text-white">
+                  {paginatedVendors.reduce((acc, v) => acc + (v.totalHostels || 0), 0)}
+                </p>
+              </div>
+              <Sparkles size={20} className="text-emerald-400" />
+            </div>
           </div>
         </>
       )}
-      
-      {/* Ticket Details Modal */}
-      {showModal && <TicketModal />}
     </div>
   );
 };
 
-export default Enquiries;
+export default AllVendors;

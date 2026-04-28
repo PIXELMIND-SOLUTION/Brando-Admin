@@ -17,7 +17,7 @@ const navItems = [
         label: "Hostels",
         icon: Building2,
         children: [
-            { to: "/dashboard/create-hostel", label: "Create Hostel", icon: PlusCircle },
+            // { to: "/dashboard/create-hostel", label: "Create Hostel", icon: PlusCircle },
             { to: "/dashboard/hostels", label: "All Hostels", icon: List },
         ],
     },
@@ -26,7 +26,6 @@ const navItems = [
         icon: UserCircle,
         children: [
             { to: "/dashboard/vendors", label: "All Vendors", icon: List },
-            { to: "/dashboard/vendors/add", label: "Add Vendor", icon: UserPlus },
             { to: "/dashboard/vendors/pending", label: "Pending", icon: Eye }
         ],
     },
@@ -35,15 +34,14 @@ const navItems = [
         icon: BookMarked,
         children: [
             { to: "/dashboard/bookings", label: "All Bookings", icon: PlusCircle },
-            { to: "/dashboard/hostels", label: "Vendor Bookings", icon: List },
         ],
     },
     {
         label: "Banners",
         icon: ImagesIcon,
         children: [
-            { to: "/dashboard/banners", label: "All Banners", icon: PlusCircle },
-            { to: "/dashboard/vendor-banners", label: "Vendor Banners", icon: List },
+            { to: "/dashboard/banners", label: "User Banners", icon: PlusCircle },
+            { to: "/dashboard/vendor-banners", label: "Vendor Banners", icon: PlusCircle },
         ],
     },
     { to: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
