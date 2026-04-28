@@ -146,8 +146,7 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
 };
 
 // ── Main Sidebar ───────────────────────────────────────────────────
-const Sidebar = () => {
-    const [mobileOpen, setMobileOpen] = useState(false);
+const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     const [collapsed, setCollapsed] = useState(false);
 
     const sidebarContent = (isCollapsed) => (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Bell, ChevronDown, Settings, LogOut, User, X } from "lucide-react";
+import { Bell, ChevronDown, Settings, LogOut, User, X, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -8,7 +8,7 @@ import logo from "../assets/logo.png";
 
 const API = "http://187.127.146.52:2003/api/admin";
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -169,14 +169,26 @@ const Navbar = () => {
       {/* NAVBAR */}
       <div className="bg-[#0f172a]/90 backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)] px-4 md:px-6 py-3 flex items-center justify-between gap-4 border-b border-white/10 sticky top-0 z-50">
         
-        {/* Logo / Brand */}
+        {/* Left section - Mobile Menu Button + Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center overflow-hidden">
-            <img src={logo} alt="Logo" className="w-full h-full object-cover" />
-          </div>
-          <div className="hidden sm:block">
-            <h1 className="text-white font-bold text-lg">HostelAdmin</h1>
-            <p className="text-[10px] text-emerald-400">Dashboard</p>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={onMenuClick}
+            className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all duration-200"
+            aria-label="Toggle menu"
+          >
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          {/* Logo / Brand */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center overflow-hidden">
+              <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+            </div>
+            <div className="hidden sm:block">
+              <h1 className="text-white font-bold text-lg">HostelAdmin</h1>
+              <p className="text-[10px] text-emerald-400">Dashboard</p>
+            </div>
           </div>
         </div>
 
@@ -184,13 +196,13 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
 
           {/* Settings Button */}
-          {/* <button 
+          <button 
             onClick={handleSettings}
             className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors duration-200"
             aria-label="Settings"
           >
             <Settings size={18} />
-          </button> */}
+          </button>
 
           {/* Notifications Dropdown */}
           <div ref={notificationRef} className="relative">
@@ -200,11 +212,11 @@ const Navbar = () => {
               aria-label="Notifications"
             >
               <Bell size={18} />
-              {/* {unreadCount > 0 && (
+              {unreadCount > 0 && (
                 <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-[#0f172a]">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
-              )} */}
+              )}
             </button>
 
             {/* Notifications Dropdown Menu */}
@@ -221,19 +233,19 @@ const Navbar = () => {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Bell size={14} className="text-emerald-400" />
                       Notifications
-                      {/* {unreadCount > 0 && (
+                      {unreadCount > 0 && (
                         <span className="text-xs text-emerald-400">({unreadCount} unread)</span>
-                      )} */}
+                      )}
                     </h3>
                     <div className="flex items-center gap-2">
-                      {/* {unreadCount > 0 && (
+                      {unreadCount > 0 && (
                         <button 
                           onClick={markAllAsRead}
                           className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
                         >
                           Mark all read
                         </button>
-                      )} */}
+                      )}
                       <button 
                         onClick={() => setNotificationsOpen(false)}
                         className="p-1 rounded-lg hover:bg-white/10 text-gray-400 transition-colors"
@@ -356,10 +368,28 @@ const Navbar = () => {
                         <img src={logo} alt="Admin" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">Brando Admin</p>
+                        <p className="text-sm font-bold text-white">Admin User</p>
+                        <p className="text-xs text-gray-400">admin@hostelbooking.com</p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Menu Items */}
+                  <button 
+                    onClick={handleProfile}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors duration-200"
+                  >
+                    <User size={16} /> 
+                    Profile
+                  </button>
+
+                  <button 
+                    onClick={handleSettings}
+                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors duration-200"
+                  >
+                    <Settings size={16} /> 
+                    Settings
+                  </button>
 
                   <div className="border-t border-white/10" />
 

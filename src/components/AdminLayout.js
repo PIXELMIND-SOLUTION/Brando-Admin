@@ -1,18 +1,25 @@
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { Outlet } from "react-router-dom";
 
 const AdminLayout = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617]">
       {/* Sidebar — fixed, never scrolls */}
-      <Sidebar />
+      <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
 
       {/* Right panel */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Navbar — pinned top */}
         <div className="flex-shrink-0">
-          <Navbar />
+          <Navbar onMenuClick={toggleMobileMenu} sidebarOpen={mobileMenuOpen} />
         </div>
 
         {/* Outlet — only this scrolls */}
