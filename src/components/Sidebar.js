@@ -6,12 +6,15 @@ import {
     List, PlusCircle, Eye, Star, Briefcase, UserPlus,
     ChevronLeft, ChevronRight,
     ImagesIcon,
-    BookMarked
+    BookMarked,
+    Bell
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
+import logo from "../assets/logo.png"
 
 const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/dashboard/customers", label: "Customers", icon: Users },
     { to: "/dashboard/category", label: "Category", icon: BsGenderNeuter },
     {
         label: "Hostels",
@@ -45,6 +48,7 @@ const navItems = [
         ],
     },
     { to: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
+    { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
 ];
 
 // ── Dropdown ───────────────────────────────────────────────────────
@@ -155,18 +159,32 @@ const Sidebar = () => {
             >
                 {!isCollapsed && (
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
-                            <Building2 size={18} className="text-white" />
+                        <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
+                            <img
+                                src={logo}
+                                alt="Brando Logo"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
+
                         <div>
-                            <span className="text-base font-black tracking-tight text-white">Brando</span>
-                            <span className="block text-[10px] text-emerald-400 font-medium -mt-0.5 tracking-widest uppercase">Admin Panel</span>
+                            <span className="text-base font-black tracking-tight text-white">
+                                Brando
+                            </span>
+                            <span className="block text-[10px] text-emerald-400 font-medium -mt-0.5 tracking-widest uppercase">
+                                Admin Panel
+                            </span>
                         </div>
                     </div>
                 )}
+
                 {isCollapsed && (
-                    <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg">
-                        <Building2 size={18} className="text-white" />
+                    <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
+                        <img
+                            src={logo}
+                            alt="Brando Logo"
+                            className="w-full h-full object-cover"
+                        />
                     </div>
                 )}
 

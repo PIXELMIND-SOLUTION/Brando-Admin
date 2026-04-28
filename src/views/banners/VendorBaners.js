@@ -6,7 +6,7 @@ import {
   Plus, Calendar, Sparkles, LayoutGrid, ChevronLeft
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/vendor";
+const API = "http://187.127.146.52:2003/api/vendors";
 
 // SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({
@@ -35,7 +35,7 @@ const VendorBanners = () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
       setError("");
-      const { data } = await axios.get(`${API}/getAllBanners`);
+      const { data } = await axios.get(`${API}/all`);
       setBanners(data.banners || []);
     } catch (error) {
       console.error(error);
@@ -48,7 +48,7 @@ const VendorBanners = () => {
 
   useEffect(() => { fetchBanners(); }, []);
 
-  // Get single banner
+  // Get single banner by ID
   const getBannerById = async (id) => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
@@ -96,7 +96,7 @@ const VendorBanners = () => {
     setError("");
   };
 
-  // Create banner
+  // Create banner - POST /api/vendors/create
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -112,7 +112,11 @@ const VendorBanners = () => {
       setLoading(prev => ({ ...prev, create: true }));
       setError("");
 
-      await axios.post(`${API}/createBanner`, formData);
+      await axios.post(`${API}/create`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
       showAlert('success', 'Success!', 'Banner uploaded successfully', 2000);
       
@@ -128,7 +132,7 @@ const VendorBanners = () => {
     }
   };
 
-  // Update banner
+  // Update banner - PUT /api/vendors/update/:id
   const handleUpdate = async (e) => {
     e.preventDefault();
 
@@ -144,7 +148,11 @@ const VendorBanners = () => {
       setLoading(prev => ({ ...prev, update: true }));
       setError("");
 
-      await axios.put(`${API}/updateBannerById/${selectedBanner._id}`, formData);
+      await axios.put(`${API}/update/${selectedBanner._id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
       showAlert('success', 'Updated!', 'Banner updated successfully', 2000);
       
@@ -161,7 +169,7 @@ const VendorBanners = () => {
     }
   };
 
-  // Delete banner
+  // Delete banner - DELETE /api/vendors/delete/:id
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Are you sure?',
@@ -182,7 +190,7 @@ const VendorBanners = () => {
 
     try {
       setLoading(prev => ({ ...prev, delete: true }));
-      await axios.delete(`${API}/deleteBannerById/${id}`);
+      await axios.delete(`${API}/delete/${id}`);
       
       showAlert('success', 'Deleted!', 'Banner has been deleted', 2000);
       await fetchBanners();
@@ -208,6 +216,13 @@ const VendorBanners = () => {
     resetForm();
     setSelectedBanner(null);
     setView('list');
+  };
+
+  const goToEdit = () => {
+    resetForm();
+    setImages([]);
+    setPreview([]);
+    setView('edit');
   };
 
   // Reusable Components
@@ -344,9 +359,12 @@ const VendorBanners = () => {
     <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group">
       <div className="relative h-32 sm:h-40 bg-white/5">
         <img 
-          src={banner.images[0]} 
+          src={banner.images && banner.images[0] ? banner.images[0] : '/api/placeholder/400/300'} 
           alt="Banner" 
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.src = '/api/placeholder/400/300';
+          }}
         />
         <div className="absolute top-2 right-2 flex gap-1.5">
           <button onClick={() => getBannerById(banner._id)}
@@ -360,13 +378,22 @@ const VendorBanners = () => {
           </button>
         </div>
         <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-          {banner.images.length} {banner.images.length === 1 ? 'image' : 'images'}
+          {banner.images?.length || 0} {banner.images?.length === 1 ? 'image' : 'images'}
         </div>
       </div>
       <div className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Calendar size={12} className="text-emerald-400" />
-          {new Date(banner.createdAt).toLocaleDateString()}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <Calendar size={12} className="text-emerald-400" />
+            {new Date(banner.createdAt).toLocaleDateString()}
+          </div>
+          <button onClick={() => {
+            setSelectedBanner(banner);
+            goToEdit();
+          }}
+            className="p-1.5 rounded-lg bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-all">
+            <Edit2 size={12} />
+          </button>
         </div>
       </div>
     </div>
@@ -392,8 +419,56 @@ const VendorBanners = () => {
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <UploadArea />
                 <PreviewGrid />
-                <SubmitButton loading={loading.create} text="Create Banner" />
+                <SubmitButton loading={loading.create} onClick={handleSubmit} text="Create Banner" />
               </form>
+            </div>
+          </>
+        );
+
+      case 'edit':
+        return selectedBanner && (
+          <>
+            <PageHeader 
+              icon={Edit2} 
+              title="Edit Banner" 
+              subtitle={`Update banner images (ID: ${selectedBanner._id.slice(-8)})`}
+              action={<BackButton />}
+            />
+            <ErrorAlert />
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
+                <h2 className="text-xs font-black text-white tracking-widest uppercase">Update Banner</h2>
+              </div>
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                {/* Current Images */}
+                {selectedBanner.images && selectedBanner.images.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-emerald-400">
+                      Current Images ({selectedBanner.images.length})
+                    </h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                      {selectedBanner.images.map((img, idx) => (
+                        <div key={idx} className="relative rounded-lg sm:rounded-xl overflow-hidden border border-white/10 aspect-video">
+                          <img src={img} alt={`Current ${idx + 1}`} className="w-full h-full object-cover" />
+                          <a href={img} target="_blank" rel="noopener noreferrer"
+                            className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 
+                              flex items-center justify-center transition-opacity">
+                            <Eye size={16} className="text-white" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Upload New Images */}
+                <div className="border-t border-white/10 pt-4">
+                  <UploadArea />
+                  <PreviewGrid />
+                </div>
+                
+                <SubmitButton loading={loading.update} onClick={handleUpdate} text="Update Banner" />
+              </div>
             </div>
           </>
         );
@@ -405,7 +480,17 @@ const VendorBanners = () => {
               icon={Eye} 
               title="Banner Details" 
               subtitle={`ID: ${selectedBanner._id.slice(-8)}`}
-              action={<BackButton />}
+              action={
+                <div className="flex gap-2">
+                  <button onClick={goToEdit}
+                    className="flex items-center gap-2 px-4 py-2 text-sm bg-yellow-500/20 hover:bg-yellow-500/30 
+                      rounded-xl transition-colors text-yellow-400">
+                    <Edit2 size={14} />
+                    Edit
+                  </button>
+                  <BackButton />
+                </div>
+              }
             />
             <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
               <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
@@ -413,7 +498,7 @@ const VendorBanners = () => {
               </div>
               <div className="p-4 sm:p-6">
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  {selectedBanner.images.map((img, idx) => (
+                  {selectedBanner.images && selectedBanner.images.map((img, idx) => (
                     <div key={idx} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10">
                       <img src={img} alt={`Banner ${idx}`} className="w-full h-32 sm:h-40 object-cover" />
                       <a href={img} target="_blank" rel="noopener noreferrer"
@@ -424,9 +509,15 @@ const VendorBanners = () => {
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 sm:mt-6 p-4 bg-white/10 rounded-xl">
-                  <p className="text-xs text-gray-400">Created</p>
-                  <p className="text-sm font-semibold text-white">{new Date(selectedBanner.createdAt).toLocaleString()}</p>
+                <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/10 rounded-xl">
+                    <p className="text-xs text-gray-400">Created At</p>
+                    <p className="text-sm font-semibold text-white">{new Date(selectedBanner.createdAt).toLocaleString()}</p>
+                  </div>
+                  <div className="p-4 bg-white/10 rounded-xl">
+                    <p className="text-xs text-gray-400">Last Updated</p>
+                    <p className="text-sm font-semibold text-white">{new Date(selectedBanner.updatedAt).toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -439,7 +530,7 @@ const VendorBanners = () => {
             <PageHeader 
               icon={LayoutGrid} 
               title="Banner Management" 
-              subtitle="View and manage all banners"
+              subtitle={`${banners.length} total banners`}
               action={
                 <button onClick={goToCreate}
                   className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl 
@@ -455,7 +546,12 @@ const VendorBanners = () => {
             
             {loading.fetch ? (
               <div className="flex justify-center py-12 sm:py-20">
-                <div className="w-8 h-8 sm:w-12 sm:h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
+                <div className="relative">
+                  <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Image size={16} className="text-emerald-400 animate-pulse" />
+                  </div>
+                </div>
               </div>
             ) : banners.length === 0 ? (
               <div className="text-center py-12 sm:py-20 bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10">
@@ -482,10 +578,11 @@ const VendorBanners = () => {
                 Banner Guidelines
               </h3>
               <ul className="space-y-1.5 text-xs text-gray-400">
-                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Use high-quality images</li>
-                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Recommended: 1920x600px</li>
-                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Max file size: 5MB per image</li>
-                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Formats: JPG, PNG, WEBP</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Use high-quality images for better display</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Recommended dimensions: 1920x600px</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Maximum file size: 5MB per image</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Supported formats: JPG, PNG, WEBP</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Multiple images can be uploaded at once</li>
               </ul>
             </div>
           </>
