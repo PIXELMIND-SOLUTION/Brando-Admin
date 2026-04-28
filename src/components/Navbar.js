@@ -184,13 +184,13 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
 
           {/* Settings Button */}
-          <button 
+          {/* <button 
             onClick={handleSettings}
             className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors duration-200"
             aria-label="Settings"
           >
             <Settings size={18} />
-          </button>
+          </button> */}
 
           {/* Notifications Dropdown */}
           <div ref={notificationRef} className="relative">
@@ -200,11 +200,11 @@ const Navbar = () => {
               aria-label="Notifications"
             >
               <Bell size={18} />
-              {unreadCount > 0 && (
+              {/* {unreadCount > 0 && (
                 <span className="absolute top-1 right-1 min-w-[16px] h-4 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-[#0f172a]">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
-              )}
+              )} */}
             </button>
 
             {/* Notifications Dropdown Menu */}
@@ -221,19 +221,19 @@ const Navbar = () => {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Bell size={14} className="text-emerald-400" />
                       Notifications
-                      {unreadCount > 0 && (
+                      {/* {unreadCount > 0 && (
                         <span className="text-xs text-emerald-400">({unreadCount} unread)</span>
-                      )}
+                      )} */}
                     </h3>
                     <div className="flex items-center gap-2">
-                      {unreadCount > 0 && (
+                      {/* {unreadCount > 0 && (
                         <button 
                           onClick={markAllAsRead}
                           className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
                         >
                           Mark all read
                         </button>
-                      )}
+                      )} */}
                       <button 
                         onClick={() => setNotificationsOpen(false)}
                         className="p-1 rounded-lg hover:bg-white/10 text-gray-400 transition-colors"
@@ -356,28 +356,10 @@ const Navbar = () => {
                         <img src={logo} alt="Admin" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">Admin User</p>
-                        <p className="text-xs text-gray-400">admin@hostelbooking.com</p>
+                        <p className="text-sm font-bold text-white">Brando Admin</p>
                       </div>
                     </div>
                   </div>
-
-                  {/* Menu Items */}
-                  <button 
-                    onClick={handleProfile}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors duration-200"
-                  >
-                    <User size={16} /> 
-                    Profile
-                  </button>
-
-                  <button 
-                    onClick={handleSettings}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors duration-200"
-                  >
-                    <Settings size={16} /> 
-                    Settings
-                  </button>
 
                   <div className="border-t border-white/10" />
 
