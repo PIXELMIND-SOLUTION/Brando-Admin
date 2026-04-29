@@ -20,6 +20,7 @@ const navItems = [
     { to: "/dashboard/customers", label: "Users", icon: Users },
     { to: "/dashboard/category", label: "Category", icon: BsGenderNeuter },
     {
+        to: "/dashboard/hostels",
         label: "Hostels",
         icon: Building2,
         children: [
@@ -28,6 +29,7 @@ const navItems = [
         ],
     },
     {
+        to: "/dashboard/vendors",
         label: "Vendors",
         icon: UserCircle,
         children: [
@@ -36,6 +38,7 @@ const navItems = [
         ],
     },
     {
+        to: "/dashboard/bookings",
         label: "Bookings",
         icon: BookMarked,
         children: [
@@ -43,6 +46,7 @@ const navItems = [
         ],
     },
     {
+        to: "/dashboard/banners",
         label: "Banners",
         icon: ImagesIcon,
         children: [
@@ -57,7 +61,7 @@ const navItems = [
 ];
 
 // ── Dropdown ───────────────────────────────────────────────────────
-const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
+const DropdownItem = ({ to, item, setMobileOpen, collapsed }) => {
     const [open, setOpen] = useState(false);
 
     // Check if any child route is active
@@ -68,10 +72,17 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
 
     const hasActiveChild = isChildActive(item.children);
 
+    const navigate = useNavigate();
+
     return (
         <div className="relative group">
             <button
-                onClick={() => !collapsed && setOpen(!open)}
+                onClick={() => {
+                    if (!collapsed) {
+                        setOpen(!open);
+                    }
+                    navigate(to);
+                }}
                 title={collapsed ? item.label : undefined}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-semibold
           ${collapsed ? "justify-center" : ""}
@@ -218,6 +229,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                     item.children ? (
                         <DropdownItem
                             key={item.label}
+                            to={item.to}
                             item={item}
                             setMobileOpen={setMobileOpen}
                             collapsed={isCollapsed}

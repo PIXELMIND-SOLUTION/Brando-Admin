@@ -20,6 +20,21 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
     }
 });
 
+
+const InputField = ({ value, onChange, placeholder }) => (
+    <div className="relative group">
+        <input
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/5 
+          text-sm outline-none transition-all duration-300 placeholder:text-gray-500 font-medium text-white
+          focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 group-hover:border-white/20"
+        />
+    </div>
+);
+
 const Category = () => {
     const [name, setName] = useState("");
     const [categories, setCategories] = useState([]);
@@ -104,19 +119,6 @@ const Category = () => {
         }
     };
 
-    const InputField = ({ value, onChange, placeholder }) => (
-        <div className="relative group">
-            <input
-                type="text"
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                className="w-full px-6 py-4 rounded-2xl border border-white/10 bg-white/5 
-          text-sm outline-none transition-all duration-300 placeholder:text-gray-500 font-medium text-white
-          focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 group-hover:border-white/20"
-            />
-        </div>
-    );
 
     const ActionButton = ({ onClick, loading, icon: Icon, children, gradient = "from-emerald-500 to-emerald-600" }) => (
         <button
@@ -262,7 +264,7 @@ const Category = () => {
 
             <div className="space-y-8">
                 {/* Create Category Card */}
-                {/* <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 
+                <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 
           shadow-[0_20px_60px_rgba(0,0,0,0.3)] overflow-hidden">
 
                     <div className="px-8 py-6 bg-gradient-to-r from-emerald-500 to-emerald-600">
@@ -296,7 +298,7 @@ const Category = () => {
                             </div>
                         </div>
                     </form>
-                </div> */}
+                </div>
 
                 {/* Category List */}
                 <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 
