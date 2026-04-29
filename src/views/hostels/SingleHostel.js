@@ -234,7 +234,7 @@ const SingleHostel = () => {
         {/* Left */}
         <div className="flex items-center gap-3 sm:gap-4">
           <button
-            onClick={() => navigate("/dashboard/hostels")}
+            onClick={() => navigate(-1)}
             className="p-2 hover:bg-white/10 rounded-xl transition-colors"
           >
             <ChevronLeft size={20} className="text-gray-400" />
