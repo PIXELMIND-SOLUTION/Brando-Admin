@@ -17,7 +17,7 @@ import logo from "../assets/logo.png"
 
 const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/dashboard/customers", label: "Customers", icon: Users },
+    { to: "/dashboard/customers", label: "Users", icon: Users },
     { to: "/dashboard/category", label: "Category", icon: BsGenderNeuter },
     {
         label: "Hostels",

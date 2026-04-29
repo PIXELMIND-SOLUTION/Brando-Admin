@@ -82,7 +82,7 @@ const Dashboard = () => {
       color: "from-blue-500 to-indigo-500"
     },
     {
-      label: "Total Customers",
+      label: "Total Users",
       value: dashboardData.counts.users,
       change: "+28%",
       icon: Users,

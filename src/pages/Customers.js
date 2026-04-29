@@ -9,7 +9,8 @@ import {
   SortAsc, SortDesc, Search, TrendingUp,
   BadgeCheck, Clock, Home, Tag, ChevronLeft,
   ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
-  Mail, User, Edit, Star, IndianRupee
+  Mail, User, Edit, Star, IndianRupee,
+  DollarSign
 } from "lucide-react";
 
 const API = "http://187.127.146.52:2003/api/admin";
@@ -72,11 +73,11 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, itemsPerPage, 
           page === '...'
             ? <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-400">...</span>
             : <button key={page} onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
-                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
-                {page}
-              </button>
+              className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
+              {page}
+            </button>
         ))}
         <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
           className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all">
@@ -124,7 +125,7 @@ const CustomerModal = memo(({
         <div className="sticky top-0 bg-[#0f172a] border-b border-white/10 p-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Users size={20} className="text-emerald-400" />
-            {editMode ? 'Edit Customer' : 'Customer Details'}
+            {editMode ? 'Edit User' : 'User Details'}
           </h2>
           <button onClick={onClose} className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 transition-all">
             <X size={20} />
@@ -142,29 +143,29 @@ const CustomerModal = memo(({
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Mobile Number</label>
                 <input
-  type="tel"
-  name="mobileNumber"
-  value={editFormData.mobileNumber}
-  onChange={(e) => {
-    const value = e.target.value
-      .replace(/\D/g, "")      // remove non-numbers
-      .slice(0, 10);          // limit to 10 digits
+                  type="tel"
+                  name="mobileNumber"
+                  value={editFormData.mobileNumber}
+                  onChange={(e) => {
+                    const value = e.target.value
+                      .replace(/\D/g, "")      // remove non-numbers
+                      .slice(0, 10);          // limit to 10 digits
 
-    onFormDataChange({
-      target: {
-        name: "mobileNumber",
-        value,
-      },
-    });
-  }}
-  inputMode="numeric"
-  pattern="[0-9]{10}"
-  maxLength={10}
-  placeholder="Enter 10-digit mobile number"
-  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
+                    onFormDataChange({
+                      target: {
+                        name: "mobileNumber",
+                        value,
+                      },
+                    });
+                  }}
+                  inputMode="numeric"
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  placeholder="Enter 10-digit mobile number"
+                  className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
   focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 
   outline-none transition-all text-white"
-/>
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
@@ -457,7 +458,7 @@ const Customers = () => {
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   const stats = useMemo(() => [
-    { label: 'Total Customers', value: customers.length, icon: Users, color: 'from-emerald-500 to-emerald-600' },
+    { label: 'Total Users', value: customers.length, icon: Users, color: 'from-emerald-500 to-emerald-600' },
     { label: 'Active', value: customers.filter(c => c.status === 'active' || !c.status).length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
     { label: 'Verified', value: customers.filter(c => c.isVerified).length, icon: BadgeCheck, color: 'from-blue-500 to-indigo-500' },
     { label: 'With Hostel', value: customers.filter(c => c.hostelId).length, icon: Building2, color: 'from-purple-500 to-pink-500' }
@@ -479,11 +480,11 @@ const Customers = () => {
             </div>
             <div>
               <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight flex items-center gap-2">
-                Customer Management <BadgeCheck size={20} className="text-emerald-400" />
+                User Management <BadgeCheck size={20} className="text-emerald-400" />
               </h1>
               <p className="text-sm text-emerald-400 font-medium flex items-center gap-2">
                 <TrendingUp size={14} />
-                {customers.length} total customers • {customers.filter(c => c.isVerified).length} verified
+                {customers.length} total users • {customers.filter(c => c.isVerified).length} verified
               </p>
             </div>
           </div>
@@ -611,7 +612,7 @@ const Customers = () => {
                       className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                     />
                   </th>
-                  {[['name', 'Customer', User], ['mobileNumber', 'Mobile', Phone], ['hostelId', 'Associated Hostel', Building2]].map(([key, label, Icon]) => (
+                  {[['name', 'User', User], ['mobileNumber', 'Mobile', Phone], ['hostelId', 'Associated Hostel', Building2]].map(([key, label, Icon]) => (
                     <th key={key} className="px-4 py-4 text-left">
                       <button onClick={() => handleSort(key)}
                         className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
@@ -677,6 +678,10 @@ const Customers = () => {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => navigate(`/dashboard/user-payments/${customer._id}`)}
+                          className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100" title="Payments">
+                          <DollarSign size={14} />
+                        </button>
                         <button onClick={() => viewCustomer(customer)}
                           className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100" title="View">
                           <Eye size={14} />
@@ -780,7 +785,7 @@ const Customers = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Customers' : `${filter} Customers`}
+                  {filter === 'All' ? 'Total Users' : `${filter} Users`}
                 </p>
                 <p className="text-xs text-gray-400">
                   {filter === 'All' ? 'Across all statuses' : 'Filtered by status'}

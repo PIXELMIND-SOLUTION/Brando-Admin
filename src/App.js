@@ -24,6 +24,8 @@ import SingleBooking from "./views/Bookings/SingleBooking";
 import VendorBookings from "./views/Bookings/VendorBookings";
 import Notifications from "./views/Notifications/Notifications";
 import AllUserPayments from "./views/Payments/AllUserPayments";
+import SingleUserPayments from "./views/Payments/SingleUserPayments";
+import HostelUsers from "./views/hostels/HostelUsers";
 
 const App = () => {
   return (
@@ -46,6 +48,7 @@ const App = () => {
         {/* <Route path="create-hostel" element={<CreateHostel />} /> */}
         <Route path="hostels" element={<Hostels />} />
         <Route path="hostels/:id" element={<SingleHostel />} />
+        <Route path="hostel/users/:hostelId" element={<HostelUsers />} />
 
         <Route path="banners" element={<UserBanners />} />
         <Route path="vendor-banners" element={<VendorBanners />} />
@@ -60,6 +63,7 @@ const App = () => {
         <Route path="vendors/:id/bookings" element={<VendorBookings />} />
 
         <Route path="payments" element={<AllUserPayments />} />
+        <Route path="user-payments/:userId" element={<SingleUserPayments />} />
 
         <Route path="notifications" element={<Notifications />} />
 

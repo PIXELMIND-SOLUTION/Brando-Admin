@@ -124,11 +124,10 @@ const ImageModal = ({ images, startIndex, onClose }) => {
             <button
               key={idx}
               onClick={() => setCurrent(idx)}
-              className={`flex-shrink-0 w-14 h-10 sm:w-16 sm:h-12 rounded-md overflow-hidden border-2 transition-all ${
-                idx === current
-                  ? "border-emerald-400 opacity-100 scale-105"
-                  : "border-transparent opacity-50 hover:opacity-80"
-              }`}
+              className={`flex-shrink-0 w-14 h-10 sm:w-16 sm:h-12 rounded-md overflow-hidden border-2 transition-all ${idx === current
+                ? "border-emerald-400 opacity-100 scale-105"
+                : "border-transparent opacity-50 hover:opacity-80"
+                }`}
             >
               <img src={img} alt={`thumb-${idx}`} className="w-full h-full object-cover" />
             </button>
@@ -219,7 +218,7 @@ const SingleHostel = () => {
   const filteredSharings = allSharings.filter((s) => s.type === roomType);
 
   // Detect which types exist so we can disable tabs if needed
-  const hasAC    = allSharings.some((s) => s.type === "AC");
+  const hasAC = allSharings.some((s) => s.type === "AC");
   const hasNonAC = allSharings.some((s) => s.type === "Non-AC");
 
   return (
@@ -231,21 +230,47 @@ const SingleHostel = () => {
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+
+        {/* Left */}
         <div className="flex items-center gap-3 sm:gap-4">
-          <button onClick={() => navigate("/dashboard/hostels")}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+          <button
+            onClick={() => navigate("/dashboard/hostels")}
+            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+          >
             <ChevronLeft size={20} className="text-gray-400" />
           </button>
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/10">
+
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl 
+    bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
+    text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/10">
             <Building2 size={20} className="sm:w-[22px] sm:h-[22px]" />
           </div>
+
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">{hostel.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+              {hostel.name}
+            </h1>
             <p className="text-xs sm:text-sm text-emerald-400 font-medium">
-              {hostel.categoryId?.name ? `${hostel.categoryId.name} • ` : ""}ID: {hostel._id.slice(-8)}
+              {hostel.categoryId?.name ? `${hostel.categoryId.name} • ` : ""}
+              ID: {hostel._id.slice(-8)}
             </p>
           </div>
         </div>
+
+        {/* Right (View Users Button) */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => navigate(`/dashboard/hostel/users/${hostel._id}`)}
+            className="flex items-center gap-2 px-4 py-2 
+      bg-gradient-to-r from-emerald-500 to-emerald-600 
+      text-white text-sm font-semibold rounded-xl 
+      hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+          >
+            <Users size={16} />
+            View Users
+          </button>
+        </div>
+
       </div>
 
       {/* Room Type Toggle */}
@@ -253,11 +278,10 @@ const SingleHostel = () => {
         <button
           onClick={() => setRoomType("AC")}
           disabled={!hasAC}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${
-            roomType === "AC"
-              ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-              : "bg-white/10 text-gray-300 hover:bg-white/20"
-          }`}
+          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "AC"
+            ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+            : "bg-white/10 text-gray-300 hover:bg-white/20"
+            }`}
         >
           <Snowflake size={16} />
           AC Rooms
@@ -270,11 +294,10 @@ const SingleHostel = () => {
         <button
           onClick={() => setRoomType("Non-AC")}
           disabled={!hasNonAC}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${
-            roomType === "Non-AC"
-              ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-              : "bg-white/10 text-gray-300 hover:bg-white/20"
-          }`}
+          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "Non-AC"
+            ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+            : "bg-white/10 text-gray-300 hover:bg-white/20"
+            }`}
         >
           <Wind size={16} />
           Non-AC Rooms
@@ -352,9 +375,8 @@ const SingleHostel = () => {
                         <div>
                           <p className="font-bold text-white">{sharing.shareType}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`text-xs px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${
-                              sharing.type === "AC" ? "bg-blue-500/20 text-blue-300" : "bg-orange-500/20 text-orange-300"
-                            }`}>
+                            <span className={`text-xs px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${sharing.type === "AC" ? "bg-blue-500/20 text-blue-300" : "bg-orange-500/20 text-orange-300"
+                              }`}>
                               {sharing.type === "AC"
                                 ? <><Snowflake size={10} /> AC</>
                                 : <><Wind size={10} /> Non-AC</>}
