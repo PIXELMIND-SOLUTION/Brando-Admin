@@ -23,6 +23,7 @@ import AllBookings from "./views/Bookings/AllBookings";
 import SingleBooking from "./views/Bookings/SingleBooking";
 import VendorBookings from "./views/Bookings/VendorBookings";
 import Notifications from "./views/Notifications/Notifications";
+import AllUserPayments from "./views/Payments/AllUserPayments";
 
 const App = () => {
   return (
@@ -57,6 +58,8 @@ const App = () => {
         <Route path="bookings" element={<AllBookings />} />
         <Route path="bookings/:id" element={<SingleBooking />} />
         <Route path="vendors/:id/bookings" element={<VendorBookings />} />
+
+        <Route path="payments" element={<AllUserPayments />} />
 
         <Route path="notifications" element={<Notifications />} />
 

@@ -9,7 +9,8 @@ import {
     BookMarked,
     Bell,
     ArrowBigLeft,
-    LogOut
+    LogOut,
+    DollarSign
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
 import logo from "../assets/logo.png"
@@ -49,6 +50,7 @@ const navItems = [
             { to: "/dashboard/vendor-banners", label: "Vendor Banners", icon: PlusCircle },
         ],
     },
+    { to: "/dashboard/payments", label: "Payments", icon: DollarSign },
     { to: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
     { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
     // { to: LogOut, label: "Logout", icon: ArrowBigLeft },
