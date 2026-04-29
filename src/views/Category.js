@@ -3,7 +3,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import {
     Plus, List, Tag, Calendar, Loader2, Edit2,
-    Check, X, Layers, Sparkles, Hash, ArrowUpRight
+    Check, X, Layers, Sparkles, Hash, ArrowUpRight, Trash2
 } from "lucide-react";
 
 const API = "http://187.127.146.52:2003/api/Admin";
@@ -19,7 +19,6 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
         confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold border-none'
     }
 });
-
 
 const InputField = ({ value, onChange, placeholder }) => (
     <div className="relative group">
@@ -38,7 +37,7 @@ const InputField = ({ value, onChange, placeholder }) => (
 const Category = () => {
     const [name, setName] = useState("");
     const [categories, setCategories] = useState([]);
-    const [loading, setLoading] = useState({ create: false, update: false });
+    const [loading, setLoading] = useState({ create: false, update: false, delete: false });
     const [fetching, setFetching] = useState(false);
     const [error, setError] = useState("");
     const [editingId, setEditingId] = useState(null);
@@ -119,6 +118,45 @@ const Category = () => {
         }
     };
 
+    const handleDelete = async (id, categoryName) => {
+        const result = await Swal.fire({
+            title: 'Delete Category?',
+            text: `Are you sure you want to delete "${categoryName}"? This action cannot be undone!`,
+            icon: 'warning',
+            showCancelButton: true,
+            background: '#0f172a',
+            color: '#fff',
+            customClass: {
+                popup: 'rounded-2xl',
+                title: 'text-lg font-bold',
+                confirmButton: 'bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-2 rounded-xl font-semibold',
+                cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
+            }
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            setLoading(prev => ({ ...prev, delete: true }));
+            await axios.delete(`${API}/deleteCategory/${id}`);
+            
+            showAlert('success', 'Deleted!', 'Category has been deleted successfully', 2000);
+            fetchCategories();
+            
+            // Clear editing state if the deleted category was being edited
+            if (editingId === id) {
+                setEditingId(null);
+                setEditName("");
+            }
+        } catch (error) {
+            console.error(error);
+            const errorMessage = error.response?.data?.message || "Failed to delete category";
+            setError(errorMessage);
+            showAlert('error', 'Delete failed', errorMessage);
+        } finally {
+            setLoading(prev => ({ ...prev, delete: false }));
+        }
+    };
 
     const ActionButton = ({ onClick, loading, icon: Icon, children, gradient = "from-emerald-500 to-emerald-600" }) => (
         <button
@@ -138,13 +176,12 @@ const Category = () => {
 
     const TableRow = ({ cat, index }) => (
         <tr className="border-b border-white/5 hover:bg-white/5 transition-all duration-300">
-
             {/* Index */}
             <td className="px-6 py-5">
                 <span className="font-mono text-sm font-bold text-gray-500">
                     {(index + 1).toString().padStart(2, "0")}
                 </span>
-            </td>
+             </td>
 
             {/* Category Name */}
             <td className="px-6 py-5">
@@ -165,7 +202,7 @@ const Category = () => {
                         <span className="font-bold text-white">{cat.name}</span>
                     </div>
                 )}
-            </td>
+             </td>
 
             {/* Created Date */}
             <td className="px-6 py-5">
@@ -179,12 +216,11 @@ const Category = () => {
                         })}
                     </span>
                 </div>
-            </td>
+             </td>
 
             {/* Actions */}
             <td className="px-6 py-5">
                 <div className="flex items-center justify-end gap-2">
-
                     {editingId === cat._id ? (
                         <>
                             <button
@@ -192,6 +228,7 @@ const Category = () => {
                                 disabled={loading.update}
                                 className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 
               text-white hover:scale-110 transition-all"
+                                title="Save"
                             >
                                 {loading.update ? (
                                     <Loader2 size={16} className="animate-spin" />
@@ -204,24 +241,39 @@ const Category = () => {
                                 onClick={cancelEdit}
                                 className="p-2.5 rounded-xl bg-gradient-to-r from-gray-600 to-gray-700 
               text-white hover:scale-110 transition-all"
+                                title="Cancel"
                             >
                                 <X size={16} />
                             </button>
                         </>
                     ) : (
-                        <button
-                            onClick={() => startEdit(cat)}
-                            className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 
+                        <>
+                            <button
+                                onClick={() => startEdit(cat)}
+                                className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 
             text-white hover:scale-110 transition-all"
-                        >
-                            <Edit2 size={16} />
-                        </button>
+                                title="Edit Category"
+                            >
+                                <Edit2 size={16} />
+                            </button>
+                            <button
+                                onClick={() => handleDelete(cat._id, cat.name)}
+                                disabled={loading.delete}
+                                className="p-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 
+            text-white hover:scale-110 transition-all"
+                                title="Delete Category"
+                            >
+                                {loading.delete ? (
+                                    <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={16} />
+                                )}
+                            </button>
+                        </>
                     )}
-
                 </div>
-            </td>
-
-        </tr>
+             </td>
+         </tr>
     );
 
     return (
@@ -345,7 +397,7 @@ const Category = () => {
                                                 { icon: Hash, label: '#' },
                                                 { icon: Tag, label: 'Category Name' },
                                                 { icon: Calendar, label: 'Created' },
-                                                { icon: Edit2, label: 'Actions', align: 'right' }
+                                                { icon: Trash2, label: 'Actions', align: 'right' }
                                             ].map(({ icon: Icon, label, align = 'left' }) => (
                                                 <th key={label} className={`px-6 py-4 text-xs font-black text-emerald-400 uppercase tracking-wider
                           text-${align}`}>
@@ -355,7 +407,7 @@ const Category = () => {
                                                     </div>
                                                 </th>
                                             ))}
-                                        </tr>
+                                         </tr>
                                     </thead>
                                     <tbody>
                                         {categories.map((cat, index) => (
@@ -394,10 +446,13 @@ const Category = () => {
                                     </div>
                                 </div>
 
-                                <button onClick={fetchCategories}
-                                    className="p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10">
-                                    <Loader2 size={18} className={`text-emerald-400 ${fetching ? "animate-spin" : ""}`} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button onClick={fetchCategories}
+                                        className="p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all border border-white/10"
+                                        title="Refresh">
+                                        <Loader2 size={18} className={`text-emerald-400 ${fetching ? "animate-spin" : ""}`} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
