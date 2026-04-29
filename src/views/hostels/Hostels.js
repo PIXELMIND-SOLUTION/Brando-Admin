@@ -71,7 +71,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
         <select
           value={itemsPerPage}
           onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:border-emerald-500 outline-none"
+          className="px-2 py-1 rounded-lg bg-black border border-white/20 text-white text-sm focus:border-emerald-500 outline-none"
         >
           {[10, 20, 30, 50].map(size => (
             <option key={size} value={size}>{size}</option>
@@ -622,7 +622,7 @@ const Hostels = () => {
                   <SortIcon column="createdAt" />
                 </button>
               </th>
-              <th className="px-4 py-4 text-right">Actions</th>
+              <th className="px-4 py-4 text-right text-xs font-black text-emerald-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -685,7 +685,7 @@ const Hostels = () => {
                     <button
                       onClick={() => viewHostel(hostel._id)}
                       className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="View details"
                     >
                       <Eye size={14} />
@@ -694,7 +694,7 @@ const Hostels = () => {
                       onClick={() => handleDelete(hostel._id)}
                       disabled={loading.delete}
                       className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="Delete"
                     >
                       <Trash2 size={14} />

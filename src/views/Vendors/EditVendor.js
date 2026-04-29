@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { 
+import {
   ArrowLeft, Save, X, User, Phone, Mail, Building2,
   Shield, CheckCircle, XCircle, AlertCircle, RefreshCw
 } from "lucide-react";
@@ -65,7 +65,7 @@ const EditVendor = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const result = await Swal.fire({
       title: 'Save Changes?',
       text: 'Are you sure you want to update this vendor?',
@@ -84,7 +84,7 @@ const EditVendor = () => {
 
     try {
       setLoading(true);
-      
+
       // Prepare data for API
       const updateData = {
         name: formData.name,
@@ -94,9 +94,9 @@ const EditVendor = () => {
         isActive: formData.isActive,
         rejectionReason: formData.approvalStatus === 'rejected' ? formData.rejectionReason : null
       };
-      
+
       await axios.put(`${API}/updatevendor/${id}`, updateData);
-      
+
       Swal.fire({
         icon: 'success',
         title: 'Updated!',
@@ -105,7 +105,7 @@ const EditVendor = () => {
         color: '#fff',
         timer: 2000
       });
-      
+
       navigate(`/dashboard/vendors/${id}`);
     } catch (error) {
       console.error(error);
@@ -127,9 +127,9 @@ const EditVendor = () => {
       rejected: { icon: XCircle, color: 'text-red-400 bg-red-500/10' },
       pending: { icon: AlertCircle, color: 'text-yellow-400 bg-yellow-500/10' }
     };
-    
+
     const { icon: Icon, color } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10' };
-    
+
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${color}`}>
         <Icon size={12} />
@@ -164,7 +164,7 @@ const EditVendor = () => {
           <ArrowLeft size={20} />
           Back to Vendor Details
         </button>
-        
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-black text-white">Edit Vendor</h1>
@@ -190,7 +190,7 @@ const EditVendor = () => {
             <User size={18} className="text-emerald-400" />
             Basic Information
           </h2>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -208,7 +208,7 @@ const EditVendor = () => {
                 placeholder="Enter vendor name"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Mobile Number *
@@ -217,15 +217,29 @@ const EditVendor = () => {
                 type="tel"
                 name="mobileNumber"
                 value={formData.mobileNumber}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const value = e.target.value
+                    .replace(/\D/g, "")   // allow only digits
+                    .slice(0, 10);       // limit to 10 digits
+
+                  handleChange({
+                    target: {
+                      name: "mobileNumber",
+                      value,
+                    },
+                  });
+                }}
+                inputMode="numeric"
+                pattern="[0-9]{10}"
+                maxLength={10}
                 required
+                placeholder="Enter 10-digit mobile number"
                 className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
-                  focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all
-                  text-white placeholder:text-gray-500"
-                placeholder="Enter mobile number"
+                focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all
+                text-white placeholder:text-gray-500"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address
@@ -250,7 +264,7 @@ const EditVendor = () => {
             <Shield size={18} className="text-emerald-400" />
             Account Status
           </h2>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -260,7 +274,7 @@ const EditVendor = () => {
                 name="approvalStatus"
                 value={formData.approvalStatus}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 
+                className="w-full px-4 py-2.5 rounded-xl border border-white/10 bg-black 
                   focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all
                   text-white"
               >
@@ -272,7 +286,7 @@ const EditVendor = () => {
                 Current status: <StatusBadge status={formData.approvalStatus} />
               </p>
             </div>
-            
+
             {formData.approvalStatus === 'rejected' && (
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -291,7 +305,7 @@ const EditVendor = () => {
                 />
               </div>
             )}
-            
+
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-300">
                 Account Active Status
@@ -299,14 +313,12 @@ const EditVendor = () => {
               <button
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, isActive: !prev.isActive }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                  formData.isActive ? 'bg-emerald-500' : 'bg-gray-600'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-gray-900 ${formData.isActive ? 'bg-emerald-500' : 'bg-gray-600'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.isActive ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isActive ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>

@@ -629,7 +629,7 @@ const Enquiries = () => {
                   <SortIcon column="createdAt" />
                 </button>
               </th>
-              <th className="px-4 py-4 text-right">Actions</th>
+              <th className="px-4 py-4 text-right text-xs font-black text-emerald-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -673,7 +673,7 @@ const Enquiries = () => {
                     <button
                       onClick={() => viewTicket(ticket)}
                       className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="View details"
                     >
                       <Eye size={14} />
@@ -683,7 +683,7 @@ const Enquiries = () => {
                         onClick={() => handleUpdateStatus(ticket._id, 'resolved')}
                         disabled={loading.update}
                         className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 
-                          text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                          text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                         title="Mark as Resolved"
                       >
                         <CheckCircleIcon size={14} />
@@ -693,7 +693,7 @@ const Enquiries = () => {
                       onClick={() => handleDelete(ticket._id)}
                       disabled={loading.delete}
                       className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="Delete"
                     >
                       <Trash2 size={14} />

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import logo from "../assets/logo.png";
+import { Maximize, Minimize } from "lucide-react";
 
 const API = "http://187.127.146.52:2003/api/admin";
 
@@ -17,6 +18,20 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const dropdownRef = useRef(null);
   const notificationRef = useRef(null);
+
+
+
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  const toggleFullScreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      setIsFullScreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullScreen(false);
+    }
+  };
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -59,7 +74,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
 
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscKey);
-    
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscKey);
@@ -86,9 +101,9 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.clear();
-      
+
       showAlert('success', 'Logged Out!', 'You have been logged out successfully', 1500);
-      
+
       // Navigate to login page after short delay
       setTimeout(() => {
         navigate('/');
@@ -149,7 +164,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   });
 
   const getNotificationIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'hostel': return '🏨';
       case 'booking': return '📅';
       default: return '🔔';
@@ -157,7 +172,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   };
 
   const getNotificationColor = (type) => {
-    switch(type) {
+    switch (type) {
       case 'hostel': return 'border-emerald-500/30 bg-emerald-500/5';
       case 'booking': return 'border-blue-500/30 bg-blue-500/5';
       default: return 'border-gray-500/30 bg-gray-500/5';
@@ -168,7 +183,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
     <>
       {/* NAVBAR */}
       <div className="bg-[#0f172a]/90 backdrop-blur-sm shadow-[0_4px_20px_rgba(0,0,0,0.3)] px-4 md:px-6 py-3 flex items-center justify-between gap-4 border-b border-white/10 sticky top-0 z-50">
-        
+
         {/* Left section - Mobile Menu Button + Logo */}
         <div className="flex items-center gap-3">
           {/* Mobile Menu Button */}
@@ -198,13 +213,20 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
 
           {/* Notifications Dropdown */}
           <div ref={notificationRef} className="relative">
-            <button 
+            <button
+              onClick={toggleFullScreen}
+              className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors duration-200"
+              aria-label="Toggle Fullscreen"
+            >
+              {isFullScreen ? <Minimize size={18} /> : <Maximize size={18} />}
+            </button>
+            <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-colors duration-200"
               aria-label="Notifications"
             >
               <Bell size={18} />
-              
+
             </button>
 
             {/* Notifications Dropdown Menu */}
@@ -221,11 +243,11 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                       <Bell size={14} className="text-emerald-400" />
                       Notifications
-                      
+
                     </h3>
                     <div className="flex items-center gap-2">
-                      
-                      <button 
+
+                      <button
                         onClick={() => setNotificationsOpen(false)}
                         className="p-1 rounded-lg hover:bg-white/10 text-gray-400 transition-colors"
                       >
@@ -233,7 +255,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="max-h-96 overflow-y-auto">
                     {loadingNotifications ? (
                       <div className="flex justify-center py-8">
@@ -247,9 +269,8 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                             handleNotificationClick(notification);
                             if (!notification.isRead) markAsRead(notification._id);
                           }}
-                          className={`p-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer border-b border-white/5 last:border-0 ${
-                            !notification.isRead ? 'bg-emerald-500/5' : ''
-                          } ${getNotificationColor(notification.type)}`}
+                          className={`p-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer border-b border-white/5 last:border-0 ${!notification.isRead ? 'bg-emerald-500/5' : ''
+                            } ${getNotificationColor(notification.type)}`}
                         >
                           <div className="flex items-start gap-3">
                             <div className="text-xl">
@@ -287,10 +308,10 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                       </div>
                     )}
                   </div>
-                  
+
                   {notifications.length > 10 && (
                     <div className="p-3 border-t border-white/10 bg-white/5">
-                      <button 
+                      <button
                         onClick={() => {
                           setNotificationsOpen(false);
                           navigate('/dashboard/notifications');
@@ -321,11 +342,10 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                 <p className="text-sm font-bold text-white">Brando Admin</p>
               </div>
 
-              <ChevronDown 
-                size={14} 
-                className={`text-gray-400 hidden sm:block transition-transform duration-200 ${
-                  open ? 'rotate-180' : ''
-                }`}
+              <ChevronDown
+                size={14}
+                className={`text-gray-400 hidden sm:block transition-transform duration-200 ${open ? 'rotate-180' : ''
+                  }`}
               />
             </button>
 
@@ -353,11 +373,11 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
 
                   <div className="border-t border-white/10" />
 
-                  <button 
+                  <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-200"
                   >
-                    <LogOut size={16} /> 
+                    <LogOut size={16} />
                     Logout
                   </button>
                 </motion.div>

@@ -11,13 +11,13 @@ const PendingVendors = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedVendor, setSelectedVendor] = useState(null);
-  
+
   // Reject modal state
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectVendor, setRejectVendor] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectLoading, setRejectLoading] = useState(false);
-  
+
   // Action loading state
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [actionError, setActionError] = useState(null);
@@ -59,7 +59,7 @@ const PendingVendors = () => {
   const handleApprove = async (vendor) => {
     setActionLoadingId(vendor.id);
     setActionError(null);
-    
+
     try {
       const response = await fetch(`${APPROVE_API}/${vendor.id}`, {
         method: 'PUT',
@@ -67,9 +67,9 @@ const PendingVendors = () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         // Remove approved vendor from list
         setVendors(prev => prev.filter(v => v.id !== vendor.id));
@@ -95,15 +95,15 @@ const PendingVendors = () => {
 
   const handleReject = async () => {
     if (!rejectVendor) return;
-    
+
     if (!rejectReason.trim()) {
       alert("Please provide a reason for rejection");
       return;
     }
-    
+
     setRejectLoading(true);
     setActionError(null);
-    
+
     try {
       const response = await fetch(`${REJECT_API}/${rejectVendor.id}`, {
         method: 'PUT',
@@ -112,9 +112,9 @@ const PendingVendors = () => {
         },
         body: JSON.stringify({ reason: rejectReason.trim() }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
         // Remove rejected vendor from list
         setVendors(prev => prev.filter(v => v.id !== rejectVendor.id));
@@ -373,58 +373,90 @@ const PendingVendors = () => {
                     )}
                   </div>
 
-                  {/* Desktop View */}
                   <div className="hidden md:grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 flex items-center justify-center flex-shrink-0">
-                          <span className="text-emerald-400 font-bold">
-                            {vendor.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-white font-bold">{vendor.name}</p>
-                          <p className="text-xs text-gray-400 font-mono">ID: {vendor.id.slice(-8)}</p>
-                        </div>
+
+                    {/* Name */}
+                    <div className="col-span-4 flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400/20 to-cyan-400/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-emerald-400 font-bold">
+                          {vendor.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="text-white font-bold truncate">{vendor.name}</p>
+                        <p className="text-xs text-gray-400 font-mono truncate">
+                          ID: {vendor.id.slice(-8)}
+                        </p>
                       </div>
                     </div>
-                    <div className="col-span-3">
-                      <p className="text-gray-300 text-sm">{vendor.mobileNumber}</p>
-                      <p className="text-gray-400 text-xs truncate">{vendor.email}</p>
+
+                    {/* Contact */}
+                    <div className="col-span-3 min-w-0">
+                      <p className="text-gray-300 text-sm truncate">
+                        {vendor.mobileNumber}
+                      </p>
+                      <p className="text-gray-400 text-xs truncate">
+                        {vendor.email}
+                      </p>
                     </div>
-                    <div className="col-span-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-gray-500" />
-                        <p className="text-gray-300 text-sm">{formatDate(vendor.createdAt)}</p>
-                      </div>
+
+                    {/* Date */}
+                    <div className="col-span-3 flex items-center gap-2 min-w-0">
+                      <Calendar size={14} className="text-gray-500 flex-shrink-0" />
+                      <p className="text-gray-300 text-sm truncate">
+                        {formatDate(vendor.createdAt)}
+                      </p>
                     </div>
-                    <div className="col-span-2 flex justify-end gap-2">
+
+                    {/* Actions */}
+                    <div className="col-span-2 flex items-center justify-end gap-2">
+
+                      {/* Approve */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleApprove(vendor);
                         }}
                         disabled={actionLoadingId === vendor.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-400/10 hover:bg-emerald-400/20 rounded-xl text-xs font-bold text-emerald-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center justify-center gap-2 
+    h-8 min-w-[110px] px-3 
+    bg-emerald-400/10 hover:bg-emerald-400/20 
+    rounded-xl text-xs font-semibold text-emerald-400 
+    transition-all duration-200 
+    disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {actionLoadingId === vendor.id ? (
-                          <div className="w-3 h-3 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                          <>
+                            <span className="w-3 h-3 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                            Processing
+                          </>
                         ) : (
-                          <CheckCircle size={14} />
+                          <>
+                            <CheckCircle size={14} />
+                            Approve
+                          </>
                         )}
-                        {actionLoadingId === vendor.id ? "Processing..." : "Approve"}
                       </button>
+
+                      {/* Reject */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openRejectModal(vendor);
                         }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-400/10 hover:bg-red-400/20 rounded-xl text-xs font-bold text-red-400 transition-all duration-200"
+                        className="flex items-center justify-center gap-2 
+    h-8 min-w-[95px] px-3 
+    bg-red-400/10 hover:bg-red-400/20 
+    rounded-xl text-xs font-semibold text-red-400 
+    transition-all duration-200"
                       >
                         <XCircle size={14} />
                         Reject
                       </button>
+
                     </div>
+
                   </div>
                 </div>
               ))}

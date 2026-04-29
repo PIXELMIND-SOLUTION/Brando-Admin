@@ -590,7 +590,7 @@ const Notifications = () => {
                   <SortIcon column="createdAt" />
                 </button>
               </th>
-              <th className="px-4 py-4 text-right">Actions</th>
+              <th className="px-4 py-4 text-right text-xs font-black text-emerald-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -649,7 +649,7 @@ const Notifications = () => {
                     <button
                       onClick={() => viewNotification(notification)}
                       className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="View details"
                     >
                       <Eye size={14} />
@@ -658,7 +658,7 @@ const Notifications = () => {
                       onClick={() => handleDelete(notification._id)}
                       disabled={loading.delete}
                       className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 
-                        text-white hover:shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                        text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100"
                       title="Delete"
                     >
                       <Trash2 size={14} />

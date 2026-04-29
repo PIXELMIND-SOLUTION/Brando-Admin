@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard, Building2, Users, UserCircle,
     MessageSquare, X, Menu, ChevronDown,
@@ -7,7 +7,9 @@ import {
     ChevronLeft, ChevronRight,
     ImagesIcon,
     BookMarked,
-    Bell
+    Bell,
+    ArrowBigLeft,
+    LogOut
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
 import logo from "../assets/logo.png"
@@ -49,6 +51,7 @@ const navItems = [
     },
     { to: "/dashboard/enquiries", label: "Enquiries", icon: MessageSquare },
     { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
+    // { to: LogOut, label: "Logout", icon: ArrowBigLeft },
 ];
 
 // ── Dropdown ───────────────────────────────────────────────────────
@@ -148,6 +151,16 @@ const DropdownItem = ({ item, setMobileOpen, collapsed }) => {
 // ── Main Sidebar ───────────────────────────────────────────────────
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     const [collapsed, setCollapsed] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        // Clear auth (adjust based on your app)
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        // Navigate to login
+        navigate("/login");
+    };
 
     const sidebarContent = (isCollapsed) => (
         <div className="flex flex-col h-full bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] text-white shadow-xl">
@@ -228,6 +241,15 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                         </NavLink>
                     )
                 )}
+                <button
+                    onClick={handleLogout}
+                    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold tracking-wide
+                        ${collapsed ? "justify-center" : ""}
+                        text-red-400 hover:bg-red-500/10 transition-all`}
+                >
+                    <LogOut size={18} className="flex-shrink-0" />
+                    {!collapsed && <span>Logout</span>}
+                </button>
             </nav>
 
             {/* Footer */}

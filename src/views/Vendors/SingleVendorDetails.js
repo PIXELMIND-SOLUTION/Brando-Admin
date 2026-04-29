@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { 
-  ArrowLeft, Building2, Mail, Phone, MapPin, Calendar, 
+import {
+  ArrowLeft, Building2, Mail, Phone, MapPin, Calendar,
   CheckCircle, XCircle, Clock, AlertCircle, Edit, Trash2,
   Image as ImageIcon, Users, Star, IndianRupee, Home,
   Camera, Bell, Shield, UserCheck, UserX, RefreshCw,
@@ -91,11 +91,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${
-                  currentPage === page
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
                     ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
                     : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -127,11 +126,11 @@ const SingleVendorDetails = () => {
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
-  
+
   // Pagination states for hostels
   const [hostelsPage, setHostelsPage] = useState(1);
   const [hostelsPerPage, setHostelsPerPage] = useState(6);
-  
+
   // Pagination states for notifications
   const [notificationsPage, setNotificationsPage] = useState(1);
   const [notificationsPerPage, setNotificationsPerPage] = useState(10);
@@ -241,9 +240,9 @@ const SingleVendorDetails = () => {
       rejected: { icon: XCircle, color: 'text-red-400 bg-red-500/10', label: 'Rejected' },
       pending: { icon: Clock, color: 'text-yellow-400 bg-yellow-500/10', label: 'Pending' }
     };
-    
+
     const { icon: Icon, color, label } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10', label: status || 'Unknown' };
-    
+
     return (
       <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-semibold ${color}`}>
         <Icon size={16} />
@@ -252,25 +251,49 @@ const SingleVendorDetails = () => {
     );
   };
 
-  const InfoCard = ({ icon: Icon, title, value, subValue }) => (
-    <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-4 hover:shadow-xl transition-all group">
-      <div className="flex items-start justify-between mb-2">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-          <Icon size={18} />
+  const InfoCard = ({ icon: Icon, title, value, subValue }) => {
+    const isComponent = typeof value !== "string" && typeof value !== "number";
+
+    return (
+      <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 
+    p-4 flex flex-col h-full min-h-[120px] hover:shadow-lg transition-all">
+
+        {/* Top Row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white flex-shrink-0">
+            <Icon size={18} />
+          </div>
         </div>
-        <Sparkles size={16} className="text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        {/* Content (IMPORTANT: flex-1 for equal height) */}
+        <div className="flex flex-col flex-1 justify-between">
+
+          {/* Value */}
+          <div className="text-white font-bold text-base sm:text-lg leading-tight break-words">
+            {isComponent ? value : value}
+          </div>
+
+          {/* Bottom Section */}
+          <div className="mt-2">
+            <p className="text-xs text-gray-400">{title}</p>
+
+            {subValue && (
+              <p className="text-xs text-emerald-400 mt-1">
+                {subValue}
+              </p>
+            )}
+          </div>
+
+        </div>
       </div>
-      <p className="text-2xl font-black text-white mt-2">{value}</p>
-      <p className="text-xs text-gray-400 mt-1">{title}</p>
-      {subValue && <p className="text-xs text-emerald-400 mt-1">{subValue}</p>}
-    </div>
-  );
+    );
+  };
 
   const HostelCard = ({ hostel }) => (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group">
       <div className="relative h-48 bg-white/5">
-        <img 
-          src={hostel.images?.[0] ? `http://187.127.146.52:2003/${hostel.images[0]}` : '/api/placeholder/400/300'} 
+        <img
+          src={hostel.images?.[0] ? `http://187.127.146.52:2003/${hostel.images[0]}` : '/api/placeholder/400/300'}
           alt={hostel.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
@@ -290,27 +313,27 @@ const SingleVendorDetails = () => {
           <span className="text-white text-xs font-semibold">{hostel.rating || 'N/A'}</span>
         </div>
       </div>
-      
+
       <div className="p-4">
         <h3 className="font-bold text-white text-lg mb-2 line-clamp-1">{hostel.name}</h3>
-        
+
         <div className="space-y-2 text-sm text-gray-400">
           <div className="flex items-center gap-2">
             <MapPin size={14} className="text-emerald-400 flex-shrink-0" />
             <span className="line-clamp-1">{hostel.address}</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <IndianRupee size={14} className="text-emerald-400 flex-shrink-0" />
             <span>Advance: ₹{hostel.monthlyAdvance}</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Users size={14} className="text-emerald-400 flex-shrink-0" />
             <span>{hostel.sharings?.length || 0} sharing options</span>
           </div>
         </div>
-        
+
         <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <Calendar size={10} />
@@ -367,7 +390,7 @@ const SingleVendorDetails = () => {
           <ArrowLeft size={20} />
           Back to Vendors
         </button>
-        
+
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -375,8 +398,8 @@ const SingleVendorDetails = () => {
               <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
                 flex items-center justify-center border border-white/20 overflow-hidden">
                 {vendor.hostelImage ? (
-                  <img 
-                    src={`http://187.127.146.52:2003/${vendor.hostelImage}`} 
+                  <img
+                    src={`http://187.127.146.52:2003/${vendor.hostelImage}`}
                     alt={vendor.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -399,7 +422,7 @@ const SingleVendorDetails = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/dashboard/vendors/edit/${vendor._id}`)}
@@ -428,25 +451,24 @@ const SingleVendorDetails = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <InfoCard 
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <InfoCard
           icon={Building2}
           title="Total Hostels"
           value={vendor.totalHostels || 0}
         />
-        <InfoCard 
+        <InfoCard
           icon={Phone}
           title="Mobile Number"
           value={vendor.mobileNumber || 'N/A'}
           subValue={vendor.otpVerified ? 'OTP Verified' : 'OTP Not Verified'}
         />
-        <InfoCard 
+        <InfoCard
           icon={Mail}
           title="Email"
           value={vendor.email || 'Not provided'}
         />
-        <InfoCard 
+        <InfoCard
           icon={Shield}
           title="Approval Status"
           value={<StatusBadge status={vendor.approvalStatus} />}
@@ -457,31 +479,28 @@ const SingleVendorDetails = () => {
       <div className="flex gap-2 mb-6 border-b border-white/10">
         <button
           onClick={() => setActiveTab('details')}
-          className={`px-4 py-2 font-medium transition-all ${
-            activeTab === 'details'
+          className={`px-4 py-2 font-medium transition-all ${activeTab === 'details'
               ? 'text-emerald-400 border-b-2 border-emerald-400'
               : 'text-gray-400 hover:text-white'
-          }`}
+            }`}
         >
           Vendor Details
         </button>
         <button
           onClick={() => setActiveTab('hostels')}
-          className={`px-4 py-2 font-medium transition-all ${
-            activeTab === 'hostels'
+          className={`px-4 py-2 font-medium transition-all ${activeTab === 'hostels'
               ? 'text-emerald-400 border-b-2 border-emerald-400'
               : 'text-gray-400 hover:text-white'
-          }`}
+            }`}
         >
           Hostels ({vendor.totalHostels || 0})
         </button>
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`px-4 py-2 font-medium transition-all ${
-            activeTab === 'notifications'
+          className={`px-4 py-2 font-medium transition-all ${activeTab === 'notifications'
               ? 'text-emerald-400 border-b-2 border-emerald-400'
               : 'text-gray-400 hover:text-white'
-          }`}
+            }`}
         >
           Notifications ({vendor.notifications?.length || 0})
         </button>
@@ -582,10 +601,10 @@ const SingleVendorDetails = () => {
                     <HostelCard key={hostel._id} hostel={hostel} />
                   ))}
                 </div>
-                
+
                 {/* Hostels Pagination */}
                 {totalHostelsPages > 1 && (
-                  <Pagination 
+                  <Pagination
                     currentPage={hostelsPage}
                     totalPages={totalHostelsPages}
                     onPageChange={setHostelsPage}
@@ -597,7 +616,7 @@ const SingleVendorDetails = () => {
                     }}
                   />
                 )}
-                
+
                 {/* Hostels Summary */}
                 <div className="bg-white/10 rounded-xl p-4 border border-white/10">
                   <div className="flex items-center justify-between">
@@ -643,15 +662,14 @@ const SingleVendorDetails = () => {
                       <div key={notification._id || index} className="p-4 hover:bg-white/5 transition-colors">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${
-                              notification.type === 'success' ? 'bg-green-500' :
-                              notification.type === 'error' ? 'bg-red-500' : 
-                              notification.type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
-                            }`} />
+                            <div className={`w-2 h-2 rounded-full ${notification.type === 'success' ? 'bg-green-500' :
+                                notification.type === 'error' ? 'bg-red-500' :
+                                  notification.type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
+                              }`} />
                             <span className="text-sm font-semibold text-white">
                               {notification.type === 'success' ? 'Success' :
-                               notification.type === 'error' ? 'Error' : 
-                               notification.type === 'info' ? 'Info' : 'Notification'}
+                                notification.type === 'error' ? 'Error' :
+                                  notification.type === 'info' ? 'Info' : 'Notification'}
                             </span>
                           </div>
                           <span className="text-xs text-gray-500">
@@ -666,10 +684,10 @@ const SingleVendorDetails = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Notifications Pagination */}
                 {totalNotificationsPages > 1 && (
-                  <Pagination 
+                  <Pagination
                     currentPage={notificationsPage}
                     totalPages={totalNotificationsPages}
                     onPageChange={setNotificationsPage}
@@ -681,7 +699,7 @@ const SingleVendorDetails = () => {
                     }}
                   />
                 )}
-                
+
                 {/* Notifications Summary */}
                 <div className="bg-white/10 rounded-xl p-4 border border-white/10">
                   <div className="flex items-center justify-between">

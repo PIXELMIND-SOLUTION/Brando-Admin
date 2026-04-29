@@ -460,7 +460,7 @@ const SingleHostel = () => {
                   </p>
                   <a href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`} target="_blank" rel="noopener noreferrer"
                     className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
-                    <MapPin size={11} /> View on Map
+                    <MapPin size={16} /> View on Map
                   </a>
                 </div>
               )}

@@ -56,7 +56,7 @@ const App = () => {
 
         <Route path="bookings" element={<AllBookings />} />
         <Route path="bookings/:id" element={<SingleBooking />} />
-        <Route path="/dashboard/vendors/:id/bookings" element={<VendorBookings />} />
+        <Route path="vendors/:id/bookings" element={<VendorBookings />} />
 
         <Route path="notifications" element={<Notifications />} />
 
