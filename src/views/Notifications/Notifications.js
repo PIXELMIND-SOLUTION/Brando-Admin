@@ -278,7 +278,7 @@ const NotificationsTable = ({
                 </button>
               </th>
             ))}
-            <th className="px-4 py-4 text-left text-xs font-black text-emerald-400 uppercase tracking-wider">Status</th>
+            {/* <th className="px-4 py-4 text-left text-xs font-black text-emerald-400 uppercase tracking-wider">Status</th> */}
             <th className="px-4 py-4 text-left">
               <button onClick={() => onSort('createdAt')}
                 className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
@@ -315,7 +315,7 @@ const NotificationsTable = ({
                   </div>
                 ) : <span className="text-sm text-gray-500">System</span>}
               </td>
-              <td className="px-4 py-4"><ReadStatusBadge isRead={notification.isRead} /></td>
+              {/* <td className="px-4 py-4"><ReadStatusBadge isRead={notification.isRead} /></td> */}
               <td className="px-4 py-4 text-sm text-gray-400">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1">
@@ -370,7 +370,7 @@ const NotificationModal = ({ notification, loadingDelete, onClose, onDelete }) =
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TypeBadge type={notification.type} />
-              <ReadStatusBadge isRead={notification.isRead} />
+              {/* <ReadStatusBadge isRead={notification.isRead} /> */}
             </div>
             <p className="text-xs text-gray-500">ID: {notification._id.slice(-8)}</p>
           </div>

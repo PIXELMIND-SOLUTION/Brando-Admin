@@ -246,7 +246,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                 ${isCollapsed ? "justify-center" : ""}
                 ${isActive
                                     ? "bg-emerald-500/30 text-white ring-1 ring-emerald-400/50"
-                                    : "text-white/70 hover:text-white hover:bg-white/10"
+                                    : "text-white hover:text-white hover:bg-white/10"
                                 }`
                             }
                         >

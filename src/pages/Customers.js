@@ -660,7 +660,7 @@ const Customers = () => {
                         <span className="text-sm">{customer.mobileNumber || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-4 text-center">
                       {customer.hostelId ? (
                         <div>
                           <p className="text-sm text-white font-medium">{customer.hostelId.name}</p>

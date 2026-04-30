@@ -677,9 +677,9 @@ const SingleVendorDetails = () => {
                           </span>
                         </div>
                         <p className="text-gray-300 text-sm">{notification.message}</p>
-                        {!notification.read && (
+                        {/* {!notification.read && (
                           <span className="text-xs text-emerald-400 mt-2 inline-block">Unread</span>
-                        )}
+                        )} */}
                       </div>
                     ))}
                   </div>
