@@ -424,32 +424,32 @@ const SingleUserPayments = () => {
                 />
               </th>
               <th className="px-4 py-4 text-left">
-                <button onClick={() => handleSort('bookingReference')} className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
+                <button onClick={() => handleSort('bookingReference')} className="flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
                   <Tag size={14} /> Booking Ref
                   {sortConfig.key === 'bookingReference' && (sortConfig.direction === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />)}
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
-                <button onClick={() => handleSort('hostelId')} className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
+                <button onClick={() => handleSort('hostelId')} className="flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
                   <Building2 size={14} /> Hostel
                   {sortConfig.key === 'hostelId' && (sortConfig.direction === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />)}
                 </button>
               </th>
-              <th className="px-4 py-4 text-left">Room/Share</th>
+              <th className="px-4 py-4 text-left flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">Room/Share</th>
               <th className="px-4 py-4 text-left">
-                <button onClick={() => handleSort('totalAmount')} className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
+                <button onClick={() => handleSort('totalAmount')} className="flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
                   <IndianRupee size={14} /> Amount
                   {sortConfig.key === 'totalAmount' && (sortConfig.direction === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />)}
                 </button>
               </th>
-              <th className="px-4 py-4 text-left">Status</th>
+              <th className="px-4 py-4 text-left flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">Status</th>
               <th className="px-4 py-4 text-left">
-                <button onClick={() => handleSort('createdAt')} className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
+                <button onClick={() => handleSort('createdAt')} className="flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
                   <Calendar size={14} /> Booked On
                   {sortConfig.key === 'createdAt' && (sortConfig.direction === 'asc' ? <SortAsc size={14} /> : <SortDesc size={14} />)}
                 </button>
               </th>
-              <th className="px-4 py-4 text-right">Actions</th>
+              <th className="px-4 py-4 text-right flex items-start gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">Actions</th>
             </tr>
           </thead>
           <tbody>
