@@ -11,7 +11,7 @@ import {
   Star
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 const SingleBooking = () => {
   const { id } = useParams();
@@ -273,7 +273,7 @@ const SingleBooking = () => {
                   <div className="w-16 h-16 rounded-lg bg-white/10 overflow-hidden flex-shrink-0">
                     {booking.hostelId.images?.[0] ? (
                       <img 
-                        src={`http://187.127.146.52:2003/${booking.hostelId.images[0]}`} 
+                        src={`https://api.brando.org.in/${booking.hostelId.images[0]}`} 
                         alt={booking.hostelId.name}
                         className="w-full h-full object-cover"
                       />

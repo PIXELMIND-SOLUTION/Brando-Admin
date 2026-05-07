@@ -6,10 +6,11 @@ import {
   Building2, Eye, Calendar, MapPin, Star, IndianRupee,
   Users, Image as ImageIcon, Thermometer, ChevronLeft,
   Home, Clock, QrCode, User, Shield, Link, Wind, Snowflake,
-  ChevronRight, X, ZoomIn
+  ChevronRight, X, ZoomIn, Wifi, Car, Coffee, Dumbbell, 
+  Sparkles, Layers, List, CheckCircle, AlertCircle, Phone, Mail
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/Admin";
+const API = "https://api.brando.org.in/api/Admin";
 
 const showAlert = (icon, title, text) =>
   Swal.fire({
@@ -115,11 +116,11 @@ const ImageModal = ({ images, startIndex, onClose }) => {
 
       {/* Thumbnail strip */}
       <div
-        className="flex-shrink-0 py-3 px-4"
+        className="flex-shrink-0 py-3 px-4 overflow-x-auto"
         style={{ background: "rgba(255,255,255,0.04)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex gap-2 overflow-x-auto justify-center pb-1">
+        <div className="flex gap-2 justify-center min-w-min">
           {images.map((img, idx) => (
             <button
               key={idx}
@@ -140,6 +141,38 @@ const ImageModal = ({ images, startIndex, onClose }) => {
   );
 };
 
+/* ─── Info Card Component ─────────────────────────────────────────── */
+const InfoCard = ({ title, icon: Icon, children, gradient = "from-emerald-500 to-emerald-600" }) => (
+  <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
+    <div className={`px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r ${gradient}`}>
+      <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
+        <Icon size={14} /> {title}
+      </h2>
+    </div>
+    <div className="p-4 sm:p-6">{children}</div>
+  </div>
+);
+
+/* ─── Feature Badge Component ─────────────────────────────────────── */
+const FeatureBadge = ({ feature }) => {
+  const getIcon = () => {
+    switch (feature.toLowerCase()) {
+      case "wifi": return <Wifi size={14} />;
+      case "parking": return <Car size={14} />;
+      case "breakfast": return <Coffee size={14} />;
+      case "gym": return <Dumbbell size={14} />;
+      default: return <Sparkles size={14} />;
+    }
+  };
+  
+  return (
+    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-xs font-medium text-gray-300">
+      {getIcon()}
+      {feature}
+    </span>
+  );
+};
+
 /* ─── Main Component ───────────────────────────────────────────────── */
 const SingleHostel = () => {
   const { id } = useParams();
@@ -147,7 +180,6 @@ const SingleHostel = () => {
   const [hostel, setHostel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // Toggle: "AC" | "Non-AC"  — matches the type field in the API response
   const [roomType, setRoomType] = useState("AC");
   const [lightbox, setLightbox] = useState({ open: false, index: 0 });
 
@@ -187,9 +219,14 @@ const SingleHostel = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-        <div className="flex justify-center py-20">
-          <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+          <div className="flex justify-center py-20">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
+              <p className="text-gray-400 text-sm">Loading hostel details...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -197,14 +234,16 @@ const SingleHostel = () => {
 
   if (error || !hostel) {
     return (
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-        <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
-          <Building2 size={48} className="mx-auto text-gray-500 mb-4" />
-          <p className="text-gray-400 font-medium">{error || "Hostel not found"}</p>
-          <button onClick={() => navigate("/dashboard/hostels")}
-            className="mt-4 text-emerald-400 hover:text-emerald-300 font-semibold">
-            Back to Hostels
-          </button>
+      <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+          <div className="text-center py-20 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10">
+            <Building2 size={48} className="mx-auto text-gray-500 mb-4" />
+            <p className="text-gray-400 font-medium">{error || "Hostel not found"}</p>
+            <button onClick={() => navigate("/dashboard/hostels")}
+              className="mt-4 text-emerald-400 hover:text-emerald-300 font-semibold">
+              Back to Hostels
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -213,115 +252,102 @@ const SingleHostel = () => {
   const coords = getCoordinates(hostel);
   const images = hostel.images || [];
   const allSharings = hostel.sharings || [];
-
-  // Client-side filter — "AC" matches type "AC", "Non-AC" matches type "Non-AC"
   const filteredSharings = allSharings.filter((s) => s.type === roomType);
-
-  // Detect which types exist so we can disable tabs if needed
   const hasAC = allSharings.some((s) => s.type === "AC");
   const hasNonAC = allSharings.some((s) => s.type === "Non-AC");
 
   return (
-    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617]">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
 
-      {lightbox.open && images.length > 0 && (
-        <ImageModal images={images} startIndex={lightbox.index} onClose={closeLightbox} />
-      )}
+        {lightbox.open && images.length > 0 && (
+          <ImageModal images={images} startIndex={lightbox.index} onClose={closeLightbox} />
+        )}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
 
-        {/* Left */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
-          >
-            <ChevronLeft size={20} className="text-gray-400" />
-          </button>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 hover:bg-white/10 rounded-xl transition-colors"
+            >
+              <ChevronLeft size={20} className="text-gray-400" />
+            </button>
 
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl 
-    bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
-    text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/10">
-            <Building2 size={20} className="sm:w-[22px] sm:h-[22px]" />
-          </div>
-
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              {hostel.name}
-            </h1>
-            <p className="text-xs sm:text-sm text-emerald-400 font-medium">
-              {hostel.categoryId?.name ? `${hostel.categoryId.name} • ` : ""}
-              ID: {hostel._id.slice(-8)}
-            </p>
-          </div>
-        </div>
-
-        {/* Right (View Users Button) */}
-        <div className="flex justify-end">
-          <button
-            onClick={() => navigate(`/dashboard/hostel/users/${hostel._id}`)}
-            className="flex items-center gap-2 px-4 py-2 
-      bg-gradient-to-r from-emerald-500 to-emerald-600 
-      text-white text-sm font-semibold rounded-xl 
-      hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-          >
-            <Users size={16} />
-            View Users
-          </button>
-        </div>
-
-      </div>
-
-      {/* Room Type Toggle */}
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={() => setRoomType("AC")}
-          disabled={!hasAC}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "AC"
-            ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-            : "bg-white/10 text-gray-300 hover:bg-white/20"
-            }`}
-        >
-          <Snowflake size={16} />
-          AC Rooms
-          {hasAC && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${roomType === "AC" ? "bg-white/20" : "bg-white/10"}`}>
-              {allSharings.filter(s => s.type === "AC").length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setRoomType("Non-AC")}
-          disabled={!hasNonAC}
-          className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "Non-AC"
-            ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
-            : "bg-white/10 text-gray-300 hover:bg-white/20"
-            }`}
-        >
-          <Wind size={16} />
-          Non-AC Rooms
-          {hasNonAC && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${roomType === "Non-AC" ? "bg-white/20" : "bg-white/10"}`}>
-              {allSharings.filter(s => s.type === "Non-AC").length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
-
-          {/* Images Gallery */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <ImageIcon size={14} />
-                Gallery ({images.length} images)
-              </h2>
+            <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl 
+              bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] 
+              text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/10">
+              <Building2 size={20} className="sm:w-[22px] sm:h-[22px]" />
             </div>
-            <div className="p-4 sm:p-6">
+
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                {hostel.name}
+              </h1>
+              <p className="text-xs sm:text-sm text-emerald-400 font-medium">
+                {hostel.category?.name ? `${hostel.category.name} • ` : ""}
+                ID: {hostel._id.slice(-8)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              onClick={() => navigate(`/dashboard/hostel/users/${hostel._id}`)}
+              className="flex items-center gap-2 px-4 py-2 
+                bg-gradient-to-r from-emerald-500 to-emerald-600 
+                text-white text-sm font-semibold rounded-xl 
+                hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
+            >
+              <Users size={16} />
+              View Users
+            </button>
+          </div>
+        </div>
+
+        {/* Room Type Toggle */}
+        <div className="mb-6 flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => setRoomType("AC")}
+            disabled={!hasAC}
+            className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "AC"
+              ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+              : "bg-white/10 text-gray-300 hover:bg-white/20"
+              }`}
+          >
+            <Snowflake size={16} />
+            AC Rooms
+            {hasAC && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${roomType === "AC" ? "bg-white/20" : "bg-white/10"}`}>
+                {allSharings.filter(s => s.type === "AC").length}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setRoomType("Non-AC")}
+            disabled={!hasNonAC}
+            className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed ${roomType === "Non-AC"
+              ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg"
+              : "bg-white/10 text-gray-300 hover:bg-white/20"
+              }`}
+          >
+            <Wind size={16} />
+            Non-AC Rooms
+            {hasNonAC && (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${roomType === "Non-AC" ? "bg-white/20" : "bg-white/10"}`}>
+                {allSharings.filter(s => s.type === "Non-AC").length}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - 2/3 width */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Images Gallery */}
+            <InfoCard title="GALLERY" icon={ImageIcon}>
               {images.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   {images.map((img, idx) => (
@@ -342,31 +368,21 @@ const SingleHostel = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-400 text-sm text-center py-6">No images available</p>
+                <div className="text-center py-12">
+                  <ImageIcon size={48} className="mx-auto text-gray-600 mb-3" />
+                  <p className="text-gray-400 text-sm">No images available</p>
+                </div>
               )}
-            </div>
-          </div>
+            </InfoCard>
 
-          {/* Sharing Plans */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <Users size={14} />
-                {roomType} Sharing Plans
-                {filteredSharings.length > 0 && (
-                  <span className="ml-auto bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                    {filteredSharings.length} plan{filteredSharings.length > 1 ? "s" : ""}
-                  </span>
-                )}
-              </h2>
-            </div>
-            <div className="p-4 sm:p-6">
+            {/* Sharing Plans */}
+            <InfoCard title={`${roomType} SHARING PLANS`} icon={Users}>
               {filteredSharings.length > 0 ? (
                 <div className="grid gap-3">
                   {filteredSharings.map((sharing, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/15 transition-colors"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/15 transition-colors gap-3"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] flex items-center justify-center text-white font-bold text-lg border border-white/20">
@@ -385,7 +401,7 @@ const SingleHostel = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right">
                         <p className="font-black text-white text-lg">{formatCurrency(sharing.monthlyPrice)}</p>
                         <p className="text-xs text-gray-400">{formatCurrency(sharing.dailyPrice)}/day</p>
                       </div>
@@ -393,7 +409,7 @@ const SingleHostel = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10">
+                <div className="text-center py-12">
                   <Thermometer size={36} className="mx-auto text-gray-600 mb-3" />
                   <p className="text-gray-400 font-medium">No {roomType} rooms available</p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -401,161 +417,226 @@ const SingleHostel = () => {
                   </p>
                 </div>
               )}
-            </div>
-          </div>
+            </InfoCard>
 
-          {/* QR Code Section */}
-          {(hostel.qrCode || hostel.qrUrl) && (
-            <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-                <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                  <QrCode size={14} /> QR Code
-                </h2>
-              </div>
-              <div className="p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-6">
-                {hostel.qrCode && (
-                  <div className="p-3 bg-white rounded-xl shadow-lg flex-shrink-0">
-                    <img src={hostel.qrCode} alt="Hostel QR Code" className="w-40 h-40 object-contain" />
+            {/* Features & Amenities */}
+            {hostel.features && hostel.features.length > 0 && (
+              <InfoCard title="FEATURES & AMENITIES" icon={Sparkles}>
+                <div className="flex flex-wrap gap-2">
+                  {hostel.features.map((feature, idx) => (
+                    <FeatureBadge key={idx} feature={feature} />
+                  ))}
+                </div>
+              </InfoCard>
+            )}
+
+            {/* Furnishing Details */}
+            {hostel.furnishing && (
+              <InfoCard title="FURNISHING" icon={Layers} gradient="from-purple-500 to-purple-600">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-white/10">
+                    <Home size={24} className="text-purple-400" />
                   </div>
-                )}
-                <div className="space-y-3 w-full">
-                  <p className="text-sm text-gray-300">Scan to view hostel details directly on mobile.</p>
-                  {hostel.qrUrl && (
-                    <div className="p-3 bg-white/10 rounded-lg">
-                      <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Link size={12} /> QR URL</p>
-                      <a href={hostel.qrUrl} target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-emerald-400 hover:text-emerald-300 break-all underline underline-offset-2">
-                        {hostel.qrUrl}
-                      </a>
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Furnishing Status</p>
+                    <p className="text-lg font-bold text-white">{hostel.furnishing}</p>
+                  </div>
+                </div>
+              </InfoCard>
+            )}
+
+            {/* QR Code Section */}
+            {(hostel.qrCode || hostel.qrUrl) && (
+              <InfoCard title="QR CODE" icon={QrCode} gradient="from-indigo-500 to-indigo-600">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  {hostel.qrCode && (
+                    <div className="p-3 bg-white rounded-xl shadow-lg flex-shrink-0">
+                      <img src={hostel.qrCode} alt="Hostel QR Code" className="w-32 h-32 sm:w-40 sm:h-40 object-contain" />
                     </div>
                   )}
-                  {hostel.qrCode && (
-                    <a href={hostel.qrCode} download={`${hostel.name}-qr.png`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all">
-                      <QrCode size={14} /> Download QR
-                    </a>
-                  )}
+                  <div className="space-y-3 w-full">
+                    <p className="text-sm text-gray-300">Scan to view hostel details directly on mobile.</p>
+                    {hostel.qrUrl && (
+                      <div className="p-3 bg-white/10 rounded-lg">
+                        <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Link size={12} /> QR URL</p>
+                        <a href={hostel.qrUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-xs text-emerald-400 hover:text-emerald-300 break-all underline underline-offset-2">
+                          {hostel.qrUrl}
+                        </a>
+                      </div>
+                    )}
+                    {hostel.qrCode && (
+                      <a href={hostel.qrCode} download={`${hostel.name}-qr.png`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all">
+                        <QrCode size={14} /> Download QR
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
+              </InfoCard>
+            )}
+          </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Property Details */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <Home size={14} /> Property Details
-              </h2>
-            </div>
-            <div className="p-4 sm:p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {hostel.categoryId?.name && (
+          {/* Right Column - 1/3 width */}
+          <div className="space-y-6">
+            
+            {/* Property Details */}
+            <InfoCard title="PROPERTY DETAILS" icon={Home}>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {hostel.category?.name && (
+                    <div className="p-3 bg-white/10 rounded-lg">
+                      <p className="text-xs text-gray-400 mb-1">Category</p>
+                      <div className="flex items-center gap-2">
+                        {hostel.category.image && (
+                          <img src={hostel.category.image} alt={hostel.category.name} className="w-6 h-6 rounded object-cover" />
+                        )}
+                        <p className="font-semibold text-white text-sm">{hostel.category.name}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="p-3 bg-white/10 rounded-lg">
-                    <p className="text-xs text-gray-400 mb-1">Category</p>
-                    <p className="font-semibold text-white">{hostel.categoryId.name}</p>
+                    <p className="text-xs text-gray-400 mb-1">Rating</p>
+                    <div className="flex items-center gap-1">
+                      <Star size={16} className="text-yellow-500 fill-yellow-500" />
+                      <span className="font-bold text-white">{hostel.rating}</span>
+                      <span className="text-xs text-gray-400">/5</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-white/10 rounded-lg">
+                  <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                    <MapPin size={12} /> Address
+                  </p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{hostel.address}</p>
+                </div>
+
+                <div className="p-3 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
+                  <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                    <IndianRupee size={12} /> Monthly Advance
+                  </p>
+                  <p className="text-xl font-black text-emerald-400">{formatCurrency(hostel.monthlyAdvance)}</p>
+                  <p className="text-xs text-gray-500 mt-1">Refundable security deposit</p>
+                </div>
+
+                {coords && (
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                      <MapPin size={12} /> Location Coordinates
+                    </p>
+                    <p className="text-xs text-gray-300 font-mono">
+                      Lat: {coords.lat.toFixed(6)}<br />
+                      Lng: {coords.lng.toFixed(6)}
+                    </p>
+                    <a href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`} 
+                       target="_blank" rel="noopener noreferrer"
+                       className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
+                      <MapPin size={14} /> View on Google Maps
+                    </a>
                   </div>
                 )}
+              </div>
+            </InfoCard>
+
+            {/* Ownership Information */}
+            <InfoCard title="OWNERSHIP" icon={User} gradient="from-blue-500 to-blue-600">
+              <div className="space-y-3">
+                {hostel.vendorId && (
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                      <User size={12} /> Vendor Information
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-white">{hostel.vendorId.name || 'N/A'}</p>
+                      {hostel.vendorId.mobileNumber && (
+                        <p className="text-xs text-gray-300 flex items-center gap-1">
+                          <Phone size={10} /> {hostel.vendorId.mobileNumber}
+                        </p>
+                      )}
+                      {hostel.vendorId.email && (
+                        <p className="text-xs text-gray-300 flex items-center gap-1 break-all">
+                          <Mail size={10} /> {hostel.vendorId.email}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-3 bg-white/10 rounded-lg">
-                  <p className="text-xs text-gray-400 mb-1">Rating</p>
-                  <div className="flex items-center gap-1">
-                    <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                    <span className="font-bold text-white">{hostel.rating}</span>
+                  <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
+                    <Shield size={12} /> Admin ID
+                  </p>
+                  <p className="text-sm font-mono text-gray-300 break-all">
+                    {hostel.adminId ? (
+                      typeof hostel.adminId === 'object' ? hostel.adminId._id : hostel.adminId
+                    ) : (
+                      <span className="text-gray-500 italic">Not assigned</span>
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-3 bg-white/10 rounded-lg">
+                  <p className="text-xs text-gray-400 mb-1">Hostel ID</p>
+                  <p className="text-xs font-mono text-gray-300 break-all">{hostel._id}</p>
+                </div>
+              </div>
+            </InfoCard>
+
+            {/* Timeline */}
+            <InfoCard title="TIMELINE" icon={Clock} gradient="from-orange-500 to-orange-600">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 bg-white/10 rounded-lg">
+                  <Calendar size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Created</p>
+                    <p className="text-sm font-medium text-white">{formatDate(hostel.createdAt)}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-white/10 rounded-lg">
+                  <Calendar size={14} className="text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400">Last Updated</p>
+                    <p className="text-sm font-medium text-white">{formatDate(hostel.updatedAt)}</p>
                   </div>
                 </div>
               </div>
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><MapPin size={12} /> Address</p>
-                <p className="text-sm text-gray-300">{hostel.address}</p>
-              </div>
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><IndianRupee size={12} /> Monthly Advance</p>
-                <p className="text-lg font-black text-white">{formatCurrency(hostel.monthlyAdvance)}</p>
-              </div>
-              {coords && (
-                <div className="p-3 bg-white/10 rounded-lg">
-                  <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><MapPin size={12} /> Location Coordinates</p>
-                  <p className="text-xs text-gray-300">
-                    Lat: {coords.lat.toFixed(6)}<br />Lng: {coords.lng.toFixed(6)}
-                  </p>
-                  <a href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`} target="_blank" rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
-                    <MapPin size={16} /> View on Map
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+            </InfoCard>
 
-          {/* Ownership */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <User size={14} /> Ownership
-              </h2>
+            {/* Quick Actions */}
+            <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-5 border border-white/10">
+              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                <Sparkles size={16} className="text-emerald-400" />
+                Quick Actions
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => images.length > 0 && openLightbox(0)}
+                  disabled={!images.length}
+                  className="flex-1 px-4 py-2.5 bg-white/10 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <Eye size={14} className="inline mr-2" />
+                  View Images
+                </button>
+                <button 
+                  onClick={() => navigate("/dashboard/hostels")}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
+                >
+                  <List size={14} className="inline mr-2" />
+                  Back to List
+                </button>
+              </div>
             </div>
-            <div className="p-4 sm:p-6 space-y-3">
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><User size={12} /> Vendor ID</p>
-                <p className="text-sm font-mono text-gray-300 break-all">
-                  {hostel.vendorId || <span className="text-gray-500 italic">Not assigned</span>}
-                </p>
-              </div>
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Shield size={12} /> Admin ID</p>
-                <p className="text-sm font-mono text-gray-300 break-all">
-                  {hostel.adminId || <span className="text-gray-500 italic">Not assigned</span>}
-                </p>
-              </div>
-              <div className="p-3 bg-white/10 rounded-lg">
-                <p className="text-xs text-gray-400 mb-1">Hostel ID</p>
-                <p className="text-sm font-mono text-gray-300 break-all">{hostel._id}</p>
-              </div>
-            </div>
-          </div>
 
-          {/* Timeline */}
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
-            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <h2 className="text-xs font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <Clock size={14} /> Timeline
-              </h2>
-            </div>
-            <div className="p-4 sm:p-6 space-y-3">
-              <div className="flex items-start gap-3">
-                <Calendar size={14} className="text-emerald-400 mt-0.5" />
-                <div>
-                  <p className="text-xs text-gray-400">Created</p>
-                  <p className="text-sm font-medium text-white">{formatDate(hostel.createdAt)}</p>
-                </div>
+            {/* Status Badge */}
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-emerald-400" />
+                <p className="text-xs text-emerald-400 font-semibold">ACTIVE HOSTEL</p>
               </div>
-              <div className="flex items-start gap-3">
-                <Calendar size={14} className="text-emerald-400 mt-0.5" />
-                <div>
-                  <p className="text-xs text-gray-400">Last Updated</p>
-                  <p className="text-sm font-medium text-white">{formatDate(hostel.updatedAt)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white/10 rounded-xl p-4 border border-white/10">
-            <h3 className="text-sm font-bold text-white mb-3">Quick Actions</h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => images.length > 0 && openLightbox(0)}
-                disabled={!images.length}
-                className="flex-1 px-3 py-2 bg-white/10 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                View Images
-              </button>
-              <button onClick={() => navigate("/dashboard/hostels")}
-                className="flex-1 px-3 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all">
-                Back to List
-              </button>
+              <p className="text-xs text-gray-400 mt-2">
+                This hostel is currently active and accepting bookings
+              </p>
             </div>
           </div>
         </div>

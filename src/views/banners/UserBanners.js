@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { 
-  Upload, X, Image, AlertCircle, Eye, Trash2, Edit2, 
+import {
+  Upload, X, Image, AlertCircle, Eye, Trash2, Edit2,
   Plus, Calendar, Sparkles, LayoutGrid, ChevronLeft
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/Admin";
+const API = "https://api.brando.org.in/api/Admin";
 
 // SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({
@@ -29,6 +29,7 @@ const UserBanners = () => {
   const [banners, setBanners] = useState([]);
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [view, setView] = useState('list'); // 'list', 'create', 'view', 'edit'
+  const [existingImages, setExistingImages] = useState([]);
 
   // Fetch all banners
   const fetchBanners = async () => {
@@ -54,6 +55,7 @@ const UserBanners = () => {
       setLoading(prev => ({ ...prev, fetch: true }));
       const { data } = await axios.get(`${API}/getBannerById/${id}`);
       setSelectedBanner(data.banner);
+      setExistingImages(data.banner.images || []);
       setView('view');
     } catch (error) {
       console.error(error);
@@ -66,17 +68,17 @@ const UserBanners = () => {
   // Handle image upload
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length === 0) return;
-    
+
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
     const invalidFiles = files.filter(file => !validTypes.includes(file.type));
-    
+
     if (invalidFiles.length > 0) {
       setError("Only JPG, PNG, and WEBP images are allowed");
       return;
     }
-    
+
     setError("");
     setImages(prev => [...prev, ...files]);
     setPreview(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
@@ -88,11 +90,16 @@ const UserBanners = () => {
     setPreview(prev => prev.filter((_, i) => i !== index));
   };
 
+  const removeExistingImage = (index) => {
+    setExistingImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Reset form
   const resetForm = () => {
     preview.forEach(url => URL.revokeObjectURL(url));
     setImages([]);
     setPreview([]);
+    setExistingImages([]);
     setError("");
   };
 
@@ -112,10 +119,12 @@ const UserBanners = () => {
       setLoading(prev => ({ ...prev, create: true }));
       setError("");
 
-      await axios.post(`${API}/createBanner`, formData);
+      await axios.post(`${API}/createBanner`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
       showAlert('success', 'Success!', 'Banner uploaded successfully', 2000);
-      
+
       resetForm();
       await fetchBanners();
       setView('list');
@@ -132,22 +141,29 @@ const UserBanners = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (images.length === 0) {
+    if (images.length === 0 && existingImages.length === 0) {
       setError("Please upload at least one image");
       return;
     }
 
     const formData = new FormData();
+
+    // Add new images
     images.forEach((img) => formData.append("images", img));
+
+    // Add existing images URLs to keep them
+    existingImages.forEach((imgUrl) => formData.append("existingImages", imgUrl));
 
     try {
       setLoading(prev => ({ ...prev, update: true }));
       setError("");
 
-      await axios.put(`${API}/updateBannerById/${selectedBanner._id}`, formData);
+      await axios.put(`${API}/updateBannerById/${selectedBanner._id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
       showAlert('success', 'Updated!', 'Banner updated successfully', 2000);
-      
+
       resetForm();
       await fetchBanners();
       setView('list');
@@ -183,7 +199,7 @@ const UserBanners = () => {
     try {
       setLoading(prev => ({ ...prev, delete: true }));
       await axios.delete(`${API}/deleteBannerById/${id}`);
-      
+
       showAlert('success', 'Deleted!', 'Banner has been deleted', 2000);
       await fetchBanners();
       if (view === 'view' && selectedBanner?._id === id) {
@@ -202,6 +218,14 @@ const UserBanners = () => {
   const goToCreate = () => {
     resetForm();
     setView('create');
+  };
+
+  const goToEdit = (banner) => {
+    setSelectedBanner(banner);
+    setImages([]);
+    setPreview([]);
+    setExistingImages(banner?.images || []);
+    setView('edit');
   };
 
   const goToList = () => {
@@ -281,23 +305,51 @@ const UserBanners = () => {
     </div>
   );
 
-  const PreviewGrid = () => preview.length > 0 && (
+  const PreviewGrid = () => (preview.length > 0 || existingImages.length > 0) && (
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-emerald-400">
-        Preview ({preview.length})
+        Images ({existingImages.length + preview.length})
       </h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        {preview.map((img, index) => (
-          <div key={index} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
+        {/* Existing Images */}
+        {existingImages.map((img, index) => (
+          <div key={`existing-${index}`} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
             shadow-[0_2px_12px_rgba(0,0,0,0.3)] aspect-video">
-            <img src={img} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+            <img src={img} alt={`Existing ${index + 1}`} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
+              transition-opacity flex items-center justify-center gap-2">
+              <a href={img} target="_blank" rel="noopener noreferrer"
+                className="p-1.5 sm:p-2 bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] rounded-full 
+                  text-white hover:scale-110 transition-transform border border-white/20">
+                <Eye size={12} className="sm:w-3.5 sm:h-3.5" />
+              </a>
+              <button type="button" onClick={() => removeExistingImage(index)}
+                className="p-1.5 sm:p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-full 
+                  text-white hover:scale-110 transition-transform shadow-lg">
+                <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
+              </button>
+            </div>
+            <div className="absolute top-1 left-1 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded">
+              Existing
+            </div>
+          </div>
+        ))}
+
+        {/* New Images */}
+        {preview.map((img, index) => (
+          <div key={`new-${index}`} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
+            shadow-[0_2px_12px_rgba(0,0,0,0.3)] aspect-video">
+            <img src={img} alt={`New ${index + 1}`} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
               transition-opacity flex items-center justify-center">
               <button type="button" onClick={() => removeImage(index)}
-                className="p-1.5 sm:p-2 bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] rounded-full 
-                  text-white hover:scale-110 transition-transform border border-white/20">
+                className="p-1.5 sm:p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-full 
+                  text-white hover:scale-110 transition-transform shadow-lg">
                 <X size={12} className="sm:w-3.5 sm:h-3.5" />
               </button>
+            </div>
+            <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded">
+              New
             </div>
           </div>
         ))}
@@ -328,7 +380,7 @@ const UserBanners = () => {
         {loading ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            <span>Uploading...</span>
+            <span>{text === "Update Banner" ? "Updating..." : "Uploading..."}</span>
           </>
         ) : (
           <>
@@ -343,19 +395,19 @@ const UserBanners = () => {
   const BannerCard = ({ banner }) => (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group">
       <div className="relative h-32 sm:h-40 bg-white/5">
-        <img 
-          src={banner.images[0]} 
-          alt="Banner" 
-          className="w-full h-full object-cover"
+        <img
+          src={banner.images[0]}
+          alt="Banner"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <div className="absolute top-2 right-2 flex gap-1.5">
           <button onClick={() => getBannerById(banner._id)}
-            className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80">
+            className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80 transition-all">
             <Eye size={14} className="sm:w-4 sm:h-4" />
           </button>
           <button onClick={() => handleDelete(banner._id)}
             disabled={loading.delete}
-            className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80">
+            className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80 transition-all">
             <Trash2 size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
@@ -364,9 +416,18 @@ const UserBanners = () => {
         </div>
       </div>
       <div className="p-3 sm:p-4">
-        <div className="flex items-center gap-2 text-xs text-gray-400">
-          <Calendar size={12} className="text-emerald-400" />
-          {new Date(banner.createdAt).toLocaleDateString()}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            <Calendar size={12} className="text-emerald-400" />
+            {new Date(banner.createdAt).toLocaleDateString()}
+          </div>
+          <button
+            onClick={() => goToEdit(banner)}
+            className="p-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:scale-110 transition-all"
+            title="Edit Banner"
+          >
+            <Edit2 size={12} />
+          </button>
         </div>
       </div>
     </div>
@@ -374,13 +435,13 @@ const UserBanners = () => {
 
   // Render views
   const renderView = () => {
-    switch(view) {
+    switch (view) {
       case 'create':
         return (
           <>
-            <PageHeader 
-              icon={Image} 
-              title="Create Banner" 
+            <PageHeader
+              icon={Image}
+              title="Create Banner"
               subtitle="Upload new banner images"
               action={<BackButton />}
             />
@@ -392,7 +453,39 @@ const UserBanners = () => {
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <UploadArea />
                 <PreviewGrid />
-                <SubmitButton loading={loading.create} text="Create Banner" />
+                <SubmitButton loading={loading.create} text="Create Banner" onClick={handleSubmit} />
+              </form>
+            </div>
+          </>
+        );
+
+      case 'edit':
+        return selectedBanner && (
+          <>
+            <PageHeader
+              icon={Edit2}
+              title="Edit Banner"
+              subtitle={`ID: ${selectedBanner._id.slice(-8)}`}
+              action={<BackButton />}
+            />
+            <ErrorAlert />
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
+                <h2 className="text-xs font-black text-white tracking-widest uppercase">Update Banner Images</h2>
+              </div>
+              <form onSubmit={handleUpdate} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <UploadArea />
+                <PreviewGrid />
+                <div className="text-xs text-gray-400 bg-white/5 p-3 rounded-lg">
+                  <p className="flex items-center gap-1">💡 <span>Tips for updating:</span></p>
+                  <ul className="mt-1 ml-4 space-y-0.5">
+                    <li>• Images marked "Existing" will be kept</li>
+                    <li>• Click the trash icon on existing images to remove them</li>
+                    <li>• Upload new images to add more</li>
+                    <li>• All changes will be applied when you click Update</li>
+                  </ul>
+                </div>
+                <SubmitButton loading={loading.update} text="Update Banner" onClick={handleUpdate} />
               </form>
             </div>
           </>
@@ -401,11 +494,21 @@ const UserBanners = () => {
       case 'view':
         return selectedBanner && (
           <>
-            <PageHeader 
-              icon={Eye} 
-              title="Banner Details" 
+            <PageHeader
+              icon={Eye}
+              title="Banner Details"
               subtitle={`ID: ${selectedBanner._id.slice(-8)}`}
-              action={<BackButton />}
+              action={
+                <div className="flex gap-2">
+                  <button onClick={() => goToEdit(selectedBanner)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm bg-gradient-to-r from-blue-500 to-indigo-500 
+                      hover:shadow-lg transition-all rounded-xl text-white font-semibold">
+                    <Edit2 size={14} />
+                    Edit Banner
+                  </button>
+                  <BackButton />
+                </div>
+              }
             />
             <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
               <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
@@ -427,6 +530,8 @@ const UserBanners = () => {
                 <div className="mt-4 sm:mt-6 p-4 bg-white/10 rounded-xl">
                   <p className="text-xs text-gray-400">Created</p>
                   <p className="text-sm font-semibold text-white">{new Date(selectedBanner.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400 mt-2">Last Updated</p>
+                  <p className="text-sm font-semibold text-white">{new Date(selectedBanner.updatedAt).toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -436,9 +541,9 @@ const UserBanners = () => {
       default: // list view
         return (
           <>
-            <PageHeader 
-              icon={LayoutGrid} 
-              title="Banner Management" 
+            <PageHeader
+              icon={LayoutGrid}
+              title="Banner Management"
               subtitle="View and manage all banners"
               action={
                 <button onClick={goToCreate}
@@ -452,7 +557,7 @@ const UserBanners = () => {
               }
             />
             <ErrorAlert />
-            
+
             {loading.fetch ? (
               <div className="flex justify-center py-12 sm:py-20">
                 <div className="w-8 h-8 sm:w-12 sm:h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />

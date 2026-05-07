@@ -11,7 +11,7 @@ import {
   ChevronRight, ChevronsLeft, ChevronsRight
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 // Pagination Component with Ellipsis
 const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, totalItems, onItemsPerPageChange }) => {
@@ -293,7 +293,7 @@ const SingleVendorDetails = () => {
     <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group">
       <div className="relative h-48 bg-white/5">
         <img
-          src={hostel.images?.[0] ? `http://187.127.146.52:2003/${hostel.images[0]}` : '/api/placeholder/400/300'}
+          src={hostel.images?.[0] ? `https://api.brando.org.in/${hostel.images[0]}` : '/api/placeholder/400/300'}
           alt={hostel.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
@@ -399,7 +399,7 @@ const SingleVendorDetails = () => {
                 flex items-center justify-center border border-white/20 overflow-hidden">
                 {vendor.hostelImage ? (
                   <img
-                    src={`http://187.127.146.52:2003/${vendor.hostelImage}`}
+                    src={`https://api.brando.org.in/${vendor.hostelImage}`}
                     alt={vendor.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {

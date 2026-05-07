@@ -26,6 +26,7 @@ import Notifications from "./views/Notifications/Notifications";
 import AllUserPayments from "./views/Payments/AllUserPayments";
 import SingleUserPayments from "./views/Payments/SingleUserPayments";
 import HostelUsers from "./views/hostels/HostelUsers";
+import RecommendedHostels from "./views/hostels/RecommendedHostels";
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
         <Route path="hostels" element={<Hostels />} />
         <Route path="hostels/:id" element={<SingleHostel />} />
         <Route path="hostel/users/:hostelId" element={<HostelUsers />} />
+        <Route path="recommended-hostels" element={<RecommendedHostels />} />
 
         <Route path="banners" element={<UserBanners />} />
         <Route path="vendor-banners" element={<VendorBanners />} />

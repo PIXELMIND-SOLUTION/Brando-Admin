@@ -2,9 +2,9 @@ import { Users, Clock, Mail, Phone, Calendar, CheckCircle, XCircle, Eye, ArrowUp
 import { useState, useEffect } from "react";
 
 
-const API_URL = "http://187.127.146.52:2003/api/admin/pending-vendors";
-const APPROVE_API = "http://187.127.146.52:2003/api/admin/approve-vendor";
-const REJECT_API = "http://187.127.146.52:2003/api/admin/reject-vendor";
+const API_URL = "https://api.brando.org.in/api/admin/pending-vendors";
+const APPROVE_API = "https://api.brando.org.in/api/admin/approve-vendor";
+const REJECT_API = "https://api.brando.org.in/api/admin/reject-vendor";
 
 const PendingVendors = () => {
   const [vendors, setVendors] = useState([]);

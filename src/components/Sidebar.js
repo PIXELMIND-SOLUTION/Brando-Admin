@@ -26,6 +26,7 @@ const navItems = [
         children: [
             // { to: "/dashboard/create-hostel", label: "Create Hostel", icon: PlusCircle },
             { to: "/dashboard/hostels", label: "All Hostels", icon: List },
+            { to: "/dashboard/recommended-hostels", label: "Recommended", icon: Star },
         ],
     },
     {

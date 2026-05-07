@@ -11,7 +11,7 @@ import {
   ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 // ─── SweetAlert helper ────────────────────────────────────────────────────────
 const showAlert = (icon, title, text, timer) => Swal.fire({

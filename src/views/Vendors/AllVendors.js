@@ -12,7 +12,7 @@ import {
   Shield, AlertCircle, Edit
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 const showAlert = (icon, title, text, timer) => Swal.fire({
   icon, title, text, timer,
@@ -432,7 +432,7 @@ const AllVendors = () => {
                       <div className="flex items-center gap-2 sm:gap-3">
                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
                           {vendor.hostelImage
-                            ? <img src={`http://187.127.146.52:2003/${vendor.hostelImage}`} alt="" className="w-full h-full object-cover" />
+                            ? <img src={`https://api.brando.org.in/${vendor.hostelImage}`} alt="" className="w-full h-full object-cover" />
                             : <Users size={13} className="text-emerald-400" />}
                         </div>
                         <div className="min-w-0">
@@ -514,7 +514,7 @@ const AllVendors = () => {
               {/* Image */}
               <div className="relative h-36 sm:h-44 bg-white/5">
                 <img
-                  src={vendor.hostelImage ? `http://187.127.146.52:2003/${vendor.hostelImage}` : '/api/placeholder/400/300'}
+                  src={vendor.hostelImage ? `https://api.brando.org.in/${vendor.hostelImage}` : '/api/placeholder/400/300'}
                   alt={vendor.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />

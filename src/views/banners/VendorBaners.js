@@ -6,7 +6,7 @@ import {
   Plus, Calendar, Sparkles, LayoutGrid, ChevronLeft
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/vendors";
+const API = "https://api.brando.org.in/api/vendors";
 
 // SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({

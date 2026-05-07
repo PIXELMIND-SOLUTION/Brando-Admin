@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 import logo from "../assets/logo.png";
 import { Maximize, Minimize } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const navigate = useNavigate();

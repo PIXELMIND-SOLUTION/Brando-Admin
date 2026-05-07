@@ -12,7 +12,7 @@ import {
   ChevronRight, ChevronsLeft, ChevronsRight
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/Admin";
+const API = "https://api.brando.org.in/api/Admin";
 
 const showAlert = (icon, title, text, timer) => Swal.fire({
   icon, title, text, timer,
@@ -244,7 +244,7 @@ const ActionBar = ({ searchTerm, onSearchChange, selectedCount, onBulkDelete, on
 );
 
 // ─── TableView (outside) ─────────────────────────────────────────────────────
-const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelete, totalItems, onToggleSelectAll, onToggleSelect, onSort, onView, onDelete }) => (
+const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelete, totalItems, onToggleSelectAll, onToggleSelect, onSort, onView, onDelete, setHostels }) => (
   <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -262,9 +262,11 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
               { key: 'categoryId', label: 'Category', icon: <Tag size={14} /> },
               { key: 'rating', label: 'Rating', icon: <Star size={14} /> },
               { key: 'address', label: 'Address', icon: <MapPin size={14} /> },
+              { key: 'features', label: 'Features', icon: <BadgeCheck size={14} /> },
+              { key: 'recommended', label: 'Recommended', icon: <Sparkles size={14} /> },
               { key: 'price', label: 'Advance', icon: <IndianRupee size={14} /> },
               { key: 'sharings', label: 'Sharing', icon: <Users size={14} /> },
-              { key: 'createdAt', label: 'Created', icon: <Calendar size={14} /> },
+              { key: 'createdAt', label: 'Created', icon: <Calendar size={14} /> }
             ].map(col => (
               <th key={col.key} className="px-4 py-4 text-left">
                 <button onClick={() => onSort(col.key)}
@@ -286,7 +288,7 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                   onChange={() => onToggleSelect(hostel._id)}
                   className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
-              </td>
+               </td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
@@ -296,34 +298,117 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                   </div>
                   <span className="font-semibold text-white">{hostel.name}</span>
                 </div>
-              </td>
+               </td>
               <td className="px-4 py-4">
                 <span className="px-2 py-1 bg-white/10 rounded-lg text-xs font-semibold text-emerald-400">
-                  {hostel.categoryId?.name || 'N/A'}
+                  {hostel.category?.name || 'N/A'}
                 </span>
-              </td>
+               </td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-1">
                   <Star size={12} className="text-yellow-500 fill-yellow-500" />
                   <span className="font-medium text-white">{hostel.rating}</span>
                 </div>
-              </td>
+               </td>
               <td className="px-4 py-4 max-w-xs">
                 <p className="text-sm text-gray-400 truncate">{hostel.address}</p>
-              </td>
+               </td>
+              <td className="px-4 py-4">
+                <div className="flex flex-wrap gap-1">
+                  {hostel.features?.slice(0, 2).map((feature, idx) => (
+                    <span key={idx} className="px-1.5 py-0.5 bg-white/10 rounded text-xs text-gray-300">
+                      {feature}
+                    </span>
+                  ))}
+                  {hostel.features?.length > 2 && (
+                    <span className="px-1.5 py-0.5 bg-white/10 rounded text-xs text-gray-300">
+                      +{hostel.features.length - 2}
+                    </span>
+                  )}
+                </div>
+               </td>
+              <td className="px-4 py-4">
+                <div className="flex items-center justify-center">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const updatedValue = !hostel.isRecommended;
+                        const res = await fetch(
+                          `https://api.brando.org.in/api/Admin/makeRecommended/${hostel._id}`,
+                          {
+                            method: "PUT",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              isRecommended: updatedValue,
+                            }),
+                          }
+                        );
+                        const data = await res.json();
+                        if (res.ok) {
+                          setHostels((prev) =>
+                            prev.map((item) =>
+                              item._id === hostel._id
+                                ? {
+                                    ...item,
+                                    isRecommended: updatedValue,
+                                  }
+                                : item
+                            )
+                          );
+                        } else {
+                          alert(data.message || "Failed to update recommendation");
+                        }
+                      } catch (error) {
+                        console.error(error);
+                        alert("Something went wrong");
+                      }
+                    }}
+                    className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 shadow-inner
+                      ${
+                        hostel.isRecommended
+                          ? "bg-gradient-to-r from-emerald-500 to-green-500"
+                          : "bg-gray-600"
+                      }
+                    `}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300
+                        ${
+                          hostel.isRecommended
+                            ? "translate-x-8"
+                            : "translate-x-1"
+                        }
+                      `}
+                    />
+                    <span
+                      className={`absolute text-[10px] font-semibold tracking-wide uppercase transition-all duration-300
+                        ${
+                          hostel.isRecommended
+                            ? "left-2 text-white"
+                            : "right-2 text-white"
+                        }
+                      `}
+                    >
+                      {hostel.isRecommended ? "ON" : "OFF"}
+                    </span>
+                  </button>
+                </div>
+               </td>
               <td className="px-4 py-4 font-semibold text-white">{formatCurrency(hostel.monthlyAdvance)}</td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-1 text-gray-400">
                   <Users size={12} />
                   <span>{hostel.sharings?.length || 0}</span>
                 </div>
-              </td>
+               </td>
               <td className="px-4 py-4 text-sm text-gray-400">
                 <div className="flex items-center gap-1">
                   <Calendar size={12} />
                   {new Date(hostel.createdAt).toLocaleDateString()}
                 </div>
-              </td>
+               </td>
               <td className="px-4 py-4">
                 <div className="flex items-center justify-end gap-2">
                   <button onClick={() => onView(hostel._id)}
@@ -337,11 +422,11 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                     <Trash2 size={14} />
                   </button>
                 </div>
-              </td>
-            </tr>
+               </td>
+             </tr>
           ))}
         </tbody>
-      </table>
+       </table>
     </div>
     <div className="px-4 py-3 bg-white/10 border-t border-white/10 flex items-center justify-between text-sm">
       <span className="text-gray-400">Showing {paginatedHostels.length} of {totalItems} hostels</span>
@@ -379,6 +464,15 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
           </div>
           <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
             <ImageIcon size={10} /> {hostel.images?.length || 0}
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className={`px-2 py-1 rounded-lg text-xs font-bold ${
+              hostel.isRecommended 
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-gray-600 text-gray-300'
+            }`}>
+              {hostel.isRecommended ? '★ Recommended' : 'Not Recommended'}
+            </div>
           </div>
         </div>
         <div className="p-3 sm:p-4">
@@ -522,6 +616,7 @@ const Hostels = () => {
       else if (sortConfig.key === 'price') { aVal = a.monthlyAdvance || 0; bVal = b.monthlyAdvance || 0; }
       else if (sortConfig.key === 'sharings') { aVal = a.sharings?.length || 0; bVal = b.sharings?.length || 0; }
       else if (sortConfig.key === 'createdAt') { aVal = new Date(a.createdAt).getTime(); bVal = new Date(b.createdAt).getTime(); }
+      else if (sortConfig.key === 'recommended') { aVal = a.isRecommended ? 1 : 0; bVal = b.isRecommended ? 1 : 0; }
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -556,10 +651,10 @@ const Hostels = () => {
 
   const exportToCSV = useCallback(() => {
     const data = filteredAndSortedHostels();
-    const headers = ['Name', 'Category', 'Rating', 'Address', 'Advance', 'Sharing Options', 'Images', 'Created'];
+    const headers = ['Name', 'Category', 'Rating', 'Address', 'Recommended', 'Advance', 'Sharing Options', 'Images', 'Created'];
     const csvData = data.map(h => [
       h.name, h.categoryId?.name || 'N/A', h.rating, h.address,
-      h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
+      h.isRecommended ? 'Yes' : 'No', h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
       new Date(h.createdAt).toLocaleDateString()
     ]);
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -649,6 +744,7 @@ const Hostels = () => {
               onSort={handleSort}
               onView={viewHostel}
               onDelete={handleDelete}
+              setHostels={setHostels}
             />
           )}
 

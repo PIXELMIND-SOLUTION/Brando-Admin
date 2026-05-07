@@ -28,7 +28,7 @@ const Login = () => {
       setLoading(true);
       setError("");
       const res = await axios.post(
-        "http://187.127.146.52:2003/api/Admin/login",
+        "https://api.brando.org.in/api/Admin/login",
         { email, password }
       );
       console.log(res.data);

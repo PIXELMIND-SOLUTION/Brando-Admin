@@ -60,7 +60,7 @@ const CreateHostel = () => {
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append("sharings", JSON.stringify(sharings));
       images.forEach(({ file }) => fd.append("images", file));
-      const res = await fetch("http://187.127.146.52:2003/api/Admin/createHostel", { method: "POST", body: fd });
+      const res = await fetch("https://api.brando.org.in/api/Admin/createHostel", { method: "POST", body: fd });
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
       showToast("Hostel created successfully! 🎉");
       setForm({ categoryId: "", name: "", type: "AC", rating: "", latitude: "", longitude: "", address: "", monthlyAdvance: "" });

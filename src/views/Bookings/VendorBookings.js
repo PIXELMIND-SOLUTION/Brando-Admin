@@ -12,7 +12,7 @@ import {
   SortAsc, SortDesc, Download
 } from "lucide-react";
 
-const API = "http://187.127.146.52:2003/api/admin";
+const API = "https://api.brando.org.in/api/admin";
 
 // SweetAlert config with dark theme
 const showAlert = (icon, title, text, timer) => Swal.fire({
@@ -512,7 +512,7 @@ const VendorBookings = () => {
                     <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden cursor-pointer"
                          onClick={() => viewHostel(booking.hostelId?._id)}>
                       {booking.hostelId?.images?.[0] ? (
-                        <img src={`http://187.127.146.52:2003/${booking.hostelId.images[0]}`} alt="" className="w-full h-full object-cover" />
+                        <img src={`https://api.brando.org.in/${booking.hostelId.images[0]}`} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <Building2 size={14} className="text-emerald-400" />
                       )}
