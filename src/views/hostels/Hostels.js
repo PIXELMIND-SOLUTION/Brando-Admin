@@ -43,10 +43,7 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (discount < 0 || discount > 100) {
-      showAlert('error', 'Invalid Discount', 'Discount must be between 0 and 100');
-      return;
-    }
+    
 
     setLoading(true);
     try {
@@ -61,7 +58,7 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
       );
 
       if (response.data) {
-        showAlert('success', 'Discount Updated', `Discount set to ${discount}%`, 2000);
+        showAlert('success', 'Discount Updated', `Discount set to ${discount}/-`, 2000);
         onSuccess(response.data);
         onClose();
       }
@@ -99,7 +96,7 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Discount Percentage (%)
+                Discount Amount (₹)
               </label>
               <div className="relative">
                 <Percent size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
@@ -110,7 +107,7 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 
                     focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none 
                     transition-all text-white"
-                  placeholder="Enter discount percentage"
+                  placeholder="Enter discount Amount"
                   min="0"
                   max="100"
                   step="1"
@@ -591,7 +588,7 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
           <div className="absolute bottom-2 right-2 flex gap-2">
             {hostel.discount > 0 && (
               <div className="px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-                {hostel.discount}% OFF
+                {hostel.discount}/-
               </div>
             )}
             <div className={`px-2 py-1 rounded-lg text-xs font-bold ${hostel.isRecommended
@@ -621,7 +618,7 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
             {hostel.discount > 0 && (
               <div className="flex items-center gap-1.5">
                 <Percent size={12} className="text-purple-400 flex-shrink-0" />
-                <span className="text-purple-400">Discount: {hostel.discount}%</span>
+                <span className="text-purple-400">Discount: {hostel.discount}/-</span>
               </div>
             )}
             <div className="flex items-center gap-1.5">
@@ -801,7 +798,7 @@ const Hostels = () => {
     const headers = ['Name', 'Category', 'Rating', 'Address', 'Discount', 'Recommended', 'Advance', 'Sharing Options', 'Images', 'Created'];
     const csvData = data.map(h => [
       h.name, h.categoryId?.name || 'N/A', h.rating, h.address,
-      `${h.discount || 0}%`, h.isRecommended ? 'Yes' : 'No', h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
+      `${h.discount || 0}/-`, h.isRecommended ? 'Yes' : 'No', h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
       new Date(h.createdAt).toLocaleDateString()
     ]);
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
