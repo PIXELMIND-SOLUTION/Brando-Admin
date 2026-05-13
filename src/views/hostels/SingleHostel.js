@@ -6,9 +6,11 @@ import {
   Building2, Eye, Calendar, MapPin, Star, IndianRupee,
   Users, Image as ImageIcon, Thermometer, ChevronLeft,
   Home, Clock, QrCode, User, Shield, Link, Wind, Snowflake,
-  ChevronRight, X, ZoomIn, Wifi, Car, Coffee, Dumbbell, 
+  ChevronRight, X, ZoomIn, Wifi, Car, Coffee, Dumbbell,
   Sparkles, Layers, List, CheckCircle, AlertCircle, Phone, Mail
 } from "lucide-react";
+import { CiDiscount1 } from "react-icons/ci";
+import { MdDiscount } from "react-icons/md";
 
 const API = "https://api.brando.org.in/api/Admin";
 
@@ -164,7 +166,7 @@ const FeatureBadge = ({ feature }) => {
       default: return <Sparkles size={14} />;
     }
   };
-  
+
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-xs font-medium text-gray-300">
       {getIcon()}
@@ -479,7 +481,7 @@ const SingleHostel = () => {
 
           {/* Right Column - 1/3 width */}
           <div className="space-y-6">
-            
+
             {/* Property Details */}
             <InfoCard title="PROPERTY DETAILS" icon={Home}>
               <div className="space-y-4">
@@ -512,6 +514,13 @@ const SingleHostel = () => {
                   <p className="text-sm text-gray-300 leading-relaxed">{hostel.address}</p>
                 </div>
 
+                <div className="p-3 bg-white/10 rounded-lg">
+                  <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                    <MdDiscount size={12} /> Discount
+                  </p>
+                  <p className="text-sm text-gray-300 leading-relaxed">{hostel.discount} %</p>
+                </div>
+
                 <div className="p-3 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
                   <p className="text-xs text-gray-400 mb-1 flex items-center gap-1">
                     <IndianRupee size={12} /> Monthly Advance
@@ -529,9 +538,9 @@ const SingleHostel = () => {
                       Lat: {coords.lat.toFixed(6)}<br />
                       Lng: {coords.lng.toFixed(6)}
                     </p>
-                    <a href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`} 
-                       target="_blank" rel="noopener noreferrer"
-                       className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
+                    <a href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300">
                       <MapPin size={14} /> View on Google Maps
                     </a>
                   </div>
@@ -618,7 +627,7 @@ const SingleHostel = () => {
                   <Eye size={14} className="inline mr-2" />
                   View Images
                 </button>
-                <button 
+                <button
                   onClick={() => navigate("/dashboard/hostels")}
                   className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-sm font-medium text-white hover:shadow-lg transition-all"
                 >

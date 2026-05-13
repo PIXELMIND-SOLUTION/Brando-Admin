@@ -9,8 +9,9 @@ import {
   Grid3x3, Download, RefreshCw,
   SortAsc, SortDesc, Search, TrendingUp,
   BadgeCheck, Clock, Home, Tag, ChevronLeft,
-  ChevronRight, ChevronsLeft, ChevronsRight
+  ChevronRight, ChevronsLeft, ChevronsRight, Percent
 } from "lucide-react";
+import { MdDiscount } from "react-icons/md";
 
 const API = "https://api.brando.org.in/api/Admin";
 
@@ -27,6 +28,132 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+
+// ─── Discount Modal Component ───────────────────────────────────────────────
+const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
+  const [discount, setDiscount] = useState(hostel?.discount || 0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (hostel) {
+      setDiscount(hostel.discount || 0);
+    }
+  }, [hostel]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (discount < 0 || discount > 100) {
+      showAlert('error', 'Invalid Discount', 'Discount must be between 0 and 100');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        `${API}/hostel/${hostel._id}/discount`,
+        { discount: Number(discount) },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      if (response.data) {
+        showAlert('success', 'Discount Updated', `Discount set to ${discount}%`, 2000);
+        onSuccess(response.data);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error updating discount:', error);
+      showAlert('error', 'Update Failed', error.response?.data?.message || 'Could not update discount');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f172a] to-[#020617] rounded-2xl border border-white/20 shadow-2xl">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600">
+              <Percent size={24} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white">Set Discount</h3>
+              <p className="text-sm text-gray-400">{hostel?.name}</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Discount Percentage (%)
+              </label>
+              <div className="relative">
+                <Percent size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseInt(e.target.value) || 0)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 
+                    focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 outline-none 
+                    transition-all text-white"
+                  placeholder="Enter discount percentage"
+                  min="0"
+                  max="100"
+                  step="1"
+                  required
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Enter a value between 0 and 100
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 rounded-xl bg-white/10 text-gray-300 font-medium 
+                  hover:bg-white/20 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 
+                  text-white font-medium hover:shadow-lg transition-all disabled:opacity-50 
+                  disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Updating...
+                  </div>
+                ) : (
+                  'Apply Discount'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ─── Pagination (outside – stable) ───────────────────────────────────────────
 const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, totalItems, onItemsPerPageChange }) => {
@@ -80,11 +207,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
               <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-400">...</span>
             ) : (
               <button key={page} onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${
-                  currentPage === page
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
-                }`}>
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'
+                  }`}>
                 {page}
               </button>
             )
@@ -165,16 +291,14 @@ const StatsCard = ({ hostels, uniqueCategoriesCount }) => {
 const ViewToggle = ({ viewMode, onViewChange }) => (
   <div className="flex items-center gap-2 p-1 bg-white/10 rounded-xl">
     <button onClick={() => onViewChange('grid')}
-      className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
-        viewMode === 'grid' ? 'bg-white/20 text-emerald-400 shadow-md' : 'text-gray-400 hover:text-white'
-      }`}>
+      className={`p-2 rounded-lg transition-all flex items-center gap-2 ${viewMode === 'grid' ? 'bg-white/20 text-emerald-400 shadow-md' : 'text-gray-400 hover:text-white'
+        }`}>
       <Grid3x3 size={18} />
       <span className="text-sm font-medium hidden sm:inline">Grid</span>
     </button>
     <button onClick={() => onViewChange('table')}
-      className={`p-2 rounded-lg transition-all flex items-center gap-2 ${
-        viewMode === 'table' ? 'bg-white/20 text-emerald-400 shadow-md' : 'text-gray-400 hover:text-white'
-      }`}>
+      className={`p-2 rounded-lg transition-all flex items-center gap-2 ${viewMode === 'table' ? 'bg-white/20 text-emerald-400 shadow-md' : 'text-gray-400 hover:text-white'
+        }`}>
       <Table2 size={18} />
       <span className="text-sm font-medium hidden sm:inline">Table</span>
     </button>
@@ -244,7 +368,7 @@ const ActionBar = ({ searchTerm, onSearchChange, selectedCount, onBulkDelete, on
 );
 
 // ─── TableView (outside) ─────────────────────────────────────────────────────
-const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelete, totalItems, onToggleSelectAll, onToggleSelect, onSort, onView, onDelete, setHostels }) => (
+const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelete, totalItems, onToggleSelectAll, onToggleSelect, onSort, onView, onDelete, onDiscount, setHostels }) => (
   <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 shadow-lg overflow-hidden">
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -262,7 +386,7 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
               { key: 'categoryId', label: 'Category', icon: <Tag size={14} /> },
               { key: 'rating', label: 'Rating', icon: <Star size={14} /> },
               { key: 'address', label: 'Address', icon: <MapPin size={14} /> },
-              { key: 'features', label: 'Features', icon: <BadgeCheck size={14} /> },
+              { key: 'discount', label: 'Discount', icon: <MdDiscount size={14} /> },
               { key: 'recommended', label: 'Recommended', icon: <Sparkles size={14} /> },
               { key: 'price', label: 'Advance', icon: <IndianRupee size={14} /> },
               { key: 'sharings', label: 'Sharing', icon: <Users size={14} /> },
@@ -288,7 +412,7 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                   onChange={() => onToggleSelect(hostel._id)}
                   className="w-4 h-4 rounded border-white/30 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
-               </td>
+              </td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
@@ -298,35 +422,28 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                   </div>
                   <span className="font-semibold text-white">{hostel.name}</span>
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4">
                 <span className="px-2 py-1 bg-white/10 rounded-lg text-xs font-semibold text-emerald-400">
                   {hostel.category?.name || 'N/A'}
                 </span>
-               </td>
+              </td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-1">
                   <Star size={12} className="text-yellow-500 fill-yellow-500" />
                   <span className="font-medium text-white">{hostel.rating}</span>
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4 max-w-xs">
                 <p className="text-sm text-gray-400 truncate">{hostel.address}</p>
-               </td>
+              </td>
               <td className="px-4 py-4">
-                <div className="flex flex-wrap gap-1">
-                  {hostel.features?.slice(0, 2).map((feature, idx) => (
-                    <span key={idx} className="px-1.5 py-0.5 bg-white/10 rounded text-xs text-gray-300">
-                      {feature}
-                    </span>
-                  ))}
-                  {hostel.features?.length > 2 && (
-                    <span className="px-1.5 py-0.5 bg-white/10 rounded text-xs text-gray-300">
-                      +{hostel.features.length - 2}
-                    </span>
-                  )}
+                <div className="flex items-center justify-center">
+                  <span className="px-2 py-1 rounded-lg text-xs font-semibold text-emerald-400 bg-emerald-400/10">
+                    {hostel.discount || 0}%
+                  </span>
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4">
                 <div className="flex items-center justify-center">
                   <button
@@ -351,9 +468,9 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                             prev.map((item) =>
                               item._id === hostel._id
                                 ? {
-                                    ...item,
-                                    isRecommended: updatedValue,
-                                  }
+                                  ...item,
+                                  isRecommended: updatedValue,
+                                }
                                 : item
                             )
                           );
@@ -366,28 +483,25 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                       }
                     }}
                     className={`relative inline-flex h-7 w-14 items-center rounded-full transition-all duration-300 shadow-inner
-                      ${
-                        hostel.isRecommended
-                          ? "bg-gradient-to-r from-emerald-500 to-green-500"
-                          : "bg-gray-600"
+                      ${hostel.isRecommended
+                        ? "bg-gradient-to-r from-emerald-500 to-green-500"
+                        : "bg-gray-600"
                       }
                     `}
                   >
                     <span
                       className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-all duration-300
-                        ${
-                          hostel.isRecommended
-                            ? "translate-x-8"
-                            : "translate-x-1"
+                        ${hostel.isRecommended
+                          ? "translate-x-8"
+                          : "translate-x-1"
                         }
                       `}
                     />
                     <span
                       className={`absolute text-[10px] font-semibold tracking-wide uppercase transition-all duration-300
-                        ${
-                          hostel.isRecommended
-                            ? "left-2 text-white"
-                            : "right-2 text-white"
+                        ${hostel.isRecommended
+                          ? "left-2 text-white"
+                          : "right-2 text-white"
                         }
                       `}
                     >
@@ -395,22 +509,27 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                     </span>
                   </button>
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4 font-semibold text-white">{formatCurrency(hostel.monthlyAdvance)}</td>
               <td className="px-4 py-4">
                 <div className="flex items-center gap-1 text-gray-400">
                   <Users size={12} />
                   <span>{hostel.sharings?.length || 0}</span>
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4 text-sm text-gray-400">
                 <div className="flex items-center gap-1">
                   <Calendar size={12} />
                   {new Date(hostel.createdAt).toLocaleDateString()}
                 </div>
-               </td>
+              </td>
               <td className="px-4 py-4">
                 <div className="flex items-center justify-end gap-2">
+                  <button onClick={() => onDiscount(hostel)}
+                    className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg transition-all"
+                    title="Set Discount">
+                    <Percent size={14} />
+                  </button>
                   <button onClick={() => onView(hostel._id)}
                     className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:shadow-lg transition-all"
                     title="View details">
@@ -422,21 +541,21 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
                     <Trash2 size={14} />
                   </button>
                 </div>
-               </td>
-             </tr>
+              </td>
+            </tr>
           ))}
         </tbody>
-       </table>
-    </div>
+      </table>
+    </div >
     <div className="px-4 py-3 bg-white/10 border-t border-white/10 flex items-center justify-between text-sm">
       <span className="text-gray-400">Showing {paginatedHostels.length} of {totalItems} hostels</span>
       <span className="text-gray-400">{selectedHostels.length} selected</span>
     </div>
-  </div>
+  </div >
 );
 
 // ─── GridView (outside) ──────────────────────────────────────────────────────
-const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSelect, onView, onDelete }) => (
+const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSelect, onView, onDelete, onDiscount }) => (
   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
     {paginatedHostels.map(hostel => (
       <div key={hostel._id} className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group relative">
@@ -450,6 +569,10 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
         <div className="relative h-40 sm:h-48 bg-white/5">
           <img src={hostel.images?.[0]} alt={hostel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           <div className="absolute top-2 right-2 flex gap-1.5">
+            <button onClick={() => onDiscount(hostel)}
+              className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-purple-400 hover:bg-black/80">
+              <Percent size={14} />
+            </button>
             <button onClick={() => onView(hostel._id)}
               className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80">
               <Eye size={14} />
@@ -465,12 +588,16 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
           <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
             <ImageIcon size={10} /> {hostel.images?.length || 0}
           </div>
-          <div className="absolute bottom-2 right-2">
-            <div className={`px-2 py-1 rounded-lg text-xs font-bold ${
-              hostel.isRecommended 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-gray-600 text-gray-300'
-            }`}>
+          <div className="absolute bottom-2 right-2 flex gap-2">
+            {hostel.discount > 0 && (
+              <div className="px-2 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                {hostel.discount}% OFF
+              </div>
+            )}
+            <div className={`px-2 py-1 rounded-lg text-xs font-bold ${hostel.isRecommended
+              ? 'bg-emerald-500 text-white'
+              : 'bg-gray-600 text-gray-300'
+              }`}>
               {hostel.isRecommended ? '★ Recommended' : 'Not Recommended'}
             </div>
           </div>
@@ -491,6 +618,12 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
               <IndianRupee size={12} className="text-emerald-400 flex-shrink-0" />
               <span>Advance: {formatCurrency(hostel.monthlyAdvance)}</span>
             </div>
+            {hostel.discount > 0 && (
+              <div className="flex items-center gap-1.5">
+                <Percent size={12} className="text-purple-400 flex-shrink-0" />
+                <span className="text-purple-400">Discount: {hostel.discount}%</span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5">
               <Users size={12} className="text-emerald-400 flex-shrink-0" />
               <span>{hostel.sharings?.length} sharing options</span>
@@ -523,6 +656,8 @@ const Hostels = () => {
   const [selectedHostels, setSelectedHostels] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [selectedHostelForDiscount, setSelectedHostelForDiscount] = useState(null);
 
   const fetchHostels = useCallback(async () => {
     try {
@@ -594,6 +729,17 @@ const Hostels = () => {
 
   const viewHostel = useCallback((id) => navigate(`/dashboard/hostels/${id}`), [navigate]);
 
+  const handleDiscount = useCallback((hostel) => {
+    setSelectedHostelForDiscount(hostel);
+    setDiscountModalOpen(true);
+  }, []);
+
+  const handleDiscountSuccess = useCallback((updatedHostel) => {
+    setHostels(prev => prev.map(hostel =>
+      hostel._id === updatedHostel._id ? updatedHostel : hostel
+    ));
+  }, []);
+
   const getUniqueCategories = useCallback(() =>
     ['All', ...new Set(hostels.map(h => h.categoryId?.name).filter(Boolean))],
     [hostels]
@@ -617,6 +763,7 @@ const Hostels = () => {
       else if (sortConfig.key === 'sharings') { aVal = a.sharings?.length || 0; bVal = b.sharings?.length || 0; }
       else if (sortConfig.key === 'createdAt') { aVal = new Date(a.createdAt).getTime(); bVal = new Date(b.createdAt).getTime(); }
       else if (sortConfig.key === 'recommended') { aVal = a.isRecommended ? 1 : 0; bVal = b.isRecommended ? 1 : 0; }
+      else if (sortConfig.key === 'discount') { aVal = a.discount || 0; bVal = b.discount || 0; }
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
@@ -651,10 +798,10 @@ const Hostels = () => {
 
   const exportToCSV = useCallback(() => {
     const data = filteredAndSortedHostels();
-    const headers = ['Name', 'Category', 'Rating', 'Address', 'Recommended', 'Advance', 'Sharing Options', 'Images', 'Created'];
+    const headers = ['Name', 'Category', 'Rating', 'Address', 'Discount', 'Recommended', 'Advance', 'Sharing Options', 'Images', 'Created'];
     const csvData = data.map(h => [
       h.name, h.categoryId?.name || 'N/A', h.rating, h.address,
-      h.isRecommended ? 'Yes' : 'No', h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
+      `${h.discount || 0}%`, h.isRecommended ? 'Yes' : 'No', h.monthlyAdvance, h.sharings?.length || 0, h.images?.length || 0,
       new Date(h.createdAt).toLocaleDateString()
     ]);
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -670,6 +817,13 @@ const Hostels = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+      <DiscountModal
+        isOpen={discountModalOpen}
+        onClose={() => setDiscountModalOpen(false)}
+        hostel={selectedHostelForDiscount}
+        onSuccess={handleDiscountSuccess}
+      />
+
       <PageHeader
         icon={LayoutGrid}
         title="Hostel Management"
@@ -731,6 +885,7 @@ const Hostels = () => {
               onToggleSelect={toggleSelect}
               onView={viewHostel}
               onDelete={handleDelete}
+              onDiscount={handleDiscount}
             />
           ) : (
             <TableView
@@ -744,6 +899,7 @@ const Hostels = () => {
               onSort={handleSort}
               onView={viewHostel}
               onDelete={handleDelete}
+              onDiscount={handleDiscount}
               setHostels={setHostels}
             />
           )}
