@@ -518,7 +518,7 @@ const SingleHostel = () => {
                   <p className="text-xs text-gray-400 mb-2 flex items-center gap-1">
                     <MdDiscount size={12} /> Discount
                   </p>
-                  <p className="text-sm text-gray-300 leading-relaxed">{hostel.discount} /-</p>
+                  <p className="text-sm text-gray-300 leading-relaxed">₹ {hostel.discount}/-</p>
                 </div>
 
                 <div className="p-3 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">

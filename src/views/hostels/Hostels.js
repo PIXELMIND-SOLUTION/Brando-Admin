@@ -12,6 +12,7 @@ import {
   ChevronRight, ChevronsLeft, ChevronsRight, Percent
 } from "lucide-react";
 import { MdDiscount } from "react-icons/md";
+import { BiRupee } from "react-icons/bi";
 
 const API = "https://api.brando.org.in/api/Admin";
 
@@ -30,7 +31,7 @@ const formatCurrency = (amount) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 
 // ─── Discount Modal Component ───────────────────────────────────────────────
-const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
+const DiscountModal = ({ isOpen, onClose, hostel, onSuccess, onRefresh }) => {
   const [discount, setDiscount] = useState(hostel?.discount || 0);
   const [loading, setLoading] = useState(false);
 
@@ -42,8 +43,6 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    
 
     setLoading(true);
     try {
@@ -60,8 +59,10 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
       if (response.data) {
         showAlert('success', 'Discount Updated', `Discount set to ${discount}/-`, 2000);
         onSuccess(response.data);
-        onClose();
       }
+
+      onRefresh();
+      onClose();
     } catch (error) {
       console.error('Error updating discount:', error);
       showAlert('error', 'Update Failed', error.response?.data?.message || 'Could not update discount');
@@ -85,10 +86,10 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600">
-              <Percent size={24} className="text-white" />
+              <BiRupee size={24} className="text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white">Set Discount</h3>
+              <h3 className="text-xl font-bold text-white">Set Discount Amount</h3>
               <p className="text-sm text-gray-400">{hostel?.name}</p>
             </div>
           </div>
@@ -99,7 +100,7 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
                 Discount Amount (₹)
               </label>
               <div className="relative">
-                <Percent size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                <BiRupee size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
                 <input
                   type="number"
                   value={discount}
@@ -109,13 +110,12 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
                     transition-all text-white"
                   placeholder="Enter discount Amount"
                   min="0"
-                  max="100"
                   step="1"
                   required
                 />
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                Enter a value between 0 and 100
+                Enter discount Amount value
               </p>
             </div>
 
@@ -142,6 +142,125 @@ const DiscountModal = ({ isOpen, onClose, hostel, onSuccess }) => {
                   </div>
                 ) : (
                   'Apply Discount'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Bulk Discount Modal Component ──────────────────────────────────────────
+const BulkDiscountModal = ({ isOpen, onClose, onRefresh }) => {
+  const [discount, setDiscount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) setDiscount(0);
+  }, [isOpen]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        `${API}/hostels/discount/all`,
+        { discount: Number(discount) },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      if (response.data) {
+        showAlert('success', 'Bulk Discount Applied', `Discount of ₹${discount}/- applied to all hostels`, 2000);
+      }
+
+      onRefresh();
+      onClose();
+    } catch (error) {
+      console.error('Error applying bulk discount:', error);
+      showAlert('error', 'Update Failed', error.response?.data?.message || 'Could not apply bulk discount');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-md bg-gradient-to-br from-[#0f172a] to-[#020617] rounded-2xl border border-white/20 shadow-2xl">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500">
+              <MdDiscount size={24} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white">Set Discount for All Hostels</h3>
+              <p className="text-sm text-gray-400">This will update every hostel at once</p>
+            </div>
+          </div>
+
+          <div className="my-4 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs font-medium flex items-start gap-2">
+            <span className="mt-0.5">⚠️</span>
+            <span>This action will overwrite the existing discount on <strong>all hostels</strong>. Proceed with caution.</span>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Discount Amount (₹)
+              </label>
+              <div className="relative">
+                <BiRupee size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-400" />
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseInt(e.target.value) || 0)}
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 
+                    focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none 
+                    transition-all text-white"
+                  placeholder="Enter discount amount for all hostels"
+                  min="0"
+                  step="1"
+                  required
+                />
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Enter ₹0 to remove discount from all hostels
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 rounded-xl bg-white/10 text-gray-300 font-medium 
+                  hover:bg-white/20 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 
+                  text-white font-medium hover:shadow-lg transition-all disabled:opacity-50 
+                  disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Applying...
+                  </div>
+                ) : (
+                  'Apply to All'
                 )}
               </button>
             </div>
@@ -343,7 +462,7 @@ const FilterBar = ({ categories, activeFilter, onFilterChange }) => (
 );
 
 // ─── ActionBar (outside) ─────────────────────────────────────────────────────
-const ActionBar = ({ searchTerm, onSearchChange, selectedCount, onBulkDelete, onExport, onRefresh, loadingFetch, viewMode, onViewChange }) => (
+const ActionBar = ({ searchTerm, onSearchChange, selectedCount, onBulkDelete, onExport, onRefresh, loadingFetch, viewMode, onViewChange, onBulkDiscount }) => (
   <div className="flex flex-wrap items-center gap-3 mb-6">
     <SearchBar searchTerm={searchTerm} onSearchChange={onSearchChange} />
     <div className="flex items-center gap-2 ml-auto">
@@ -353,6 +472,14 @@ const ActionBar = ({ searchTerm, onSearchChange, selectedCount, onBulkDelete, on
           <Trash2 size={16} /> Delete ({selectedCount})
         </button>
       )}
+      <button
+        onClick={onBulkDiscount}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white font-medium text-sm hover:shadow-lg hover:opacity-90 transition-all"
+        title="Set discount for all hostels"
+      >
+        <MdDiscount size={16} />
+        <span className="hidden sm:inline">All Discount</span>
+      </button>
       <button onClick={onExport} className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all" title="Export to CSV">
         <Download size={18} />
       </button>
@@ -437,7 +564,7 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
               <td className="px-4 py-4">
                 <div className="flex items-center justify-center">
                   <span className="px-2 py-1 rounded-lg text-xs font-semibold text-emerald-400 bg-emerald-400/10">
-                    {hostel.discount || 0}%
+                    ₹ {hostel.discount || 0}/-
                   </span>
                 </div>
               </td>
@@ -655,6 +782,7 @@ const Hostels = () => {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
   const [selectedHostelForDiscount, setSelectedHostelForDiscount] = useState(null);
+  const [bulkDiscountModalOpen, setBulkDiscountModalOpen] = useState(false);
 
   const fetchHostels = useCallback(async () => {
     try {
@@ -819,6 +947,13 @@ const Hostels = () => {
         onClose={() => setDiscountModalOpen(false)}
         hostel={selectedHostelForDiscount}
         onSuccess={handleDiscountSuccess}
+        onRefresh={fetchHostels}
+      />
+
+      <BulkDiscountModal
+        isOpen={bulkDiscountModalOpen}
+        onClose={() => setBulkDiscountModalOpen(false)}
+        onRefresh={fetchHostels}
       />
 
       <PageHeader
@@ -839,6 +974,7 @@ const Hostels = () => {
         loadingFetch={loading.fetch}
         viewMode={viewMode}
         onViewChange={setViewMode}
+        onBulkDiscount={() => setBulkDiscountModalOpen(true)}
       />
 
       <FilterBar
