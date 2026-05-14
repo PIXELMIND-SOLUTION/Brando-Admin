@@ -663,8 +663,8 @@ const Customers = () => {
                     <td className="px-4 py-4 text-center">
                       {customer.hostelId ? (
                         <div>
-                          <p className="text-sm text-white font-medium">{customer.hostelId.name}</p>
-                          <p className="text-xs text-gray-500">{customer.hostelId.address}</p>
+                          <p className="text-sm text-white font-medium">{customer.hostelId}</p>
+                          <p className="text-xs text-gray-500">{customer.hostelName}</p>
                         </div>
                       ) : <span className="text-sm text-gray-500">None</span>}
                     </td>
