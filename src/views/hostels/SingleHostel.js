@@ -384,29 +384,77 @@ const SingleHostel = () => {
                   {filteredSharings.map((sharing, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/15 transition-colors gap-3"
+                      className="flex flex-col gap-4 p-4 bg-white/10 rounded-xl border border-white/10 hover:bg-white/15 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] flex items-center justify-center text-white font-bold text-lg border border-white/20">
-                          {idx + 1}
-                        </div>
-                        <div>
-                          <p className="font-bold text-white">{sharing.shareType}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`text-xs px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${sharing.type === "AC" ? "bg-blue-500/20 text-blue-300" : "bg-orange-500/20 text-orange-300"
-                              }`}>
-                              {sharing.type === "AC"
-                                ? <><Snowflake size={10} /> AC</>
-                                : <><Wind size={10} /> Non-AC</>}
-                            </span>
-                            <p className="text-xs text-gray-400">Monthly / Daily</p>
+                      {/* Top */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        {/* Left */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] flex items-center justify-center text-white font-bold text-lg border border-white/20">
+                            {idx + 1}
+                          </div>
+
+                          <div>
+                            <p className="font-bold text-white">
+                              {sharing.shareType}
+                            </p>
+
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span
+                                className={`text-xs px-1.5 py-0.5 rounded font-semibold inline-flex items-center gap-1 ${sharing.type === "AC"
+                                  ? "bg-blue-500/20 text-blue-300"
+                                  : "bg-orange-500/20 text-orange-300"
+                                  }`}
+                              >
+                                {sharing.type === "AC" ? (
+                                  <>
+                                    <Snowflake size={10} /> AC
+                                  </>
+                                ) : (
+                                  <>
+                                    <Wind size={10} /> Non-AC
+                                  </>
+                                )}
+                              </span>
+
+                              <p className="text-xs text-gray-400">
+                                Monthly / Daily
+                              </p>
+                            </div>
                           </div>
                         </div>
+
+                        {/* Price */}
+                        <div className="text-left sm:text-right">
+                          <p className="font-black text-white text-lg">
+                            {formatCurrency(sharing.monthlyPrice)}
+                          </p>
+
+                          <p className="text-xs text-gray-400">
+                            {formatCurrency(sharing.dailyPrice)}/day
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-left sm:text-right">
-                        <p className="font-black text-white text-lg">{formatCurrency(sharing.monthlyPrice)}</p>
-                        <p className="text-xs text-gray-400">{formatCurrency(sharing.dailyPrice)}/day</p>
-                      </div>
+
+                      {/* Room Numbers */}
+                      {sharing.roomNumbers?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-gray-400 mb-2 font-medium">
+                            Room Numbers
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {sharing.roomNumbers.map((room, roomIdx) => (
+                              <button
+                                key={roomIdx}
+                                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 text-emerald-300 text-sm font-semibold hover:scale-105 hover:bg-emerald-500/30 transition-all"
+                              >
+                                Room {room}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
