@@ -10,15 +10,37 @@ import {
     Bell,
     ArrowBigLeft,
     LogOut,
-    DollarSign
+    DollarSign,
+    Boxes,
+    Apple,
+    Leaf,
+    Carrot
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
 import logo from "../assets/logo.png"
 
 const navItems = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/dashboard/customers", label: "Users", icon: Users },
+    { to: "/dashboard", label: "Brando", icon: Boxes },
+    { to: "/dashboard/brando", label: "Dashboard", icon: LayoutDashboard },
+    {
+        to: "/dashboard/customers",
+        label: "Users",
+        icon: Users,
+        children: [
+            { to: "/dashboard/customers/today", label: "Today Users", icon: List },
+            { to: "/dashboard/customers", label: "Total Users", icon: Eye }
+        ],
+    },
     { to: "/dashboard/category", label: "Category", icon: BsGenderNeuter },
+    {
+        to: "/dashboard/products",
+        label: "Products",
+        icon: Carrot,
+        children: [
+            { to: "/dashboard/create-product", label: "Create Products", icon: List },
+            { to: "/dashboard/products", label: "Total Products", icon: Star },
+        ],
+    },
     {
         to: "/dashboard/hostels",
         label: "Hostels",
@@ -34,8 +56,8 @@ const navItems = [
         label: "Vendors",
         icon: UserCircle,
         children: [
-            { to: "/dashboard/vendors", label: "All Vendors", icon: List },
-            { to: "/dashboard/vendors/pending", label: "Pending", icon: Eye }
+            { to: "/dashboard/vendors/pending", label: "Today Vendors", icon: List },
+            { to: "/dashboard/vendors", label: "Total Vendors", icon: Eye }
         ],
     },
     {
@@ -185,7 +207,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
         ${isCollapsed ? "justify-center p-4" : "justify-between px-5 py-[18px]"}`}
             >
                 {!isCollapsed && (
-                    <div className="flex items-center gap-2.5">
+                    <div onClick={() => navigate('/dashboard')} className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
                             <img
                                 src={logo}

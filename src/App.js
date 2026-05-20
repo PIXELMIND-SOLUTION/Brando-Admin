@@ -27,6 +27,9 @@ import AllUserPayments from "./views/Payments/AllUserPayments";
 import SingleUserPayments from "./views/Payments/SingleUserPayments";
 import HostelUsers from "./views/hostels/HostelUsers";
 import RecommendedHostels from "./views/hostels/RecommendedHostels";
+import BrandoComponent from "./pages/BrandoComponent";
+import AllProducts from "./views/products/AllProducts";
+import CreateProductAndCategory from "./views/products/CreateCategoryAndProduct";
 
 const App = () => {
   return (
@@ -38,9 +41,14 @@ const App = () => {
       {/* Dashboard Layout */}
       <Route path="/dashboard" element={<AdminLayout />}>
 
-        <Route index element={<Dashboard />} />
+        <Route index element={<BrandoComponent />} />
+
+        <Route path="brando" element={<Dashboard />} />
 
         <Route path="category" element={<Category />} />
+
+        <Route path="create-product" element={<CreateProductAndCategory />} />
+        <Route path="products" element={<AllProducts />} />
 
         <Route path="agents" element={<Agents />} />
         <Route path="customers" element={<Customers />} />

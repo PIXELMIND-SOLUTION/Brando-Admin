@@ -196,7 +196,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
           </button>
 
           {/* Logo / Brand */}
-          <div className="flex items-center gap-3">
+          <div onClick={()=>navigate('/dashboard')} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center overflow-hidden">
               <img src={logo} alt="Logo" className="w-full h-full object-cover" />
             </div>
@@ -360,7 +360,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                   className="absolute right-0 mt-2 w-56 bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
                 >
                   {/* User Info Header */}
-                  <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+                  <div onClick={()=>navigate('/dashboard')} className="px-4 py-3 border-b border-white/10 bg-white/5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold overflow-hidden">
                         <img src={logo} alt="Admin" className="w-full h-full object-cover" />
