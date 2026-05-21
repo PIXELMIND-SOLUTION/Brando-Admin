@@ -37,8 +37,9 @@ const navItems = [
         label: "Products",
         icon: Carrot,
         children: [
+            { to: "/dashboard/product-banners", label: "Products Banners", icon: PlusCircle },
             { to: "/dashboard/create-product", label: "Create Products", icon: List },
-            { to: "/dashboard/products", label: "Total Products", icon: Star },
+            // { to: "/dashboard/products", label: "Total Products", icon: Star },
         ],
     },
     {

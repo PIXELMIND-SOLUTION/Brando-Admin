@@ -30,6 +30,7 @@ import RecommendedHostels from "./views/hostels/RecommendedHostels";
 import BrandoComponent from "./pages/BrandoComponent";
 import AllProducts from "./views/products/AllProducts";
 import CreateProductAndCategory from "./views/products/CreateCategoryAndProduct";
+import ProductBanners from "./views/banners/ProductBanners";
 
 const App = () => {
   return (
@@ -62,6 +63,7 @@ const App = () => {
 
         <Route path="banners" element={<UserBanners />} />
         <Route path="vendor-banners" element={<VendorBanners />} />
+        <Route path="product-banners" element={<ProductBanners />} />
 
         <Route path="vendors/pending" element={<PendingVendors />} />
         <Route path="vendors" element={<AllVendors />} />
