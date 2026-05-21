@@ -22,14 +22,13 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
 
 const ProductBanners = () => {
   // State management
-  const [images, setImages] = useState([]);
-  const [preview, setPreview] = useState([]);
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState({ create: false, fetch: false, update: false, delete: false });
   const [error, setError] = useState("");
   const [banners, setBanners] = useState([]);
   const [selectedBanner, setSelectedBanner] = useState(null);
   const [view, setView] = useState('list'); // 'list', 'create', 'view', 'edit'
-  const [existingImages, setExistingImages] = useState([]);
 
   // Fetch all product banners
   const fetchBanners = async () => {
@@ -55,7 +54,6 @@ const ProductBanners = () => {
       setLoading(prev => ({ ...prev, fetch: true }));
       const { data } = await axios.get(`${API}/product-banner/${id}`);
       setSelectedBanner(data.productBanner);
-      setExistingImages(data.productBanner.images || []);
       setView('view');
     } catch (error) {
       console.error(error);
@@ -67,39 +65,27 @@ const ProductBanners = () => {
 
   // Handle image upload
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-
-    if (files.length === 0) return;
+    const file = e.target.files?.[0];
+    
+    if (!file) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
-    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
-
-    if (invalidFiles.length > 0) {
+    
+    if (!validTypes.includes(file.type)) {
       setError("Only JPG, PNG, and WEBP images are allowed");
       return;
     }
 
     setError("");
-    setImages(prev => [...prev, ...files]);
-    setPreview(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
-  };
-
-  const removeImage = (index) => {
-    URL.revokeObjectURL(preview[index]);
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setPreview(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const removeExistingImage = (index) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
   };
 
   // Reset form
   const resetForm = () => {
-    preview.forEach(url => URL.revokeObjectURL(url));
-    setImages([]);
-    setPreview([]);
-    setExistingImages([]);
+    if (preview) URL.revokeObjectURL(preview);
+    setImage(null);
+    setPreview("");
     setError("");
   };
 
@@ -107,13 +93,13 @@ const ProductBanners = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (images.length === 0) {
-      setError("Please upload at least one image");
+    if (!image) {
+      setError("Please upload an image");
       return;
     }
 
     const formData = new FormData();
-    images.forEach((img) => formData.append("images", img));
+    formData.append("image", image);
 
     try {
       setLoading(prev => ({ ...prev, create: true }));
@@ -141,18 +127,13 @@ const ProductBanners = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
 
-    if (images.length === 0 && existingImages.length === 0) {
-      setError("Please upload at least one image");
+    if (!image && !selectedBanner?.image) {
+      setError("Please upload an image");
       return;
     }
 
     const formData = new FormData();
-
-    // Add new images
-    images.forEach((img) => formData.append("images", img));
-
-    // Add existing images URLs to keep them
-    existingImages.forEach((imgUrl) => formData.append("existingImages", imgUrl));
+    if (image) formData.append("image", image);
 
     try {
       setLoading(prev => ({ ...prev, update: true }));
@@ -222,9 +203,8 @@ const ProductBanners = () => {
 
   const goToEdit = (banner) => {
     setSelectedBanner(banner);
-    setImages([]);
-    setPreview([]);
-    setExistingImages(banner?.images || []);
+    setImage(null);
+    setPreview("");
     setView('edit');
   };
 
@@ -275,12 +255,11 @@ const ProductBanners = () => {
     <div className="space-y-2">
       <label className="text-sm font-bold text-gray-300 flex items-center gap-1.5">
         <Upload size={13} className="text-emerald-400" />
-        Product Banner Images
+        Product Banner Image
       </label>
       <div>
         <input
           type="file"
-          multiple
           accept="image/jpeg,image/png,image/webp,image/jpg"
           onChange={handleImageChange}
           className="hidden"
@@ -297,62 +276,45 @@ const ProductBanners = () => {
             text-white shadow-[0_4px_16px_rgba(0,0,0,0.35)] mb-3 sm:mb-4 border border-white/10">
             <Upload size={20} className="sm:w-6 sm:h-6" />
           </div>
-          <p className="font-bold text-white text-sm sm:text-base">Click to upload product banner images</p>
-          <p className="text-xs text-gray-400 mt-1 text-center">PNG, JPG, WEBP — multiple allowed</p>
+          <p className="font-bold text-white text-sm sm:text-base">Click to upload product banner image</p>
+          <p className="text-xs text-gray-400 mt-1 text-center">PNG, JPG, WEBP — single image only</p>
           <p className="text-xs text-gray-500 mt-2">Recommended: 1920x600px</p>
         </label>
       </div>
     </div>
   );
 
-  const PreviewGrid = () => (preview.length > 0 || existingImages.length > 0) && (
+  const PreviewSection = () => (preview || (selectedBanner?.image && view === 'edit')) && (
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-emerald-400">
-        Images ({existingImages.length + preview.length})
+        Image Preview
       </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        {/* Existing Images */}
-        {existingImages.map((img, index) => (
-          <div key={`existing-${index}`} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
-            shadow-[0_2px_12px_rgba(0,0,0,0.3)] aspect-video">
-            <img src={img} alt={`Existing ${index + 1}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
-              transition-opacity flex items-center justify-center gap-2">
-              <a href={img} target="_blank" rel="noopener noreferrer"
-                className="p-1.5 sm:p-2 bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#020617] rounded-full 
-                  text-white hover:scale-110 transition-transform border border-white/20">
-                <Eye size={12} className="sm:w-3.5 sm:h-3.5" />
-              </a>
-              <button type="button" onClick={() => removeExistingImage(index)}
-                className="p-1.5 sm:p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-full 
-                  text-white hover:scale-110 transition-transform shadow-lg">
-                <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
-              </button>
-            </div>
-            <div className="absolute top-1 left-1 bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded">
-              Existing
-            </div>
+      <div className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
+        shadow-[0_2px_12px_rgba(0,0,0,0.3)]">
+        <img 
+          src={preview || selectedBanner?.image} 
+          alt="Banner preview" 
+          className="w-full h-48 sm:h-64 object-cover" 
+        />
+        {preview && (
+          <button 
+            type="button" 
+            onClick={() => {
+              URL.revokeObjectURL(preview);
+              setImage(null);
+              setPreview("");
+            }}
+            className="absolute top-2 right-2 p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-full 
+              text-white hover:scale-110 transition-transform shadow-lg"
+          >
+            <X size={16} />
+          </button>
+        )}
+        {!preview && view === 'edit' && (
+          <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs px-2 py-1 rounded">
+            Current Image
           </div>
-        ))}
-
-        {/* New Images */}
-        {preview.map((img, index) => (
-          <div key={`new-${index}`} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10
-            shadow-[0_2px_12px_rgba(0,0,0,0.3)] aspect-video">
-            <img src={img} alt={`New ${index + 1}`} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
-              transition-opacity flex items-center justify-center">
-              <button type="button" onClick={() => removeImage(index)}
-                className="p-1.5 sm:p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-full 
-                  text-white hover:scale-110 transition-transform shadow-lg">
-                <X size={12} className="sm:w-3.5 sm:h-3.5" />
-              </button>
-            </div>
-            <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded">
-              New
-            </div>
-          </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -394,9 +356,9 @@ const ProductBanners = () => {
 
   const BannerCard = ({ banner }) => (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden hover:shadow-xl transition-all group">
-      <div className="relative h-32 sm:h-40 bg-white/5">
+      <div className="relative h-40 sm:h-48 bg-white/5">
         <img
-          src={banner.images[0]}
+          src={banner.image}
           alt="Product Banner"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
@@ -405,14 +367,15 @@ const ProductBanners = () => {
             className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80 transition-all">
             <Eye size={14} className="sm:w-4 sm:h-4" />
           </button>
+          <button onClick={() => goToEdit(banner)}
+            className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-emerald-400 hover:bg-black/80 transition-all">
+            <Edit2 size={14} className="sm:w-4 sm:h-4" />
+          </button>
           <button onClick={() => handleDelete(banner._id)}
             disabled={loading.delete}
             className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80 transition-all">
             <Trash2 size={14} className="sm:w-4 sm:h-4" />
           </button>
-        </div>
-        <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-lg">
-          {banner.images.length} {banner.images.length === 1 ? 'image' : 'images'}
         </div>
       </div>
       <div className="p-3 sm:p-4">
@@ -421,13 +384,9 @@ const ProductBanners = () => {
             <Calendar size={12} className="text-emerald-400" />
             {new Date(banner.createdAt).toLocaleDateString()}
           </div>
-          <button
-            onClick={() => goToEdit(banner)}
-            className="p-1.5 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:scale-110 transition-all"
-            title="Edit Banner"
-          >
-            <Edit2 size={12} />
-          </button>
+          <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
+            Banner
+          </span>
         </div>
       </div>
     </div>
@@ -442,7 +401,7 @@ const ProductBanners = () => {
             <PageHeader
               icon={Image}
               title="Create Product Banner"
-              subtitle="Upload new product banner images"
+              subtitle="Upload new product banner image"
               action={<BackButton />}
             />
             <ErrorAlert />
@@ -452,7 +411,7 @@ const ProductBanners = () => {
               </div>
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <UploadArea />
-                <PreviewGrid />
+                <PreviewSection />
                 <SubmitButton loading={loading.create} text="Create Banner" onClick={handleSubmit} />
               </form>
             </div>
@@ -471,18 +430,17 @@ const ProductBanners = () => {
             <ErrorAlert />
             <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
               <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-                <h2 className="text-xs font-black text-white tracking-widest uppercase">Update Product Banner Images</h2>
+                <h2 className="text-xs font-black text-white tracking-widest uppercase">Update Product Banner</h2>
               </div>
               <form onSubmit={handleUpdate} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <UploadArea />
-                <PreviewGrid />
+                <PreviewSection />
                 <div className="text-xs text-gray-400 bg-white/5 p-3 rounded-lg">
                   <p className="flex items-center gap-1">💡 <span>Tips for updating:</span></p>
                   <ul className="mt-1 ml-4 space-y-0.5">
-                    <li>• Images marked "Existing" will be kept</li>
-                    <li>• Click the trash icon on existing images to remove them</li>
-                    <li>• Upload new images to add more</li>
-                    <li>• All changes will be applied when you click Update</li>
+                    <li>• Upload a new image to replace the current one</li>
+                    <li>• The current image will be replaced with the new one</li>
+                    <li>• Leave image field empty to keep current image</li>
                   </ul>
                 </div>
                 <SubmitButton loading={loading.update} text="Update Banner" onClick={handleUpdate} />
@@ -512,20 +470,20 @@ const ProductBanners = () => {
             />
             <div className="bg-white/5 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-white/10 shadow-lg overflow-hidden">
               <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600">
-                <h2 className="text-xs font-black text-white tracking-widest uppercase">Product Banner Images</h2>
+                <h2 className="text-xs font-black text-white tracking-widest uppercase">Product Banner</h2>
               </div>
               <div className="p-4 sm:p-6">
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  {selectedBanner.images.map((img, idx) => (
-                    <div key={idx} className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10">
-                      <img src={img} alt={`Product Banner ${idx}`} className="w-full h-32 sm:h-40 object-cover" />
-                      <a href={img} target="_blank" rel="noopener noreferrer"
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
-                          flex items-center justify-center transition-opacity">
-                        <Eye size={20} className="text-white" />
-                      </a>
-                    </div>
-                  ))}
+                <div className="relative group rounded-lg sm:rounded-xl overflow-hidden border border-white/10">
+                  <img 
+                    src={selectedBanner.image} 
+                    alt="Product Banner" 
+                    className="w-full h-64 sm:h-96 object-cover" 
+                  />
+                  <a href={selectedBanner.image} target="_blank" rel="noopener noreferrer"
+                    className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 
+                      flex items-center justify-center transition-opacity">
+                    <Eye size={32} className="text-white" />
+                  </a>
                 </div>
                 <div className="mt-4 sm:mt-6 p-4 bg-white/10 rounded-xl">
                   <p className="text-xs text-gray-400">Created</p>
@@ -572,7 +530,7 @@ const ProductBanners = () => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {banners.map(banner => (
                   <BannerCard key={banner._id} banner={banner} />
                 ))}
@@ -588,7 +546,7 @@ const ProductBanners = () => {
               </h3>
               <ul className="space-y-1.5 text-xs text-gray-400">
                 <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Use high-quality product images</li>
-                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Recommended: 1920x600px</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Recommended: 1360x680px</li>
                 <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Max file size: 5MB per image</li>
                 <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Formats: JPG, PNG, WEBP</li>
                 <li className="flex items-start gap-2"><span className="text-emerald-400">•</span>Showcase featured products or promotions</li>

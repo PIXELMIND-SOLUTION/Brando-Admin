@@ -21,7 +21,16 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
 });
 
 /* ─────────────────────── UNITS ─────────────────────── */
-const UNITS = ["kg", "litre", "dozen"];
+const UNITS = [
+    { value: "kg", label: "Kilogram (kg)" },
+    { value: "g", label: "Gram (g)" },
+    { value: "litre", label: "Litre (L)" },
+    { value: "ml", label: "Millilitre (ml)" },
+    { value: "dozen", label: "Dozen" },
+    { value: "piece", label: "Piece" },
+    { value: "packet", label: "Packet" },
+    { value: "bottle", label: "Bottle" }
+];
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 const InputField = memo(({ value, onChange, placeholder, type = "text" }) => (
@@ -91,7 +100,7 @@ const SectionHeader = ({ icon: Icon, title, count }) => (
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     const getPageNumbers = () => {
         const pages = [];
-        const maxVisible = window.innerWidth < 640 ? 3 : 5;
+        const maxVisible = typeof window !== 'undefined' && window.innerWidth < 640 ? 3 : 5;
         
         if (totalPages <= maxVisible) {
             for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -231,7 +240,7 @@ const DataTable = ({ columns, data, onEdit, onDelete, itemsPerPage = 10 }) => {
                                                 ) : col.accessor === 'category' ? (
                                                     <span className="truncate max-w-[100px] block">{item.categoryId?.name || 'Uncategorized'}</span>
                                                 ) : col.accessor === 'price' ? (
-                                                    <span>₹{item.price}/{item.type}</span>
+                                                    <span>₹{item.price}</span>
                                                 ) : col.accessor === 'createdAt' ? (
                                                     <span className="text-[10px] sm:text-xs whitespace-nowrap">
                                                         {new Date(item.createdAt).toLocaleDateString()}
@@ -285,7 +294,14 @@ const CreateProductAndCategory = () => {
     const [highlightCategory, setHighlightCategory] = useState(false);
 
     const [prodForm, setProdForm] = useState({
-        name: "", categoryId: "", price: "", type: "", image: null, imagePreview: "",
+        name: "", 
+        categoryId: "", 
+        price: "", 
+        quantity: "", 
+        unit: "", 
+        type: "", 
+        image: null, 
+        imagePreview: ""
     });
     const [prodErrors, setProdErrors] = useState({});
     const [editingProduct, setEditingProduct] = useState(null);
@@ -460,21 +476,46 @@ const CreateProductAndCategory = () => {
         setHighlightCategory(false);
     };
 
+    // Helper function to combine quantity and unit
+    const combineQuantityAndUnit = (quantity, unit) => {
+        if (!quantity && !unit) return "";
+        if (quantity && !unit) return quantity.toString();
+        if (!quantity && unit) return unit;
+        return `${quantity}${unit}`;
+    };
+
+    // Helper function to parse type into quantity and unit
+    const parseType = (type) => {
+        if (!type) return { quantity: "", unit: "" };
+        
+        // Try to match pattern: number followed by letters
+        const match = type.match(/^(\d+(?:\.\d+)?)([a-zA-Z]+)$/);
+        if (match) {
+            return { quantity: match[1], unit: match[2] };
+        }
+        
+        // If no number found, treat as unit only
+        return { quantity: "", unit: type };
+    };
+
     /* ── Create product ── */
     const submitProduct = async () => {
         const errs = {};
         if (!prodForm.name.trim()) errs.name = "Product name is required";
         if (!prodForm.categoryId) errs.categoryId = "Select a category";
         if (!prodForm.price) errs.price = "Price is required";
-        if (!prodForm.type) errs.type = "Unit is required";
+        if (!prodForm.quantity && !prodForm.unit) errs.type = "Either quantity or unit is required";
         
         setProdErrors(errs);
         if (Object.keys(errs).length) return;
 
+        // Combine quantity and unit to create type
+        const combinedType = combineQuantityAndUnit(prodForm.quantity, prodForm.unit);
+        
         const formData = new FormData();
         formData.append("name", prodForm.name.trim());
         formData.append("price", prodForm.price);
-        formData.append("type", prodForm.type);
+        formData.append("type", combinedType);
         formData.append("categoryId", prodForm.categoryId);
         if (prodForm.image) formData.append("image", prodForm.image);
 
@@ -483,8 +524,17 @@ const CreateProductAndCategory = () => {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             
-            showAlert('success', 'Success!', 'Product created successfully', 2000);
-            setProdForm({ name: "", categoryId: "", price: "", type: "", image: null, imagePreview: "" });
+            showAlert('success', 'Success!', `Product created successfully with type: ${combinedType}`, 2000);
+            setProdForm({ 
+                name: "", 
+                categoryId: "", 
+                price: "", 
+                quantity: "", 
+                unit: "", 
+                type: "", 
+                image: null, 
+                imagePreview: "" 
+            });
             setProdErrors({});
             await fetchProducts();
         } catch (error) {
@@ -499,15 +549,18 @@ const CreateProductAndCategory = () => {
         if (!prodForm.name.trim()) errs.name = "Product name is required";
         if (!prodForm.categoryId) errs.categoryId = "Select a category";
         if (!prodForm.price) errs.price = "Price is required";
-        if (!prodForm.type) errs.type = "Unit is required";
+        if (!prodForm.quantity && !prodForm.unit) errs.type = "Either quantity or unit is required";
         
         setProdErrors(errs);
         if (Object.keys(errs).length) return;
 
+        // Combine quantity and unit to create type
+        const combinedType = combineQuantityAndUnit(prodForm.quantity, prodForm.unit);
+        
         const formData = new FormData();
         formData.append("name", prodForm.name.trim());
         formData.append("price", prodForm.price);
-        formData.append("type", prodForm.type);
+        formData.append("type", combinedType);
         formData.append("categoryId", prodForm.categoryId);
         if (prodForm.image) formData.append("image", prodForm.image);
 
@@ -516,8 +569,17 @@ const CreateProductAndCategory = () => {
                 headers: { "Content-Type": "multipart/form-data" }
             });
             
-            showAlert('success', 'Updated!', 'Product updated successfully', 2000);
-            setProdForm({ name: "", categoryId: "", price: "", type: "", image: null, imagePreview: "" });
+            showAlert('success', 'Updated!', `Product updated successfully with type: ${combinedType}`, 2000);
+            setProdForm({ 
+                name: "", 
+                categoryId: "", 
+                price: "", 
+                quantity: "", 
+                unit: "", 
+                type: "", 
+                image: null, 
+                imagePreview: "" 
+            });
             setEditingProduct(null);
             setProdErrors({});
             await fetchProducts();
@@ -557,11 +619,16 @@ const CreateProductAndCategory = () => {
 
     /* ── Edit product ── */
     const handleEditProduct = (product) => {
+        // Parse the type field to get quantity and unit
+        const { quantity, unit } = parseType(product.type);
+        
         setEditingProduct(product);
         setProdForm({
             name: product.name,
             categoryId: product.categoryId?._id || product.categoryId,
             price: product.price,
+            quantity: quantity,
+            unit: unit,
             type: product.type,
             image: null,
             imagePreview: product.image
@@ -573,7 +640,16 @@ const CreateProductAndCategory = () => {
     /* ── Cancel edit product ── */
     const cancelEditProduct = () => {
         setEditingProduct(null);
-        setProdForm({ name: "", categoryId: "", price: "", type: "", image: null, imagePreview: "" });
+        setProdForm({ 
+            name: "", 
+            categoryId: "", 
+            price: "", 
+            quantity: "", 
+            unit: "", 
+            type: "", 
+            image: null, 
+            imagePreview: "" 
+        });
         setProdErrors({});
         setHighlightProduct(false);
     };
@@ -591,6 +667,7 @@ const CreateProductAndCategory = () => {
         { header: "Name", accessor: "name" },
         { header: "Category", accessor: "category" },
         { header: "Price", accessor: "price" },
+        { header: "Type", accessor: "type" },
         { header: "Created At", accessor: "createdAt" }
     ];
 
@@ -698,22 +775,44 @@ const CreateProductAndCategory = () => {
                             {prodErrors.categoryId && <p className="text-red-400 text-xs mt-1.5 pl-1">{prodErrors.categoryId}</p>}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div>
                             <InputField
                                 type="number"
                                 value={prodForm.price}
                                 onChange={(e) => setProdForm((p) => ({ ...p, price: e.target.value }))}
-                                placeholder="Price"
+                                placeholder="Price (₹)"
                             />
-                            <SelectField
-                                value={prodForm.type}
-                                onChange={(e) => setProdForm((p) => ({ ...p, type: e.target.value }))}
-                                placeholder="Unit"
-                                options={UNITS}
-                            />
+                            {prodErrors.price && <p className="text-red-400 text-xs mt-1.5 pl-1">{prodErrors.price}</p>}
                         </div>
-                        {prodErrors.price && <p className="text-red-400 text-xs mt-1.5 pl-1">{prodErrors.price}</p>}
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <InputField
+                                    type="number"
+                                    value={prodForm.quantity}
+                                    onChange={(e) => setProdForm((p) => ({ ...p, quantity: e.target.value }))}
+                                    placeholder="Quantity (e.g., 1, 250, 500)"
+                                />
+                            </div>
+                            <div>
+                                <SelectField
+                                    value={prodForm.unit}
+                                    onChange={(e) => setProdForm((p) => ({ ...p, unit: e.target.value }))}
+                                    placeholder="Select unit"
+                                    options={UNITS}
+                                />
+                            </div>
+                        </div>
                         {prodErrors.type && <p className="text-red-400 text-xs mt-1.5 pl-1">{prodErrors.type}</p>}
+                        
+                        {/* Preview of combined type */}
+                        {(prodForm.quantity || prodForm.unit) && (
+                            <div className="mt-2 p-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                                <p className="text-xs text-green-400">
+                                    <span className="font-semibold">Preview:</span> Will be saved as "{combineQuantityAndUnit(prodForm.quantity, prodForm.unit)}"
+                                </p>
+                            </div>
+                        )}
 
                         <UploadBox preview={prodForm.imagePreview} onChange={handleProdImage} />
 

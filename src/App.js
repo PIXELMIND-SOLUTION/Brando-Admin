@@ -31,6 +31,9 @@ import BrandoComponent from "./pages/BrandoComponent";
 import AllProducts from "./views/products/AllProducts";
 import CreateProductAndCategory from "./views/products/CreateCategoryAndProduct";
 import ProductBanners from "./views/banners/ProductBanners";
+import ProductOrders from "./views/products/ProductBookings";
+import SingleUserProductOrders from "./views/products/SingleUserProductOrders";
+import SingleVendorProductOrders from "./views/products/SingleVendorProductOrders";
 
 const App = () => {
   return (
@@ -50,6 +53,9 @@ const App = () => {
 
         <Route path="create-product" element={<CreateProductAndCategory />} />
         <Route path="products" element={<AllProducts />} />
+        <Route path="product-bookings" element={<ProductOrders />} />
+        <Route path="/dashboard/orders/user/:userId" element={<SingleUserProductOrders />} />
+        <Route path="/dashboard/orders/vendor/:vendorId" element={<SingleVendorProductOrders />} />
 
         <Route path="agents" element={<Agents />} />
         <Route path="customers" element={<Customers />} />

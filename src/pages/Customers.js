@@ -10,7 +10,10 @@ import {
   BadgeCheck, Clock, Home, Tag, ChevronLeft,
   ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
   Mail, User, Edit, Star, IndianRupee,
-  DollarSign
+  DollarSign,
+  Package,
+  Leaf,
+  Carrot
 } from "lucide-react";
 
 const API = "https://api.brando.org.in/api/admin";
@@ -678,6 +681,12 @@ const Customers = () => {
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/dashboard/orders/user/${customer._id}`)}
+                          className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100" title="Product Orders"
+                        >
+                          <Carrot size={14} />
+                        </button>
                         <button onClick={() => navigate(`/dashboard/user-payments/${customer._id}`)}
                           className="p-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100" title="Payments">
                           <DollarSign size={14} />
@@ -726,6 +735,12 @@ const Customers = () => {
                   </div>
                 </div>
                 <div className="absolute top-2 right-2 flex gap-1.5">
+                  <button
+                    onClick={() => navigate(`/dashboard/orders/user/${customer._id}`)}
+                    className="p-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-emerald-400 hover:bg-black/80 transition-all"
+                  >
+                    <Carrot size={14} />
+                  </button>
                   <button onClick={() => viewCustomer(customer)} className="p-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80"><Eye size={14} /></button>
                   <button onClick={() => openEditModal(customer)} className="p-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-yellow-400 hover:bg-black/80"><Edit size={14} /></button>
                   <button onClick={() => handleDelete(customer._id)} disabled={loading.delete} className="p-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-red-400 hover:bg-black/80"><Trash2 size={14} /></button>

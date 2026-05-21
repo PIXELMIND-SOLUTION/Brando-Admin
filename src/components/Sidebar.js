@@ -39,7 +39,7 @@ const navItems = [
         children: [
             { to: "/dashboard/product-banners", label: "Products Banners", icon: PlusCircle },
             { to: "/dashboard/create-product", label: "Create Products", icon: List },
-            // { to: "/dashboard/products", label: "Total Products", icon: Star },
+            { to: "/dashboard/product-bookings", label: "Products Bookings", icon: Star },
         ],
     },
     {

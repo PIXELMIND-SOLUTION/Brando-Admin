@@ -9,7 +9,8 @@ import {
   SortAsc, SortDesc, Search, TrendingUp,
   BadgeCheck, Clock, Home, ChevronLeft,
   ChevronRight, ChevronsLeft, ChevronsRight,
-  Shield, AlertCircle, Edit
+  Shield, AlertCircle, Edit,
+  Leaf
 } from "lucide-react";
 
 const API = "https://api.brando.org.in/api/admin";
@@ -29,8 +30,8 @@ const showAlert = (icon, title, text, timer) => Swal.fire({
 const StatusBadge = ({ status }) => {
   const config = {
     approved: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10' },
-    rejected:  { icon: XCircle,    color: 'text-red-400 bg-red-500/10'     },
-    pending:   { icon: Clock,      color: 'text-yellow-400 bg-yellow-500/10' }
+    rejected: { icon: XCircle, color: 'text-red-400 bg-red-500/10' },
+    pending: { icon: Clock, color: 'text-yellow-400 bg-yellow-500/10' }
   };
   const { icon: Icon, color } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10' };
   return (
@@ -83,12 +84,11 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, itemsPerPage, 
           page === '...'
             ? <span key={`e${i}`} className="px-2 py-1 text-gray-400 text-sm">…</span>
             : <button key={page} onClick={() => onPageChange(page)}
-                className={`min-w-[34px] h-9 px-2 rounded-lg text-sm font-medium transition-all ${
-                  currentPage === page
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
-                {page}
-              </button>
+              className={`min-w-[34px] h-9 px-2 rounded-lg text-sm font-medium transition-all ${currentPage === page
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
+              {page}
+            </button>
         )}
         <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages} className={btnBase}><ChevronRight size={16} /></button>
         <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages} className={btnBase}><ChevronsRight size={16} /></button>
@@ -100,15 +100,15 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, itemsPerPage, 
 // ── Main Component ────────────────────────────────────────────────────────────
 const AllVendors = () => {
   const navigate = useNavigate();
-  const [vendors, setVendors]               = useState([]);
-  const [loading, setLoading]               = useState({ fetch: false, delete: false });
-  const [filter, setFilter]                 = useState('All');
-  const [viewMode, setViewMode]             = useState('table');
-  const [searchTerm, setSearchTerm]         = useState('');
-  const [sortConfig, setSortConfig]         = useState({ key: 'createdAt', direction: 'desc' });
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState({ fetch: false, delete: false });
+  const [filter, setFilter] = useState('All');
+  const [viewMode, setViewMode] = useState('table');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [selectedVendors, setSelectedVendors] = useState([]);
-  const [currentPage, setCurrentPage]       = useState(1);
-  const [itemsPerPage, setItemsPerPage]     = useState(12);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchVendors = useCallback(async () => {
@@ -156,8 +156,8 @@ const AllVendors = () => {
     });
   }, [vendors, filter, searchTerm, sortConfig]);
 
-  const totalItems  = filteredAndSorted.length;
-  const totalPages  = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const totalItems = filteredAndSorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
   const paginatedVendors = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -166,10 +166,10 @@ const AllVendors = () => {
 
   // ── Stats (memoized) ──────────────────────────────────────────────────────
   const stats = useMemo(() => [
-    { label: 'Total Vendors', value: vendors.length,                                                  icon: Users,        color: 'from-emerald-500 to-emerald-600' },
-    { label: 'Approved',      value: vendors.filter(v => v.approvalStatus === 'approved').length,     icon: CheckCircle,  color: 'from-green-500 to-emerald-500'   },
-    { label: 'Pending',       value: vendors.filter(v => v.approvalStatus === 'pending').length,      icon: Clock,        color: 'from-yellow-500 to-orange-500'   },
-    { label: 'Rejected',      value: vendors.filter(v => v.approvalStatus === 'rejected').length,     icon: XCircle,      color: 'from-red-500 to-rose-500'        },
+    { label: 'Total Vendors', value: vendors.length, icon: Users, color: 'from-emerald-500 to-emerald-600' },
+    { label: 'Approved', value: vendors.filter(v => v.approvalStatus === 'approved').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
+    { label: 'Pending', value: vendors.filter(v => v.approvalStatus === 'pending').length, icon: Clock, color: 'from-yellow-500 to-orange-500' },
+    { label: 'Rejected', value: vendors.filter(v => v.approvalStatus === 'rejected').length, icon: XCircle, color: 'from-red-500 to-rose-500' },
   ], [vendors]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -228,15 +228,15 @@ const AllVendors = () => {
   }, [selectedVendors, fetchVendors]);
 
   const exportToCSV = useCallback(() => {
-    const headers = ['Name','Mobile','Email','Status','OTP Verified','Total Hostels','Created','Last Updated'];
+    const headers = ['Name', 'Mobile', 'Email', 'Status', 'OTP Verified', 'Total Hostels', 'Created', 'Last Updated'];
     const rows = filteredAndSorted.map(v => [
-      v.name||'N/A', v.mobileNumber||'N/A', v.email||'N/A', v.approvalStatus||'N/A',
-      v.otpVerified?'Yes':'No', v.totalHostels||0,
+      v.name || 'N/A', v.mobileNumber || 'N/A', v.email || 'N/A', v.approvalStatus || 'N/A',
+      v.otpVerified ? 'Yes' : 'No', v.totalHostels || 0,
       new Date(v.createdAt).toLocaleDateString(), new Date(v.updatedAt).toLocaleDateString()
     ]);
-    const csv = [headers,...rows].map(r=>r.join(',')).join('\n');
+    const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     a.download = `vendors_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
   }, [filteredAndSorted]);
@@ -401,11 +401,11 @@ const AllVendors = () => {
                     />
                   </th>
                   {[
-                    ['name',           'Vendor',     Users],
-                    ['mobileNumber',   'Contact',    Phone],
-                    ['approvalStatus', 'Status',     Shield],
-                    ['totalHostels',   'Hostels',    Building2],
-                    ['createdAt',      'Registered', Calendar],
+                    ['name', 'Vendor', Users],
+                    ['mobileNumber', 'Contact', Phone],
+                    ['approvalStatus', 'Status', Shield],
+                    ['totalHostels', 'Hostels', Building2],
+                    ['createdAt', 'Registered', Calendar],
                   ].map(([key, label, Icon]) => (
                     <th key={key} className="px-3 sm:px-4 py-3 sm:py-4 text-left">
                       <button onClick={() => handleSort(key)}
@@ -468,6 +468,15 @@ const AllVendors = () => {
                     </td>
                     <td className="px-3 sm:px-4 py-3 sm:py-4">
                       <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() =>
+                            navigate(`/dashboard/orders/vendor/${vendor._id}`)
+                          }
+                          className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:shadow-lg transition-all"
+                          title="Vendor Orders"
+                        >
+                          <Leaf size={13} />
+                        </button>
                         <button onClick={() => navigate(`/dashboard/vendors/${vendor._id}/bookings`)}
                           className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-green-500 text-white hover:shadow-lg transition-all opacity-100 group-hover:opacity-100" title="Bookings">
                           <Home size={13} />
@@ -521,6 +530,15 @@ const AllVendors = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 {/* Action buttons */}
                 <div className="absolute top-2 right-2 flex gap-1.5">
+                  <button
+                    onClick={() =>
+                      navigate(`/dashboard/orders/vendor/${vendor._id}`)
+                    }
+                    className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:shadow-lg transition-all"
+                    title="Vendor Orders"
+                  >
+                    <Leaf size={13} />
+                  </button>
                   <button onClick={() => navigate(`/dashboard/vendors/${vendor._id}`)}
                     className="p-1.5 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80 transition-colors">
                     <Eye size={13} />
