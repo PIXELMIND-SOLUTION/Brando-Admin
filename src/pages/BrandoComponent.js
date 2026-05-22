@@ -41,7 +41,7 @@ const data = {
         quickLinks: [
             { label: "Banners", icon: Image, route: "/dashboard/banners", ic: "purple" },
             { label: "Offers", icon: Tag, route: "/dashboard/offers", ic: "coral" },
-            { label: "Shopping", icon: ShoppingBag, route: "/dashboard/shopping", ic: "teal" },
+            { label: "Shopping", icon: ShoppingBag, route: "/dashboard/create-product", ic: "teal" },
             { label: "Messages", icon: MessageCircle, route: "/dashboard/messages", ic: "blue" },
             { label: "Shopping banners", icon: LayoutTemplate, route: "/dashboard/shopping-banners", ic: "amber" },
         ],
@@ -65,7 +65,7 @@ const data = {
         ],
         quickLinks: [
             { label: "Banners", icon: Image, route: "/dashboard/vendor-banners", ic: "purple" },
-            { label: "Shopping", icon: ShoppingBag, route: "/dashboard/vendor-shopping", ic: "teal" },
+            { label: "Shopping", icon: ShoppingBag, route: "/dashboard/create-product", ic: "teal" },
             { label: "Messages", icon: MessageCircle, route: "/dashboard/vendor-messages", ic: "blue" },
             { label: "Discount", icon: FaPercentage, route: "/dashboard/vendor-discount", ic: "blue" },
         ],
@@ -97,20 +97,20 @@ const StatCard = ({ card, navigate }) => {
                     </p>
 
                     <div className="flex items-end gap-2 mt-1.5 flex-wrap">
-                        {/* main value */}
+                        {/* unread value */}
                         <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight truncate leading-none">
                             {card.value}
                         </h2>
 
-                        {/* light gray count */}
+                        {/* light gray count total value*/}
                         <span className="text-xs sm:text-sm font-semibold text-gray-500 mb-1">
                             100
                         </span>
                     </div>
                 </div>
                 {/* <div className={`p-2.5 rounded-xl ${c.bg} border ${c.border} group-hover:scale-110 transition-transform duration-200 flex-shrink-0`}>
-          <Icon size={20} className={c.text} />
-        </div> */}
+                    <Icon size={20} className={c.text} />
+                </div> */}
             </div>
             <div className="mt-4 flex items-center gap-1 text-white/40 text-xs font-semibold group-hover:text-white/70 transition-colors">
                 View <ArrowUpRight size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
