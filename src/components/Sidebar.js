@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { BsGenderNeuter } from "react-icons/bs";
 import logo from "../assets/logo.png"
+import { FaPercentage } from "react-icons/fa";
 
 const navItems = [
     { to: "/dashboard", label: "Brando", icon: Boxes },
@@ -32,8 +33,9 @@ const navItems = [
         ],
     },
     { to: "/dashboard/category", label: "Category", icon: BsGenderNeuter },
+    { to: "/dashboard/offers", label: "Offers", icon: FaPercentage },
     {
-        to: "/dashboard/products",
+        to: "/dashboard/create-product",
         label: "Products",
         icon: Carrot,
         children: [

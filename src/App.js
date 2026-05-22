@@ -34,6 +34,7 @@ import ProductBanners from "./views/banners/ProductBanners";
 import ProductOrders from "./views/products/ProductBookings";
 import SingleUserProductOrders from "./views/products/SingleUserProductOrders";
 import SingleVendorProductOrders from "./views/products/SingleVendorProductOrders";
+import Offers from "./pages/Offers";
 
 const App = () => {
   return (
@@ -57,7 +58,9 @@ const App = () => {
         <Route path="/dashboard/orders/user/:userId" element={<SingleUserProductOrders />} />
         <Route path="/dashboard/orders/vendor/:vendorId" element={<SingleVendorProductOrders />} />
 
-        <Route path="agents" element={<Agents />} />
+        <Route path="offers" element={<Offers />} />
+
+        <Route path="agents" element={<Offers />} />
         <Route path="customers" element={<Customers />} />
         <Route path="enquiries" element={<Enquiries />} />
 
