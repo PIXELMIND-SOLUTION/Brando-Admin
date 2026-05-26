@@ -56,7 +56,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
         <select
           value={itemsPerPage}
           onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          className="px-2 py-1 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:border-emerald-500 outline-none"
+          className="px-2 py-1 rounded-lg bg-black border border-white/20 text-white text-sm focus:border-emerald-500 outline-none"
         >
           {[5, 10, 20, 30].map(size => (
             <option key={size} value={size}>{size}</option>
