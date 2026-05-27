@@ -35,6 +35,7 @@ import ProductOrders from "./views/products/ProductBookings";
 import SingleUserProductOrders from "./views/products/SingleUserProductOrders";
 import SingleVendorProductOrders from "./views/products/SingleVendorProductOrders";
 import Offers from "./pages/Offers";
+import PrivateRoute from "./components/PrivateRoute";
 
 const App = () => {
   return (
@@ -43,57 +44,59 @@ const App = () => {
       {/* Login Route */}
       <Route path="/" element={<Login />} />
 
-      {/* Dashboard Layout */}
-      <Route path="/dashboard" element={<AdminLayout />}>
+      <Route element={<PrivateRoute />}>
+        {/* Dashboard Layout */}
+        <Route path="/dashboard" element={<AdminLayout />}>
 
-        <Route index element={<BrandoComponent />} />
+          <Route index element={<BrandoComponent />} />
 
-        <Route path="brando" element={<Dashboard />} />
+          <Route path="brando" element={<Dashboard />} />
 
-        <Route path="category" element={<Category />} />
+          <Route path="category" element={<Category />} />
 
-        <Route path="create-product" element={<CreateProductAndCategory />} />
-        <Route path="products" element={<AllProducts />} />
-        <Route path="product-bookings" element={<ProductOrders />} />
-        <Route path="/dashboard/orders/user/:userId" element={<SingleUserProductOrders />} />
-        <Route path="/dashboard/orders/vendor/:vendorId" element={<SingleVendorProductOrders />} />
+          <Route path="create-product" element={<CreateProductAndCategory />} />
+          <Route path="products" element={<AllProducts />} />
+          <Route path="product-bookings" element={<ProductOrders />} />
+          <Route path="/dashboard/orders/user/:userId" element={<SingleUserProductOrders />} />
+          <Route path="/dashboard/orders/vendor/:vendorId" element={<SingleVendorProductOrders />} />
 
-        <Route path="offers" element={<Offers />} />
+          <Route path="offers" element={<Offers />} />
 
-        <Route path="agents" element={<Agents />} />
-        <Route path="customers" element={<Customers />} />
-        <Route path="enquiries" element={<Enquiries />} />
+          <Route path="agents" element={<Agents />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="enquiries" element={<Enquiries />} />
 
-        {/* <Route path="create-hostel" element={<CreateHostel />} /> */}
-        <Route path="hostels" element={<Hostels />} />
-        <Route path="hostels/:id" element={<SingleHostel />} />
-        <Route path="hostel/users/:hostelId" element={<HostelUsers />} />
-        <Route path="recommended-hostels" element={<RecommendedHostels />} />
+          {/* <Route path="create-hostel" element={<CreateHostel />} /> */}
+          <Route path="hostels" element={<Hostels />} />
+          <Route path="hostels/:id" element={<SingleHostel />} />
+          <Route path="hostel/users/:hostelId" element={<HostelUsers />} />
+          <Route path="recommended-hostels" element={<RecommendedHostels />} />
 
-        <Route path="banners" element={<UserBanners />} />
-        <Route path="vendor-banners" element={<VendorBanners />} />
-        <Route path="product-banners" element={<ProductBanners />} />
+          <Route path="banners" element={<UserBanners />} />
+          <Route path="vendor-banners" element={<VendorBanners />} />
+          <Route path="product-banners" element={<ProductBanners />} />
 
-        <Route path="vendors/pending" element={<PendingVendors />} />
-        <Route path="vendors" element={<AllVendors />} />
-        <Route path="vendors/:id" element={<SingleVendorDetails />} />
-        <Route path="vendors/edit/:id" element={<EditVendor />} />
+          <Route path="vendors/pending" element={<PendingVendors />} />
+          <Route path="vendors" element={<AllVendors />} />
+          <Route path="vendors/:id" element={<SingleVendorDetails />} />
+          <Route path="vendors/edit/:id" element={<EditVendor />} />
 
-        <Route path="bookings" element={<AllBookings />} />
-        <Route path="bookings/:id" element={<SingleBooking />} />
-        <Route path="vendors/:id/bookings" element={<VendorBookings />} />
+          <Route path="bookings" element={<AllBookings />} />
+          <Route path="bookings/:id" element={<SingleBooking />} />
+          <Route path="vendors/:id/bookings" element={<VendorBookings />} />
 
-        <Route path="payments" element={<AllUserPayments />} />
-        <Route path="user-payments/:userId" element={<SingleUserPayments />} />
+          <Route path="payments" element={<AllUserPayments />} />
+          <Route path="user-payments/:userId" element={<SingleUserPayments />} />
 
-        <Route path="notifications" element={<Notifications />} />
+          <Route path="notifications" element={<Notifications />} />
 
+        </Route>
       </Route>
 
       {/* Default Redirect */}
       <Route path="*" element={<Navigate to="/dashboard" />} />
 
-    </Routes>
+    </Routes >
   );
 };
 

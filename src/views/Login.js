@@ -24,17 +24,36 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
       setLoading(true);
       setError("");
+
       const res = await axios.post(
         "https://api.brando.org.in/api/Admin/login",
-        { email, password }
+        {
+          email,
+          password,
+        }
       );
+
       console.log(res.data);
-      navigate("/dashboard");
+
+      if (res.data.success) {
+
+        // store dummy auth flag
+        sessionStorage.setItem("adminToken", "authenticated");
+
+        navigate("/dashboard");
+      }
+
     } catch (err) {
-      setError(err?.response?.data?.message || "Invalid email or password");
+
+      setError(
+        err?.response?.data?.message ||
+        "Invalid email or password"
+      );
+
     } finally {
       setLoading(false);
     }

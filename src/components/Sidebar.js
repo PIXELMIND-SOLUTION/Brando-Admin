@@ -19,6 +19,7 @@ import {
 import { BsGenderNeuter } from "react-icons/bs";
 import logo from "../assets/logo.png"
 import { FaPercentage } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const navItems = [
     { to: "/dashboard", label: "Brando", icon: Boxes },
@@ -192,14 +193,58 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        // Clear auth (adjust based on your app)
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        sessionStorage.clear();
+    const handleLogout = async () => {
 
-        // Navigate to login
-        navigate("/");
+        const result = await Swal.fire({
+            title: "Logout?",
+            text: "Are you sure you want to logout?",
+            icon: "question",
+            showCancelButton: true,
+
+            background: "#0f172a",
+            color: "#fff",
+
+            confirmButtonText: "Yes, Logout",
+            cancelButtonText: "Cancel",
+
+            customClass: {
+                popup: "rounded-3xl",
+                confirmButton:
+                    "bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-xl font-semibold mr-3",
+                cancelButton:
+                    "bg-slate-700 text-white px-6 py-2 rounded-xl font-semibold",
+            },
+        });
+
+        if (result.isConfirmed) {
+
+            // Remove auth data
+            sessionStorage.removeItem("adminToken");
+            sessionStorage.removeItem("user");
+
+            // Optional full clear
+            sessionStorage.clear();
+
+            // Success Alert
+            await Swal.fire({
+                title: "Logged Out!",
+                text: "You have been logged out successfully.",
+                icon: "success",
+
+                timer: 1500,
+                showConfirmButton: false,
+
+                background: "#0f172a",
+                color: "#fff",
+
+                customClass: {
+                    popup: "rounded-3xl",
+                },
+            });
+
+            // Redirect
+            window.location.href = "/";
+        }
     };
 
     const sidebarContent = (isCollapsed) => (

@@ -82,6 +82,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   }, []);
 
   const handleLogout = async () => {
+
     const result = await Swal.fire({
       title: 'Logout?',
       text: 'Are you sure you want to logout?',
@@ -89,24 +90,37 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
       showCancelButton: true,
       background: '#0f172a',
       color: '#fff',
+
       customClass: {
         popup: 'rounded-2xl',
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
+
+        confirmButton:
+          'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+
+        cancelButton:
+          'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
 
     if (result.isConfirmed) {
-      // Clear any auth tokens/storage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+
+      // Clear auth
+      sessionStorage.removeItem("adminToken");
+      sessionStorage.removeItem("user");
+
+      // optional full clear
       sessionStorage.clear();
 
-      showAlert('success', 'Logged Out!', 'You have been logged out successfully', 1500);
+      showAlert(
+        'success',
+        'Logged Out!',
+        'You have been logged out successfully',
+        1500
+      );
 
-      // Navigate to login page after short delay
+      // Redirect
       setTimeout(() => {
-        navigate('/');
+        window.location.href = "/";
       }, 1500);
     }
   };
@@ -196,7 +210,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
           </button>
 
           {/* Logo / Brand */}
-          <div onClick={()=>navigate('/dashboard')} className="flex items-center gap-3">
+          <div onClick={() => navigate('/dashboard')} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center overflow-hidden">
               <img src={logo} alt="Logo" className="w-full h-full object-cover" />
             </div>
@@ -360,7 +374,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                   className="absolute right-0 mt-2 w-56 bg-[#0f172a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
                 >
                   {/* User Info Header */}
-                  <div onClick={()=>navigate('/dashboard')} className="px-4 py-3 border-b border-white/10 bg-white/5">
+                  <div onClick={() => navigate('/dashboard')} className="px-4 py-3 border-b border-white/10 bg-white/5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold overflow-hidden">
                         <img src={logo} alt="Admin" className="w-full h-full object-cover" />
