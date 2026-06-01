@@ -42,8 +42,8 @@ const data = {
             { label: "Banners", icon: Image, route: "/dashboard/banners", ic: "purple" },
             { label: "Offers", icon: Tag, route: "/dashboard/offers", ic: "coral" },
             { label: "Shopping", icon: ShoppingBag, route: "/dashboard/create-product", ic: "teal" },
-            { label: "Messages", icon: MessageCircle, route: "/dashboard/messages", ic: "blue" },
-            { label: "Shopping banners", icon: LayoutTemplate, route: "/dashboard/shopping-banners", ic: "amber" },
+            // { label: "Messages", icon: MessageCircle, route: "/dashboard/messages", ic: "blue" },
+            { label: "Shopping banners", icon: LayoutTemplate, route: "/dashboard/product-banners", ic: "amber" },
         ],
     },
     vendors: {
@@ -66,7 +66,7 @@ const data = {
         quickLinks: [
             { label: "Banners", icon: Image, route: "/dashboard/vendor-banners", ic: "purple" },
             { label: "Shopping", icon: ShoppingBag, route: "/dashboard/create-product", ic: "teal" },
-            { label: "Messages", icon: MessageCircle, route: "/dashboard/vendor-messages", ic: "blue" },
+            // { label: "Messages", icon: MessageCircle, route: "/dashboard/vendor-messages", ic: "blue" },
             { label: "Discount", icon: FaPercentage, route: "/dashboard/vendor-discount", ic: "blue" },
         ],
     },
