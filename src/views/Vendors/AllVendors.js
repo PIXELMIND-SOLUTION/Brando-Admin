@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Users, Eye, Trash2, Calendar, Mail, Phone,
   Building2, Sparkles, Filter, X, Table2,
@@ -100,9 +100,13 @@ const Pagination = memo(({ currentPage, totalPages, onPageChange, itemsPerPage, 
 // ── Main Component ────────────────────────────────────────────────────────────
 const AllVendors = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get filter from URL query parameter
+  const urlFilter = searchParams.get('filter');
+  const [filter, setFilter] = useState(urlFilter || 'All');
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState({ fetch: false, delete: false });
-  const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -110,30 +114,77 @@ const AllVendors = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
+  // Sync URL when filter changes
+  useEffect(() => {
+    if (filter === 'All') {
+      // Remove filter param if it's 'All'
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('filter');
+      setSearchParams(newParams, { replace: true });
+    } else {
+      // Set filter param in URL
+      setSearchParams({ filter: filter.toLowerCase() }, { replace: true });
+    }
+  }, [filter, setSearchParams, searchParams]);
+
+  // Listen to URL changes (if user manually changes URL)
+  useEffect(() => {
+    const newFilter = searchParams.get('filter');
+    if (newFilter && newFilter !== filter.toLowerCase()) {
+      // Convert first letter to uppercase to match state format
+      const formattedFilter = newFilter.charAt(0).toUpperCase() + newFilter.slice(1);
+      setFilter(formattedFilter);
+    } else if (!newFilter && filter !== 'All') {
+      setFilter('All');
+    }
+  }, [searchParams]);
+
   // ── Fetch ─────────────────────────────────────────────────────────────────
   const fetchVendors = useCallback(async () => {
     try {
       setLoading(p => ({ ...p, fetch: true }));
-      const { data } = await axios.get(`${API}/getallvendors`);
+      
+      // Build URL with query parameters
+      let url = `${API}/getallvendors`;
+      const params = new URLSearchParams();
+      
+      // Check both state filter and URL filter
+      const activeFilter = filter !== 'All' ? filter.toLowerCase() : null;
+      if (activeFilter === 'today') {
+        params.append('filter', 'today');
+      }
+      // Add more filter types as needed
+      else if (activeFilter === 'week') {
+        params.append('filter', 'week');
+      }
+      else if (activeFilter === 'month') {
+        params.append('filter', 'month');
+      }
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+      
+      const { data } = await axios.get(url);
       setVendors(data.data || []);
     } catch (e) {
       showAlert('error', 'Oops...', 'Failed to fetch vendors');
     } finally {
       setLoading(p => ({ ...p, fetch: false }));
     }
-  }, []);
+  }, [filter]);
 
   useEffect(() => { fetchVendors(); }, [fetchVendors]);
   useEffect(() => { setCurrentPage(1); }, [filter, searchTerm, sortConfig]);
 
   // ── Derived data (memoized) ───────────────────────────────────────────────
   const uniqueFilters = useMemo(
-    () => ['All', ...new Set(vendors.map(v => v.approvalStatus).filter(Boolean))],
+    () => ['All', 'today', ...new Set(vendors.map(v => v.approvalStatus).filter(Boolean))],
     [vendors]
   );
 
   const filteredAndSorted = useMemo(() => {
     let list = filter === 'All' ? vendors : vendors.filter(v => v.approvalStatus === filter);
+
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       list = list.filter(v =>
@@ -347,14 +398,18 @@ const AllVendors = () => {
       <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-5 sm:mb-6">
         <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
           <Filter size={14} className="text-emerald-400" />
-          <span className="font-medium">Status:</span>
+          <span className="font-medium">Filter by:</span>
         </div>
         {uniqueFilters.map(status => (
           <button key={status} onClick={() => setFilter(status)}
             className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex items-center gap-1.5
               ${filter === status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
-            {status === 'approved' ? <CheckCircle size={12} /> : status === 'rejected' ? <XCircle size={12} /> : status === 'pending' ? <Clock size={12} /> : <Filter size={12} />}
-            {status}
+            {status === 'approved' ? <CheckCircle size={12} /> : 
+             status === 'rejected' ? <XCircle size={12} /> : 
+             status === 'pending' ? <Clock size={12} /> : 
+             status === 'today' ? <Clock size={12} /> :
+             <Filter size={12} />}
+            {status === 'today' ? "Today's Vendors" : status}
           </button>
         ))}
       </div>
@@ -620,17 +675,17 @@ const AllVendors = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Vendors' : `${filter} Vendors`}
+                  {filter === 'All' ? 'Total Vendors' : filter === 'today' ? "Today's Vendors" : `${filter} Vendors`}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {filter === 'All' ? 'Across all statuses' : 'Filtered by status'}
+                  {filter === 'All' ? 'Across all statuses' : filter === 'today' ? 'Vendors registered today' : 'Filtered by status'}
                   {searchTerm && ` · "${searchTerm}"`}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-xs text-gray-400">Page Hostels</p>
+                <p className="text-xs text-gray-400">Total Hostels</p>
                 <p className="font-bold text-white text-sm">
                   {paginatedVendors.reduce((acc, v) => acc + (v.totalHostels || 0), 0)}
                 </p>

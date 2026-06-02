@@ -29,7 +29,7 @@ const navItems = [
         label: "Users",
         icon: Users,
         children: [
-            { to: "/dashboard/customers/today", label: "Today Users", icon: List },
+            // { to: "/dashboard/customers/today", label: "Today Users", icon: List },
             { to: "/dashboard/customers", label: "Total Users", icon: Eye }
         ],
     },
@@ -60,7 +60,7 @@ const navItems = [
         label: "Vendors",
         icon: UserCircle,
         children: [
-            { to: "/dashboard/vendors/pending", label: "Today Vendors", icon: List },
+            // { to: "/dashboard/vendors/pending", label: "Today Vendors", icon: List },
             { to: "/dashboard/vendors", label: "Total Vendors", icon: Eye }
         ],
     },

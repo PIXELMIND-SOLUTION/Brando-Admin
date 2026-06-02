@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Calendar, Eye, Trash2, Building2,
   Sparkles, Filter, X, Table2, CreditCard,
@@ -46,14 +46,18 @@ const useDebouncedSearch = (initialValue = '', delay = 300) => {
   return { searchTerm, debouncedSearchTerm, setSearchTerm, clearSearch };
 };
 
-const useFilterAndSortBookings = (bookings, filterStatus, searchTerm, sortConfig) => {
+const useFilterAndSortBookings = (bookings, filterStatus, filterDate, searchTerm, sortConfig) => {
   return useMemo(() => {
     if (!bookings.length) return [];
 
-    let filtered = filterStatus === 'All'
-      ? bookings
-      : bookings.filter(b => b.status === filterStatus);
+    let filtered = [...bookings];
+    
+    // Filter by status
+    if (filterStatus !== 'All') {
+      filtered = filtered.filter(b => b.status === filterStatus);
+    }
 
+    // Search
     if (searchTerm) {
       filtered = filtered.filter(b =>
         (b.bookingReference || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -285,7 +289,11 @@ const StatsCard = ({ bookings }) => {
   );
 };
 
-const FilterBar = ({ filterStatus, setFilterStatus, getUniqueFilters }) => {
+const FilterBar = ({ 
+  filterStatus, setFilterStatus, 
+  dateFilter, setDateFilter,
+  getUniqueFilters 
+}) => {
   const filters = getUniqueFilters();
 
   const getFilterIcon = (filter) => {
@@ -299,24 +307,51 @@ const FilterBar = ({ filterStatus, setFilterStatus, getUniqueFilters }) => {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 mb-6">
-      <div className="flex items-center gap-2 text-sm text-gray-400">
-        <Filter size={16} className="text-emerald-400" />
-        <span className="font-medium">Filter by Status:</span>
+    <div className="space-y-4 mb-6">
+      {/* Date Filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Calendar size={16} className="text-emerald-400" />
+          <span className="font-medium">Date Filter:</span>
+        </div>
+        {[
+          { value: 'all', label: 'All Bookings', icon: Calendar },
+          { value: 'today', label: "Today's Bookings", icon: Clock }
+        ].map(date => (
+          <button
+            key={date.value}
+            onClick={() => setDateFilter(date.value)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
+              ${dateFilter === date.value
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+          >
+            <date.icon size={14} />
+            {date.label}
+          </button>
+        ))}
       </div>
-      {filters.map(status => (
-        <button
-          key={status}
-          onClick={() => setFilterStatus(status)}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
-            ${filterStatus === status
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-              : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-        >
-          {getFilterIcon(status)}
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </button>
-      ))}
+
+      {/* Status Filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Filter size={16} className="text-emerald-400" />
+          <span className="font-medium">Status Filter:</span>
+        </div>
+        {filters.map(status => (
+          <button
+            key={status}
+            onClick={() => setFilterStatus(status)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
+              ${filterStatus === status
+                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+          >
+            {getFilterIcon(status)}
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -470,16 +505,46 @@ const TableView = ({
 // ─── Main component ───────────────────────────────────────────────────────────
 const AllBookings = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get filters from URL query parameters
+  const urlFilter = searchParams.get('filter');
+  
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [filterStatus, setFilterStatus] = useState('All');
+  const [dateFilter, setDateFilter] = useState(urlFilter || 'all');
   const [viewMode, setViewMode] = useState('table');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [selectedBookings, setSelectedBookings] = useState([]);
 
+  // Sync URL when date filter changes
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+    
+    if (dateFilter !== 'all') {
+      newParams.set('filter', dateFilter);
+    } else {
+      newParams.delete('filter');
+    }
+    
+    setSearchParams(newParams, { replace: true });
+  }, [dateFilter, setSearchParams, searchParams]);
+
+  // Listen to URL changes (if user manually changes URL)
+  useEffect(() => {
+    const newFilter = searchParams.get('filter');
+    
+    if (newFilter && newFilter !== dateFilter) {
+      setDateFilter(newFilter);
+    } else if (!newFilter && dateFilter !== 'all') {
+      setDateFilter('all');
+    }
+  }, [searchParams]);
+
   const { searchTerm, debouncedSearchTerm, setSearchTerm, clearSearch } = useDebouncedSearch('', 300);
 
-  const filteredAndSortedBookings = useFilterAndSortBookings(bookings, filterStatus, debouncedSearchTerm, sortConfig);
+  const filteredAndSortedBookings = useFilterAndSortBookings(bookings, filterStatus, dateFilter, debouncedSearchTerm, sortConfig);
 
   const { currentPage, itemsPerPage, totalItems, totalPages, paginatedItems, goToPage, changeItemsPerPage }
     = usePagination(filteredAndSortedBookings, 15);
@@ -487,7 +552,19 @@ const AllBookings = () => {
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      const { data } = await axios.get(`${API}/getallbookings`);
+      
+      // Build URL with query parameters
+      let url = `${API}/getallbookings`;
+      const params = new URLSearchParams();
+      
+      if (dateFilter !== 'all') {
+        params.append('filter', dateFilter);
+      }
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+      
+      const { data } = await axios.get(url);
       setBookings(data.data || []);
     } catch (error) {
       console.error(error);
@@ -495,7 +572,7 @@ const AllBookings = () => {
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
-  }, []);
+  }, [dateFilter]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
@@ -585,22 +662,28 @@ const AllBookings = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bookings_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `bookings_${dateFilter !== 'all' ? dateFilter + '_' : ''}${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-  }, [filteredAndSortedBookings]);
+  }, [filteredAndSortedBookings, dateFilter]);
 
   const totalRevenue = useMemo(
     () => bookings.reduce((acc, b) => acc + (b.totalAmount || 0), 0),
     [bookings]
   );
 
+  // Get subtitle text based on filters
+  const getSubtitle = () => {
+    const dateText = dateFilter === 'today' ? "Today's " : '';
+    return `${dateText}Bookings • ${bookings.length} bookings • ₹${totalRevenue.toLocaleString()} revenue`;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       <PageHeader
         icon={Calendar}
         title="Booking Management"
-        subtitle={`${bookings.length} total bookings • ₹${totalRevenue.toLocaleString()} total revenue`}
+        subtitle={getSubtitle()}
       />
 
       <StatsCard bookings={bookings} />
@@ -622,6 +705,8 @@ const AllBookings = () => {
       <FilterBar
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
         getUniqueFilters={getUniqueFilters}
       />
 
@@ -641,14 +726,16 @@ const AllBookings = () => {
           </div>
           <p className="text-white font-bold text-lg mb-2">No bookings found</p>
           <p className="text-sm text-gray-400">
-            {debouncedSearchTerm ? 'Try adjusting your search' : filterStatus !== 'All' ? 'Try a different filter' : ''}
+            {debouncedSearchTerm ? 'Try adjusting your search' : 
+             dateFilter !== 'all' ? `No ${dateFilter} bookings found` :
+             filterStatus !== 'All' ? 'Try a different filter' : ''}
           </p>
-          {(debouncedSearchTerm || filterStatus !== 'All') && (
+          {(debouncedSearchTerm || filterStatus !== 'All' || dateFilter !== 'all') && (
             <button
-              onClick={() => { clearSearch(); setFilterStatus('All'); }}
+              onClick={() => { clearSearch(); setFilterStatus('All'); setDateFilter('all'); }}
               className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
             >
-              Clear filters
+              Clear all filters
             </button>
           )}
         </div>
@@ -688,6 +775,7 @@ const AllBookings = () => {
                 </p>
                 <p className="text-xs text-gray-400">
                   {filterStatus === 'All' ? 'Across all statuses' : 'Filtered by status'}
+                  {dateFilter !== 'all' && ` • ${dateFilter === 'today' ? 'Today' : dateFilter}`}
                   {debouncedSearchTerm && ` • Search: "${debouncedSearchTerm}"`}
                 </p>
               </div>

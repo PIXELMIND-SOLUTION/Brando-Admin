@@ -1,7 +1,7 @@
 import { useState, useEffect, memo, useCallback, useMemo } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Users, Eye, Trash2, Calendar, Phone, MapPin,
   Building2, Sparkles, Filter, X, Table2,
@@ -151,8 +151,8 @@ const CustomerModal = memo(({
                   value={editFormData.mobileNumber}
                   onChange={(e) => {
                     const value = e.target.value
-                      .replace(/\D/g, "")      // remove non-numbers
-                      .slice(0, 10);          // limit to 10 digits
+                      .replace(/\D/g, "")
+                      .slice(0, 10);
 
                     onFormDataChange({
                       target: {
@@ -263,9 +263,13 @@ const CustomerModal = memo(({
 // ── Main Component ────────────────────────────────────────────────────────────
 const Customers = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get filter from URL query parameter
+  const urlFilter = searchParams.get('filter');
+  const [filter, setFilter] = useState(urlFilter || 'All');
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState({ fetch: false, update: false, delete: false });
-  const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState('table');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
@@ -277,11 +281,57 @@ const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
+  // Sync URL when filter changes
+  useEffect(() => {
+    if (filter === 'All') {
+      // Remove filter param if it's 'All'
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('filter');
+      setSearchParams(newParams, { replace: true });
+    } else {
+      // Set filter param in URL
+      setSearchParams({ filter: filter.toLowerCase() }, { replace: true });
+    }
+  }, [filter, setSearchParams, searchParams]);
+
+  // Listen to URL changes (if user manually changes URL)
+  useEffect(() => {
+    const newFilter = searchParams.get('filter');
+    if (newFilter && newFilter !== filter.toLowerCase()) {
+      // Convert first letter to uppercase to match state format
+      const formattedFilter = newFilter.charAt(0).toUpperCase() + newFilter.slice(1);
+      setFilter(formattedFilter);
+    } else if (!newFilter && filter !== 'All') {
+      setFilter('All');
+    }
+  }, [searchParams]);
+
   // ── Data fetching ──────────────────────────────────────────────────────────
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      const { data } = await axios.get(`${API}/getallusers`);
+      
+      // Build URL with query parameters
+      let url = `${API}/getallusers`;
+      const params = new URLSearchParams();
+      
+      // Check both state filter and URL filter
+      const activeFilter = filter !== 'All' ? filter.toLowerCase() : null;
+      if (activeFilter === 'today') {
+        params.append('filter', 'today');
+      }
+      // Add more filter types as needed
+      else if (activeFilter === 'week') {
+        params.append('filter', 'week');
+      }
+      else if (activeFilter === 'month') {
+        params.append('filter', 'month');
+      }
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+      
+      const { data } = await axios.get(url);
       setCustomers(data.data || []);
     } catch (error) {
       console.error(error);
@@ -289,7 +339,7 @@ const Customers = () => {
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
-  }, []);
+  }, [filter]);
 
   useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
   useEffect(() => { setCurrentPage(1); }, [filter, searchTerm, sortConfig]);
@@ -332,7 +382,7 @@ const Customers = () => {
   }, [filteredAndSorted, currentPage, itemsPerPage]);
 
   const uniqueFilters = useMemo(
-    () => ['All', ...new Set(customers.map(c => c.status).filter(Boolean))],
+    () => ['All', 'today', ...new Set(customers.map(c => c.status).filter(Boolean))],
     [customers]
   );
 
@@ -563,14 +613,20 @@ const Customers = () => {
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2 text-sm text-gray-400">
           <Filter size={16} className="text-emerald-400" />
-          <span className="font-medium">Filter by Status:</span>
+          <span className="font-medium">Filter by:</span>
         </div>
         {uniqueFilters.map(status => (
-          <button key={status} onClick={() => setFilter(status)}
+          <button 
+            key={status} 
+            onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
               ${filter === status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
-            {status === 'active' ? <CheckCircle size={14} /> : status === 'inactive' ? <XCircle size={14} /> : status === 'deleted' ? <Trash2 size={14} /> : <Filter size={14} />}
-            {status}
+            {status === 'active' ? <CheckCircle size={14} /> : 
+             status === 'inactive' ? <XCircle size={14} /> : 
+             status === 'deleted' ? <Trash2 size={14} /> : 
+             status === 'today' ? <Clock size={14} /> :
+             <Filter size={14} />}
+            {status === 'today' ? "Today's Users" : status}
           </button>
         ))}
       </div>
@@ -663,10 +719,10 @@ const Customers = () => {
                         <span className="text-sm">{customer.mobileNumber || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-center">
+                    <td className="px-4 py-4">
                       {customer.hostelId ? (
                         <div>
-                          <p className="text-sm text-white font-medium">{customer.hostelId}</p>
+                          <p className="text-sm text-white font-medium">{customer.hostelId.name || customer.hostelId}</p>
                           <p className="text-xs text-gray-500">{customer.hostelName}</p>
                         </div>
                       ) : <span className="text-sm text-gray-500">None</span>}
@@ -800,10 +856,10 @@ const Customers = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Users' : `${filter} Users`}
+                  {filter === 'All' ? 'Total Users' : filter === 'today' ? "Today's Users" : `${filter} Users`}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {filter === 'All' ? 'Across all statuses' : 'Filtered by status'}
+                  {filter === 'All' ? 'Across all statuses' : filter === 'today' ? 'Users joined today' : 'Filtered by status'}
                   {searchTerm && ` • Search: "${searchTerm}"`}
                 </p>
               </div>

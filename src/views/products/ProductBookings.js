@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useSearchParams } from "react-router-dom";
 import {
   Package, Eye, Trash2, Building2, MapPin, CheckCircle,
   Sparkles, Filter, X, Table2, CreditCard, Clock,
@@ -8,7 +9,7 @@ import {
   TrendingUp, BadgeCheck, Home, Tag, ChevronLeft,
   ChevronRight, ChevronsLeft, ChevronsRight, AlertCircle,
   IndianRupee, User, Truck, Map, Phone, Mail, Key,
-  Calendar
+  Calendar, Users
 } from "lucide-react";
 
 const API = "https://api.brando.org.in/api/admin";
@@ -63,6 +64,7 @@ const useFilterAndSortOrders = (orders, filterStatus, filterPaymentStatus, searc
       filtered = filtered.filter(o =>
         (o._id || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (o.vendorId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (o.userId?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (o.deliveryAddress?.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (o.deliveryAddress?.phone || '').includes(searchTerm)
       );
@@ -72,7 +74,7 @@ const useFilterAndSortOrders = (orders, filterStatus, filterPaymentStatus, searc
       let aVal = a[sortConfig.key];
       let bVal = b[sortConfig.key];
 
-      if (sortConfig.key === 'vendorId') { aVal = a.vendorId?.name || ''; bVal = b.vendorId?.name || ''; }
+      if (sortConfig.key === 'vendorId') { aVal = a.vendorId?.name || a.userId?.name || ''; bVal = b.vendorId?.name || b.userId?.name || ''; }
       else if (sortConfig.key === 'grandTotal') { aVal = a.grandTotal || 0; bVal = b.grandTotal || 0; }
       else if (sortConfig.key === 'createdAt') { aVal = new Date(a.createdAt).getTime(); bVal = new Date(b.createdAt).getTime(); }
       else if (sortConfig.key === 'itemsCount') { aVal = a.items?.length || 0; bVal = b.items?.length || 0; }
@@ -300,41 +302,98 @@ const StatsCard = ({ orders }) => {
   );
 };
 
-const FilterBar = ({ filterStatus, setFilterStatus, filterPaymentStatus, setFilterPaymentStatus }) => (
-  <div className="flex flex-wrap items-center gap-3 mb-6">
-    <div className="flex items-center gap-2 text-sm text-gray-400">
-      <Filter size={16} className="text-emerald-400" />
-      <span className="font-medium">Order Status:</span>
+const FilterBar = ({ 
+  filterStatus, setFilterStatus, 
+  filterPaymentStatus, setFilterPaymentStatus,
+  orderType, setOrderType,
+  dateFilter, setDateFilter 
+}) => (
+  <div className="space-y-4 mb-6">
+    {/* Order Type Filter */}
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Users size={16} className="text-emerald-400" />
+        <span className="font-medium">Order Type:</span>
+      </div>
+      {[
+        { value: 'all', label: 'All Orders', icon: Package },
+        { value: 'user', label: 'User Orders', icon: User },
+        { value: 'vendor', label: 'Vendor Orders', icon: Building2 }
+      ].map(type => (
+        <button
+          key={type.value}
+          onClick={() => setOrderType(type.value)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
+            ${orderType === type.value
+              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+              : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+        >
+          <type.icon size={14} />
+          {type.label}
+        </button>
+      ))}
     </div>
-    {['All', 'pending', 'delivered'].map(status => (
-      <button
-        key={status}
-        onClick={() => setFilterStatus(status)}
-        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap
-          ${filterStatus === status
-            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-            : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-      >
-        {status === 'All' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-      </button>
-    ))}
-    
-    <div className="flex items-center gap-2 text-sm text-gray-400 ml-4">
-      <CreditCard size={16} className="text-emerald-400" />
-      <span className="font-medium">Payment:</span>
+
+    {/* Date Filter */}
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Calendar size={16} className="text-emerald-400" />
+        <span className="font-medium">Date Filter:</span>
+      </div>
+      {[
+        { value: 'all', label: 'All Time', icon: Calendar },
+        { value: 'today', label: "Today's Orders", icon: Clock }
+      ].map(date => (
+        <button
+          key={date.value}
+          onClick={() => setDateFilter(date.value)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
+            ${dateFilter === date.value
+              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+              : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+        >
+          <date.icon size={14} />
+          {date.label}
+        </button>
+      ))}
     </div>
-    {['All', 'paid', 'unpaid'].map(status => (
-      <button
-        key={status}
-        onClick={() => setFilterPaymentStatus(status)}
-        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap
-          ${filterPaymentStatus === status
-            ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-            : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
-      >
-        {status === 'All' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
-      </button>
-    ))}
+
+    {/* Status Filters */}
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Filter size={16} className="text-emerald-400" />
+        <span className="font-medium">Order Status:</span>
+      </div>
+      {['All', 'pending', 'delivered', 'processing', 'cancelled'].map(status => (
+        <button
+          key={status}
+          onClick={() => setFilterStatus(status)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap
+            ${filterStatus === status
+              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+              : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+        >
+          {status === 'All' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+        </button>
+      ))}
+      
+      <div className="flex items-center gap-2 text-sm text-gray-400 ml-4">
+        <CreditCard size={16} className="text-emerald-400" />
+        <span className="font-medium">Payment:</span>
+      </div>
+      {['All', 'paid', 'unpaid'].map(status => (
+        <button
+          key={status}
+          onClick={() => setFilterPaymentStatus(status)}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap
+            ${filterPaymentStatus === status
+              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+              : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}
+        >
+          {status === 'All' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1)}
+        </button>
+      ))}
+    </div>
   </div>
 );
 
@@ -533,15 +592,21 @@ const OrderDetailModal = ({ isOpen, onClose, order }) => {
             </div>
           )}
           
-          {/* Vendor Info */}
+          {/* Vendor/User Info */}
           <div className="p-4 rounded-xl bg-white/5 border border-white/10">
             <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-              <Building2 size={16} className="text-emerald-400" />
+              {order.orderedBy === 'vendor' ? <Building2 size={16} className="text-emerald-400" /> : <User size={16} className="text-emerald-400" />}
               {order.orderedBy === 'vendor' ? 'Vendor Information' : 'User Information'}
             </h4>
             <div className="space-y-2 text-sm">
-              <p className="text-white"><span className="text-gray-400">{order.orderedBy === 'vendor' ? 'Name: ' : 'UserId: '}</span>{order.orderedBy === 'vendor' ? order.vendorId?.name : order.userId?._id}</p>
-              <p className="text-white"><span className="text-gray-400">{order.orderedBy === 'vendor' ? 'Email: ' : 'Mobile: '}</span>{order.orderedBy === 'vendor' ? order.vendorId?.email : order.userId?.mobileNumber}</p>
+              <p className="text-white">
+                <span className="text-gray-400">{order.orderedBy === 'vendor' ? 'Name: ' : 'Name: '}</span>
+                {order.orderedBy === 'vendor' ? order.vendorId?.name : order.userId?.name || 'N/A'}
+              </p>
+              <p className="text-white">
+                <span className="text-gray-400">{order.orderedBy === 'vendor' ? 'Email: ' : 'Mobile: '}</span>
+                {order.orderedBy === 'vendor' ? order.vendorId?.email : order.userId?.mobileNumber}
+              </p>
             </div>
           </div>
           
@@ -600,7 +665,8 @@ const TableView = ({
           <tr className="bg-white/10 border-b border-white/10">
             {[
               { key: '_id', label: 'Order ID', icon: <Tag size={14} /> },
-              { key: 'vendorId', label: 'Vendor', icon: <Building2 size={14} /> },
+              { key: 'orderedBy', label: 'Type', icon: <Users size={14} /> },
+              { key: 'vendorId', label: 'Customer', icon: <User size={14} /> },
               { key: 'itemsCount', label: 'Items', icon: <Package size={14} /> },
               { key: 'grandTotal', label: 'Total', icon: <IndianRupee size={14} /> },
               { key: 'status', label: 'Status', icon: <CheckCircle size={14} /> },
@@ -627,12 +693,25 @@ const TableView = ({
                 <p className="text-xs text-gray-500 capitalize">{order.orderedBy}</p>
               </td>
               <td className="px-4 py-4">
+                <span className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                  order.orderedBy === 'vendor' 
+                    ? 'bg-purple-500/10 text-purple-400' 
+                    : 'bg-blue-500/10 text-blue-400'
+                }`}>
+                  {order.orderedBy === 'vendor' ? 'Vendor' : 'User'}
+                </span>
+              </td>
+              <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                    <Building2 size={14} className="text-emerald-400" />
+                    {order.orderedBy === 'vendor' ? <Building2 size={14} className="text-emerald-400" /> : <User size={14} className="text-emerald-400" />}
                   </div>
                   <div>
-                    <p className="font-semibold text-white text-sm">{order.vendorId?.name || order.userId?.mobileNumber}</p>
+                    <p className="font-semibold text-white text-sm">
+                      {order.orderedBy === 'vendor' 
+                        ? order.vendorId?.name || 'N/A'
+                        : order.userId?.name || order.userId?.mobileNumber || 'N/A'}
+                    </p>
                     <p className="text-xs text-gray-500">{order.deliveryType === 'address' ? 'Address Delivery' : 'Live Location'}</p>
                   </div>
                 </div>
@@ -672,23 +751,64 @@ const TableView = ({
             </tr>
           ))}
         </tbody>
-      </table>
+       </table>
     </div>
   </div>
 );
 
 // Main Component
 const ProductOrders = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Get filters from URL query parameters
+  const urlFilter = searchParams.get('filter');
+  const urlOrderType = searchParams.get('orderType');
+  
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState({ fetch: false, deliver: null });
   const [filterStatus, setFilterStatus] = useState('All');
   const [filterPaymentStatus, setFilterPaymentStatus] = useState('All');
+  const [orderType, setOrderType] = useState(urlOrderType || 'all');
+  const [dateFilter, setDateFilter] = useState(urlFilter || 'all');
   const [viewMode, setViewMode] = useState('table');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [deliveryOrderId, setDeliveryOrderId] = useState(null);
+
+  // Sync URL when filters change
+  useEffect(() => {
+    const newParams = new URLSearchParams();
+    
+    if (dateFilter !== 'all') {
+      newParams.set('filter', dateFilter);
+    }
+    
+    if (orderType !== 'all') {
+      newParams.set('orderType', orderType);
+    }
+    
+    setSearchParams(newParams, { replace: true });
+  }, [dateFilter, orderType, setSearchParams]);
+
+  // Listen to URL changes (if user manually changes URL)
+  useEffect(() => {
+    const newFilter = searchParams.get('filter');
+    const newOrderType = searchParams.get('orderType');
+    
+    if (newFilter && newFilter !== dateFilter) {
+      setDateFilter(newFilter);
+    } else if (!newFilter && dateFilter !== 'all') {
+      setDateFilter('all');
+    }
+    
+    if (newOrderType && newOrderType !== orderType) {
+      setOrderType(newOrderType);
+    } else if (!newOrderType && orderType !== 'all') {
+      setOrderType('all');
+    }
+  }, [searchParams]);
 
   const { searchTerm, debouncedSearchTerm, setSearchTerm, clearSearch } = useDebouncedSearch('', 300);
 
@@ -700,7 +820,23 @@ const ProductOrders = () => {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      const { data } = await axios.get(`${API}/orders`);
+      
+      // Build URL with query parameters
+      let url = `${API}/orders`;
+      const params = new URLSearchParams();
+      
+      if (dateFilter !== 'all') {
+        params.append('filter', dateFilter);
+      }
+      
+      if (orderType !== 'all') {
+        params.append('orderType', orderType);
+      }
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
+      
+      const { data } = await axios.get(url);
       setOrders(data.orders || []);
     } catch (error) {
       console.error(error);
@@ -708,7 +844,7 @@ const ProductOrders = () => {
     } finally {
       setLoading(prev => ({ ...prev, fetch: false }));
     }
-  }, []);
+  }, [dateFilter, orderType]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -743,41 +879,52 @@ const ProductOrders = () => {
     setShowDetailModal(true);
   }, []);
 
-  const getUniqueFilters = useCallback(() =>
-    ['All', ...new Set(orders.map(o => o.status).filter(Boolean))],
-  [orders]);
-
   const handleSort = useCallback((key) => {
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
   }, []);
 
   const exportToCSV = useCallback(() => {
-    const headers = ['Order ID', 'Vendor', 'Items Count', 'Grand Total', 'Status', 'Payment Status', 'Order Date', 'Delivery Type'];
+    const headers = ['Order ID', 'Order Type', 'Customer Name', 'Customer Contact', 'Items Count', 'Grand Total', 'Status', 'Payment Status', 'Order Date', 'Delivery Type'];
     const csvData = filteredAndSortedOrders.map(o => [
-      o._id, o.vendorId?.name || 'N/A', o.items?.length || 0, o.grandTotal || 0,
-      o.status, o.paymentStatus, new Date(o.createdAt).toLocaleDateString(), o.deliveryType
+      o._id, 
+      o.orderedBy,
+      o.orderedBy === 'vendor' ? o.vendorId?.name : o.userId?.name || 'N/A',
+      o.orderedBy === 'vendor' ? o.vendorId?.mobileNumber : o.userId?.mobileNumber || 'N/A',
+      o.items?.length || 0, 
+      o.grandTotal || 0,
+      o.status, 
+      o.paymentStatus, 
+      new Date(o.createdAt).toLocaleDateString(), 
+      o.deliveryType
     ]);
     const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `orders_${dateFilter}_${orderType}_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-  }, [filteredAndSortedOrders]);
+  }, [filteredAndSortedOrders, dateFilter, orderType]);
 
   const totalRevenue = useMemo(
     () => orders.reduce((acc, o) => acc + (o.grandTotal || 0), 0),
     [orders]
   );
 
+  // Get subtitle text based on filters
+  const getSubtitle = () => {
+    const dateText = dateFilter === 'today' ? "Today's " : '';
+    const typeText = orderType === 'user' ? 'User ' : orderType === 'vendor' ? 'Vendor ' : '';
+    return `${dateText}${typeText}Orders • ${orders.length} orders • ₹${totalRevenue.toLocaleString()} revenue`;
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       <PageHeader
         icon={Package}
         title="Order Management"
-        subtitle={`${orders.length} total orders • ₹${totalRevenue.toLocaleString()} total revenue`}
+        subtitle={getSubtitle()}
       />
 
       <StatsCard orders={orders} />
@@ -798,6 +945,10 @@ const ProductOrders = () => {
         setFilterStatus={setFilterStatus}
         filterPaymentStatus={filterPaymentStatus}
         setFilterPaymentStatus={setFilterPaymentStatus}
+        orderType={orderType}
+        setOrderType={setOrderType}
+        dateFilter={dateFilter}
+        setDateFilter={setDateFilter}
       />
 
       {loading.fetch ? (
@@ -816,14 +967,23 @@ const ProductOrders = () => {
           </div>
           <p className="text-white font-bold text-lg mb-2">No orders found</p>
           <p className="text-sm text-gray-400">
-            {debouncedSearchTerm ? 'Try adjusting your search' : filterStatus !== 'All' ? 'Try a different filter' : ''}
+            {debouncedSearchTerm ? 'Try adjusting your search' : 
+             dateFilter !== 'all' ? `No ${dateFilter} orders found` :
+             orderType !== 'all' ? `No ${orderType} orders found` :
+             filterStatus !== 'All' ? 'Try a different filter' : ''}
           </p>
-          {(debouncedSearchTerm || filterStatus !== 'All') && (
+          {(debouncedSearchTerm || filterStatus !== 'All' || dateFilter !== 'all' || orderType !== 'all') && (
             <button
-              onClick={() => { clearSearch(); setFilterStatus('All'); setFilterPaymentStatus('All'); }}
+              onClick={() => { 
+                clearSearch(); 
+                setFilterStatus('All'); 
+                setFilterPaymentStatus('All');
+                setDateFilter('all');
+                setOrderType('all');
+              }}
               className="mt-4 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
             >
-              Clear filters
+              Clear all filters
             </button>
           )}
         </div>
@@ -859,6 +1019,8 @@ const ProductOrders = () => {
                 </p>
                 <p className="text-xs text-gray-400">
                   {filterStatus === 'All' ? 'Across all statuses' : 'Filtered by status'}
+                  {dateFilter !== 'all' && ` • ${dateFilter === 'today' ? 'Today' : dateFilter}`}
+                  {orderType !== 'all' && ` • ${orderType === 'user' ? 'User' : 'Vendor'} orders`}
                   {debouncedSearchTerm && ` • Search: "${debouncedSearchTerm}"`}
                 </p>
               </div>
