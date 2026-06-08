@@ -449,12 +449,22 @@ const VendorBookings = () => {
                 </button>
               </th>
               <th className="px-4 py-4 text-left">
+                <button
+                  onClick={() => handleSort('roomType')}
+                  className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
+                >
+                  <Tag size={14} />
+                  Room
+                  <SortIcon column="roomType" />
+                </button>
+              </th>
+              <th className="px-4 py-4 text-left">
                 <button 
                   onClick={() => handleSort('roomType')}
                   className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group"
                 >
                   <Home size={14} />
-                  Room
+                  RoomType
                   <SortIcon column="roomType" />
                 </button>
               </th>
@@ -532,6 +542,9 @@ const VendorBookings = () => {
                   <div>
                     <p className="font-medium text-white text-sm">{booking.userId?.name || 'Guest User'}</p>
                   </div>
+                </td>
+                <td className="px-4 py-4">
+                  <p className="font-medium text-white text-sm">{booking.roomNo || 'N/A'}</p>
                 </td>
                 <td className="px-4 py-4">
                   <div>
