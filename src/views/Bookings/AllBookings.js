@@ -384,7 +384,7 @@ const ActionBar = ({
         className="p-2.5 rounded-xl bg-white/10 text-gray-300 hover:bg-white/20 transition-all" title="Refresh">
         <RefreshCw size={18} className={loadingFetch ? 'animate-spin' : ''} />
       </button>
-      <ViewToggle viewMode={viewMode} setViewMode={setViewMode} />
+      {/* <ViewToggle viewMode={viewMode} setViewMode={setViewMode} /> */}
     </div>
   </div>
 );

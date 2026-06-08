@@ -403,11 +403,11 @@ const PaymentsTable = React.memo(({
                                         title="View details">
                                         <Eye size={14} />
                                     </button>
-                                    <button onClick={() => onDelete(payment._id)} disabled={loadingDelete}
+                                    {/* <button onClick={() => onDelete(payment._id)} disabled={loadingDelete}
                                         className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg transition-all"
                                         title="Delete">
                                         <Trash2 size={14} />
-                                    </button>
+                                    </button> */}
                                 </div>
                             </td>
                         </tr>
@@ -485,12 +485,12 @@ const PaymentModal = React.memo(({ payment, loadingDelete, onClose, onDelete }) 
                             <p className="text-white text-sm">{payment.startDate ? new Date(payment.startDate).toLocaleDateString() : 'N/A'}</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                    {/* <div className="flex items-center gap-3 pt-4 border-t border-white/10">
                         <button onClick={() => onDelete(payment._id)} disabled={loadingDelete}
                             className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
                             <Trash2 size={18} /> Delete Payment
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

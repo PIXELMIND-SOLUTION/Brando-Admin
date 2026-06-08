@@ -344,7 +344,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           ${isCollapsed ? "justify-center" : ""} hover:bg-white/10 transition-colors`}
                 >
                     <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                        <img src={logo} className="w-8 h-8 rounded-xl object-contain" />
+                        <img src={logo} className="w-8 h-8 rounded object-contain" />
                     </div>
                     {!isCollapsed && (
                         <div className="overflow-hidden">

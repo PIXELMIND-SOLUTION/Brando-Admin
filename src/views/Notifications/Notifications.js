@@ -28,18 +28,23 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
+    
     if (totalPages <= maxVisible + 2) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else if (currentPage <= 3) {
       for (let i = 1; i <= maxVisible; i++) pages.push(i);
-      pages.push('...'); pages.push(totalPages);
+      pages.push('...');
+      pages.push(totalPages);
     } else if (currentPage >= totalPages - 2) {
-      pages.push(1); pages.push('...');
+      pages.push(1);
+      pages.push('...');
       for (let i = totalPages - (maxVisible - 1); i <= totalPages; i++) pages.push(i);
     } else {
-      pages.push(1); pages.push('...');
+      pages.push(1);
+      pages.push('...');
       for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-      pages.push('...'); pages.push(totalPages);
+      pages.push('...');
+      pages.push(totalPages);
     }
     return pages;
   };
@@ -61,12 +66,18 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
         </span>
       </div>
       <div className="flex items-center gap-1">
-        <button onClick={() => onPageChange(1)} disabled={currentPage === 1}
-          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <button 
+          onClick={() => onPageChange(1)} 
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronsLeft size={16} />
         </button>
-        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
-          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <button 
+          onClick={() => onPageChange(currentPage - 1)} 
+          disabled={currentPage === 1}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronLeft size={16} />
         </button>
         <div className="flex items-center gap-1">
@@ -74,21 +85,30 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
             page === '...' ? (
               <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-400">...</span>
             ) : (
-              <button key={page} onClick={() => onPageChange(page)}
+              <button 
+                key={page} 
+                onClick={() => onPageChange(page)}
                 className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
                   ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                  : 'bg-black border border-white/20 text-white hover:bg-white/20'}`}>
+                  : 'bg-black border border-white/20 text-white hover:bg-white/20'}`}
+              >
                 {page}
               </button>
             )
           )}
         </div>
-        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
-          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <button 
+          onClick={() => onPageChange(currentPage + 1)} 
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronRight size={16} />
         </button>
-        <button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages}
-          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        <button 
+          onClick={() => onPageChange(totalPages)} 
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-lg bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronsRight size={16} />
         </button>
       </div>
@@ -278,7 +298,6 @@ const NotificationsTable = ({
                 </button>
               </th>
             ))}
-            {/* <th className="px-4 py-4 text-left text-xs font-black text-emerald-400 uppercase tracking-wider">Status</th> */}
             <th className="px-4 py-4 text-left">
               <button onClick={() => onSort('createdAt')}
                 className="flex items-center gap-2 text-xs font-black text-emerald-400 uppercase tracking-wider group">
@@ -315,7 +334,6 @@ const NotificationsTable = ({
                   </div>
                 ) : <span className="text-sm text-gray-500">System</span>}
               </td>
-              {/* <td className="px-4 py-4"><ReadStatusBadge isRead={notification.isRead} /></td> */}
               <td className="px-4 py-4 text-sm text-gray-400">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-1">
@@ -370,7 +388,6 @@ const NotificationModal = ({ notification, loadingDelete, onClose, onDelete }) =
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TypeBadge type={notification.type} />
-              {/* <ReadStatusBadge isRead={notification.isRead} /> */}
             </div>
             <p className="text-xs text-gray-500">ID: {notification._id.slice(-8)}</p>
           </div>

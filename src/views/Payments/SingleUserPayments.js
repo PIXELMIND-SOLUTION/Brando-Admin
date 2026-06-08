@@ -483,9 +483,9 @@ const SingleUserPayments = () => {
                     <button onClick={() => viewPayment(payment)} className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:shadow-lg transition-all" title="View details">
                       <Eye size={14} />
                     </button>
-                    <button onClick={() => handleDelete(payment._id)} disabled={loading.delete} className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg transition-all" title="Delete">
+                    {/* <button onClick={() => handleDelete(payment._id)} disabled={loading.delete} className="p-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white hover:shadow-lg transition-all" title="Delete">
                       <Trash2 size={14} />
-                    </button>
+                    </button> */}
                   </div>
                 </td>
               </tr>
@@ -535,9 +535,9 @@ const SingleUserPayments = () => {
               <div className="bg-white/5 rounded-xl p-3"><p className="text-xs text-gray-400 mb-1">Booking Date</p><p className="text-white text-sm">{new Date(selectedPayment.createdAt).toLocaleString()}</p></div>
               <div className="bg-white/5 rounded-xl p-3"><p className="text-xs text-gray-400 mb-1">Start Date</p><p className="text-white text-sm">{selectedPayment.startDate ? new Date(selectedPayment.startDate).toLocaleDateString() : 'N/A'}</p></div>
             </div>
-            <button onClick={() => handleDelete(selectedPayment._id)} disabled={loading.delete} className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
+            {/* <button onClick={() => handleDelete(selectedPayment._id)} disabled={loading.delete} className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2">
               <Trash2 size={18} /> Delete Payment
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

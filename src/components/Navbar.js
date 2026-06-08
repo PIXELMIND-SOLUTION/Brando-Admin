@@ -145,14 +145,14 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
     setNotificationsOpen(false);
   };
 
-  const markAsRead = async (id) => {
-    try {
-      await axios.put(`${API}/updatenotification/${id}`, { isRead: true });
-      fetchNotifications();
-    } catch (error) {
-      console.error("Failed to mark notification as read:", error);
-    }
-  };
+  // const markAsRead = async (id) => {
+  //   try {
+  //     await axios.put(`${API}/updatenotification/${id}`, { isRead: true });
+  //     fetchNotifications();
+  //   } catch (error) {
+  //     console.error("Failed to mark notification as read:", error);
+  //   }
+  // };
 
   const markAllAsRead = async () => {
     try {
@@ -281,7 +281,6 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                           key={notification._id}
                           onClick={() => {
                             handleNotificationClick(notification);
-                            if (!notification.isRead) markAsRead(notification._id);
                           }}
                           className={`p-4 hover:bg-white/5 transition-colors duration-200 cursor-pointer border-b border-white/5 last:border-0 ${!notification.isRead ? 'bg-emerald-500/5' : ''
                             } ${getNotificationColor(notification.type)}`}
@@ -348,7 +347,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
               className="flex items-center gap-2.5 cursor-pointer hover:bg-white/10 rounded-xl px-2.5 py-1.5 transition-colors duration-200"
               aria-label="Profile menu"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm font-black overflow-hidden">
+              <div className="w-8 h-8 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm font-black overflow-hidden">
                 <img src={logo} alt="Admin" className="w-full h-full object-cover" />
               </div>
 
@@ -376,7 +375,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
                   {/* User Info Header */}
                   <div onClick={() => navigate('/dashboard')} className="px-4 py-3 border-b border-white/10 bg-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold overflow-hidden">
+                      <div className="w-10 h-10 rounded bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold overflow-hidden">
                         <img src={logo} alt="Admin" className="w-full h-full object-cover" />
                       </div>
                       <div>

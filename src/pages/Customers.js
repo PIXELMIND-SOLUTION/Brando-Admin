@@ -193,8 +193,26 @@ const CustomerModal = memo(({
           ) : (
             <>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold">
-                  {selectedCustomer.name?.charAt(0) || 'U'}
+                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
+                  {selectedCustomer.profileImage ? (
+                    <img
+                      src={selectedCustomer.profileImage}
+                      alt={selectedCustomer.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.parentElement.innerHTML = `
+          <span class="text-white text-2xl font-bold">
+            ${(selectedCustomer.name?.charAt(0) || "U").toUpperCase()}
+          </span>
+        `;
+                      }}
+                    />
+                  ) : (
+                    <span className="text-white text-2xl font-bold">
+                      {(selectedCustomer.name?.charAt(0) || "U").toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">{selectedCustomer.name || 'Guest User'}</h3>
@@ -264,7 +282,7 @@ const CustomerModal = memo(({
 const Customers = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Get filter from URL query parameter
   const urlFilter = searchParams.get('filter');
   const [filter, setFilter] = useState(urlFilter || 'All');
@@ -310,11 +328,11 @@ const Customers = () => {
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      
+
       // Build URL with query parameters
       let url = `${API}/getallusers`;
       const params = new URLSearchParams();
-      
+
       // Check both state filter and URL filter
       const activeFilter = filter !== 'All' ? filter.toLowerCase() : null;
       if (activeFilter === 'today') {
@@ -327,10 +345,10 @@ const Customers = () => {
       else if (activeFilter === 'month') {
         params.append('filter', 'month');
       }
-      
+
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
-      
+
       const { data } = await axios.get(url);
       setCustomers(data.data || []);
     } catch (error) {
@@ -616,16 +634,16 @@ const Customers = () => {
           <span className="font-medium">Filter by:</span>
         </div>
         {uniqueFilters.map(status => (
-          <button 
-            key={status} 
+          <button
+            key={status}
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
               ${filter === status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
-            {status === 'active' ? <CheckCircle size={14} /> : 
-             status === 'inactive' ? <XCircle size={14} /> : 
-             status === 'deleted' ? <Trash2 size={14} /> : 
-             status === 'today' ? <Clock size={14} /> :
-             <Filter size={14} />}
+            {status === 'active' ? <CheckCircle size={14} /> :
+              status === 'inactive' ? <XCircle size={14} /> :
+                status === 'deleted' ? <Trash2 size={14} /> :
+                  status === 'today' ? <Clock size={14} /> :
+                    <Filter size={14} />}
             {status === 'today' ? "Today's Users" : status}
           </button>
         ))}
@@ -701,9 +719,22 @@ const Customers = () => {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-                          {customer.profileImage
-                            ? <img src={customer.profileImage} alt="" className="w-full h-full object-cover" />
-                            : <Users size={14} className="text-emerald-400" />}
+                          {customer.profileImage ? (
+                            <img
+                              src={customer.profileImage}
+                              alt={customer.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = `https://placehold.co/200x200/e5e7eb/64748b?text=${encodeURIComponent(
+                                  (customer.name?.charAt(0) || "U").toUpperCase()
+                                )}`;
+                              }}
+                            />
+                          ) : (
+                            <span className="text-emerald-400 text-sm font-bold uppercase">
+                              {customer.name?.charAt(0) || "U"}
+                            </span>
+                          )}
                         </div>
                         <div>
                           <p className="font-semibold text-white">{customer.name || 'Guest User'}</p>
@@ -785,9 +816,24 @@ const Customers = () => {
               <div className="relative h-32 bg-gradient-to-br from-emerald-500/20 to-emerald-600/20">
                 <div className="absolute -bottom-8 left-4">
                   <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#0f172a] to-[#020617] flex items-center justify-center border-2 border-emerald-500/30 overflow-hidden">
-                    {customer.profileImage
-                      ? <img src={customer.profileImage} alt={customer.name} className="w-full h-full object-cover" />
-                      : <Users size={24} className="text-emerald-400" />}
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden">
+                      {customer.profileImage ? (
+                        <img
+                          src={customer.profileImage}
+                          alt={customer.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://placehold.co/200x200/e5e7eb/64748b?text=${encodeURIComponent(
+                              (customer.name?.charAt(0) || "U").toUpperCase()
+                            )}`;
+                          }}
+                        />
+                      ) : (
+                        <span className="text-emerald-600 text-sm font-bold">
+                          {(customer.name?.charAt(0) || "U").toUpperCase()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="absolute top-2 right-2 flex gap-1.5">
