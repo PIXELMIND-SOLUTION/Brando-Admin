@@ -51,7 +51,7 @@ const useFilterAndSortBookings = (bookings, filterStatus, filterDate, searchTerm
     if (!bookings.length) return [];
 
     let filtered = [...bookings];
-    
+
     // Filter by status
     if (filterStatus !== 'All') {
       filtered = filtered.filter(b => b.status === filterStatus);
@@ -163,11 +163,11 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, total
             page === '...'
               ? <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-400">...</span>
               : <button key={page} onClick={() => onPageChange(page)}
-                  className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
-                    ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
-                  {page}
-                </button>
+                className={`min-w-[36px] h-9 px-3 rounded-lg font-medium transition-all ${currentPage === page
+                  ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg'
+                  : 'bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white'}`}>
+                {page}
+              </button>
           )}
         </div>
         <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
@@ -223,11 +223,11 @@ const SearchBar = ({ searchTerm, setSearchTerm, clearSearch }) => (
 
 const StatusBadge = ({ status }) => {
   const config = {
-    confirmed:      { icon: CheckCircle, color: 'text-green-400 bg-green-500/10',    label: 'Confirmed' },
-    pending:        { icon: Clock,        color: 'text-yellow-400 bg-yellow-500/10', label: 'Pending' },
-    completed:      { icon: CreditCard,   color: 'text-blue-400 bg-blue-500/10',     label: 'Completed' },
-    cancelled:      { icon: XCircle,      color: 'text-red-400 bg-red-500/10',       label: 'Cancelled' },
-    form_submitted: { icon: AlertCircle,  color: 'text-purple-400 bg-purple-500/10', label: 'Form Submitted' }
+    confirmed: { icon: CheckCircle, color: 'text-green-400 bg-green-500/10', label: 'Confirmed' },
+    pending: { icon: Clock, color: 'text-yellow-400 bg-yellow-500/10', label: 'Pending' },
+    completed: { icon: CreditCard, color: 'text-blue-400 bg-blue-500/10', label: 'Completed' },
+    cancelled: { icon: XCircle, color: 'text-red-400 bg-red-500/10', label: 'Cancelled' },
+    form_submitted: { icon: AlertCircle, color: 'text-purple-400 bg-purple-500/10', label: 'Form Submitted' }
   };
   const { icon: Icon, color, label } = config[status] || { icon: AlertCircle, color: 'text-gray-400 bg-gray-500/10', label: status || 'Unknown' };
   return (
@@ -264,10 +264,10 @@ const PageHeader = ({ icon: Icon, title, subtitle, actions }) => (
 
 const StatsCard = ({ bookings }) => {
   const stats = useMemo(() => [
-    { label: 'Total Bookings', value: bookings.length,                                       icon: Calendar,    color: 'from-emerald-500 to-emerald-600' },
-    { label: 'Pending',        value: bookings.filter(b => b.status === 'pending').length,   icon: Clock,       color: 'from-yellow-500 to-orange-500' },
-    { label: 'Confirmed',      value: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
-    { label: 'Completed',      value: bookings.filter(b => b.status === 'completed').length, icon: CreditCard,  color: 'from-blue-500 to-indigo-500' }
+    { label: 'Total Bookings', value: bookings.length, icon: Calendar, color: 'from-emerald-500 to-emerald-600' },
+    { label: 'Pending', value: bookings.filter(b => b.status === 'pending').length, icon: Clock, color: 'from-yellow-500 to-orange-500' },
+    { label: 'Confirmed', value: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'from-green-500 to-emerald-500' },
+    { label: 'Completed', value: bookings.filter(b => b.status === 'completed').length, icon: CreditCard, color: 'from-blue-500 to-indigo-500' }
   ], [bookings]);
 
   return (
@@ -289,20 +289,20 @@ const StatsCard = ({ bookings }) => {
   );
 };
 
-const FilterBar = ({ 
-  filterStatus, setFilterStatus, 
+const FilterBar = ({
+  filterStatus, setFilterStatus,
   dateFilter, setDateFilter,
-  getUniqueFilters 
+  getUniqueFilters
 }) => {
   const filters = getUniqueFilters();
 
   const getFilterIcon = (filter) => {
     switch (filter) {
       case 'confirmed': return <CheckCircle size={14} />;
-      case 'pending':   return <Clock size={14} />;
+      case 'pending': return <Clock size={14} />;
       case 'completed': return <CreditCard size={14} />;
       case 'cancelled': return <XCircle size={14} />;
-      default:          return <Filter size={14} />;
+      default: return <Filter size={14} />;
     }
   };
 
@@ -408,12 +408,12 @@ const TableView = ({
             </th>
             {[
               { key: 'bookingReference', label: 'Booking Ref', icon: <Tag size={14} /> },
-              { key: 'hostelId',         label: 'Hostel',      icon: <Building2 size={14} /> },
-              { key: 'userId',           label: 'Customer',    icon: <User size={14} /> },
-              { key: 'roomType',         label: 'Room',        icon: <Home size={14} /> },
-              { key: 'totalAmount',      label: 'Amount',      icon: <IndianRupee size={14} /> },
-              { key: 'status',           label: 'Status',      icon: <CheckCircle size={14} /> },
-              { key: 'createdAt',        label: 'Booked On',   icon: <Calendar size={14} /> },
+              { key: 'hostelId', label: 'Hostel', icon: <Building2 size={14} /> },
+              { key: 'userId', label: 'Customer', icon: <User size={14} /> },
+              { key: 'roomType', label: 'Room', icon: <Home size={14} /> },
+              { key: 'totalAmount', label: 'Amount', icon: <IndianRupee size={14} /> },
+              { key: 'status', label: 'Status', icon: <CheckCircle size={14} /> },
+              { key: 'createdAt', label: 'Booked On', icon: <Calendar size={14} /> },
             ].map(({ key, label, icon }) => (
               <th key={key} className="px-4 py-4 text-left">
                 <button
@@ -462,6 +462,7 @@ const TableView = ({
               <td className="px-4 py-4">
                 <p className="text-sm text-white">{booking.roomType || 'N/A'}</p>
                 <p className="text-xs text-gray-500">{booking.shareType || 'N/A'}</p>
+                <p className="text-sm text-white">roomNo : {booking.roomNo ? booking.roomNo : 'N/A'}</p>
               </td>
               <td className="px-4 py-4">
                 <p className="font-semibold text-white">₹{booking.totalAmount?.toLocaleString() || 0}</p>
@@ -506,10 +507,10 @@ const TableView = ({
 const AllBookings = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Get filters from URL query parameters
   const urlFilter = searchParams.get('filter');
-  
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState({ fetch: false, delete: false });
   const [filterStatus, setFilterStatus] = useState('All');
@@ -521,20 +522,20 @@ const AllBookings = () => {
   // Sync URL when date filter changes
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
-    
+
     if (dateFilter !== 'all') {
       newParams.set('filter', dateFilter);
     } else {
       newParams.delete('filter');
     }
-    
+
     setSearchParams(newParams, { replace: true });
   }, [dateFilter, setSearchParams, searchParams]);
 
   // Listen to URL changes (if user manually changes URL)
   useEffect(() => {
     const newFilter = searchParams.get('filter');
-    
+
     if (newFilter && newFilter !== dateFilter) {
       setDateFilter(newFilter);
     } else if (!newFilter && dateFilter !== 'all') {
@@ -552,18 +553,18 @@ const AllBookings = () => {
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
-      
+
       // Build URL with query parameters
       let url = `${API}/getallbookings`;
       const params = new URLSearchParams();
-      
+
       if (dateFilter !== 'all') {
         params.append('filter', dateFilter);
       }
-      
+
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
-      
+
       const { data } = await axios.get(url);
       setBookings(data.data || []);
     } catch (error) {
@@ -632,7 +633,7 @@ const AllBookings = () => {
 
   const getUniqueFilters = useCallback(() =>
     ['All', ...new Set(bookings.map(b => b.status).filter(Boolean))],
-  [bookings]);
+    [bookings]);
 
   const handleSort = useCallback((key) => {
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -649,7 +650,7 @@ const AllBookings = () => {
   }, []);
 
   const exportToCSV = useCallback(() => {
-    const headers = ['Booking Ref','Hostel','Customer','Vendor','Room Type','Share Type','Booking Type','Total Amount','Status','Booking Date','Start Date'];
+    const headers = ['Booking Ref', 'Hostel', 'Customer', 'Vendor', 'Room Type', 'Share Type', 'Booking Type', 'Total Amount', 'Status', 'Booking Date', 'Start Date'];
     const csvData = filteredAndSortedBookings.map(b => [
       b.bookingReference || 'N/A', b.hostelId?.name || 'N/A', b.userId?.name || 'N/A',
       b.vendorId?.name || 'N/A', b.roomType || 'N/A', b.shareType || 'N/A',
@@ -726,9 +727,9 @@ const AllBookings = () => {
           </div>
           <p className="text-white font-bold text-lg mb-2">No bookings found</p>
           <p className="text-sm text-gray-400">
-            {debouncedSearchTerm ? 'Try adjusting your search' : 
-             dateFilter !== 'all' ? `No ${dateFilter} bookings found` :
-             filterStatus !== 'All' ? 'Try a different filter' : ''}
+            {debouncedSearchTerm ? 'Try adjusting your search' :
+              dateFilter !== 'all' ? `No ${dateFilter} bookings found` :
+                filterStatus !== 'All' ? 'Try a different filter' : ''}
           </p>
           {(debouncedSearchTerm || filterStatus !== 'All' || dateFilter !== 'all') && (
             <button

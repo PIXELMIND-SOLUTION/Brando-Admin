@@ -110,7 +110,7 @@ const StatCard = ({ card, navigate }) => {
                     <div className="flex items-end gap-2 mt-1.5 flex-wrap">
                         <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight truncate leading-none">
                             {card.value?.toLocaleString() || 0}
-                        </h2>                      
+                        </h2>
                     </div>
                 </div>
 
@@ -414,12 +414,12 @@ const BrandoComponent = () => {
                     route: "/dashboard/create-product",
                     ic: "teal",
                 },
-                {
-                    label: "Discount",
-                    icon: FaPercentage,
-                    route: "/dashboard/vendor-discount",
-                    ic: "blue",
-                },
+                // {
+                //     label: "Discount",
+                //     icon: FaPercentage,
+                //     route: "/dashboard/vendor-discount",
+                //     ic: "blue",
+                // },
             ],
         },
     };
@@ -560,10 +560,10 @@ const BrandoComponent = () => {
                             Quick Links
                         </p>
                         <div className={`grid gap-3 ${current.quickLinks.length === 5
-                                ? "grid-cols-3 sm:grid-cols-5"
-                                : current.quickLinks.length === 4
-                                    ? "grid-cols-2 sm:grid-cols-4"
-                                    : "grid-cols-3"
+                            ? "grid-cols-3 sm:grid-cols-5"
+                            : current.quickLinks.length === 4
+                                ? "grid-cols-2 sm:grid-cols-4"
+                                : "grid-cols-3"
                             }`}>
                             {current.quickLinks.map((item, i) => (
                                 <QuickLinkCard key={i} item={item} navigate={navigate} />

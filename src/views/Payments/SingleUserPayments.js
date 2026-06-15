@@ -469,6 +469,7 @@ const SingleUserPayments = () => {
                 <td className="px-4 py-4">
                   <p className="text-sm text-white">{payment.roomType || 'N/A'}</p>
                   <p className="text-xs text-gray-500">{payment.shareType || 'N/A'}</p>
+                  <p className="text-sm text-white">roomNo : {payment.roomNo ? payment.roomNo : 'N/A'}</p>
                 </td>
                 <td className="px-4 py-4">
                   <p className="font-semibold text-white">{formatCurrency(payment.totalAmount || 0)}</p>
