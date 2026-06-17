@@ -299,26 +299,41 @@ const Customers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
+  // Date filter options
+  const dateFilters = ['Today', 'Week', 'Month'];
+
   // Sync URL when filter changes
   useEffect(() => {
     if (filter === 'All') {
-      // Remove filter param if it's 'All'
       const newParams = new URLSearchParams(searchParams);
       newParams.delete('filter');
       setSearchParams(newParams, { replace: true });
+    } else if (dateFilters.includes(filter)) {
+      // For date filters, set the filter param in URL (lowercase)
+      setSearchParams({ filter: filter.toLowerCase() }, { replace: true });
     } else {
-      // Set filter param in URL
+      // For status filters, set the filter param in URL
       setSearchParams({ filter: filter.toLowerCase() }, { replace: true });
     }
   }, [filter, setSearchParams, searchParams]);
 
-  // Listen to URL changes (if user manually changes URL)
+  // Listen to URL changes
   useEffect(() => {
     const newFilter = searchParams.get('filter');
-    if (newFilter && newFilter !== filter.toLowerCase()) {
-      // Convert first letter to uppercase to match state format
-      const formattedFilter = newFilter.charAt(0).toUpperCase() + newFilter.slice(1);
-      setFilter(formattedFilter);
+    if (newFilter) {
+      // Check if it's a date filter
+      const dateFilterMap = {
+        'today': 'Today',
+        'week': 'Week',
+        'month': 'Month'
+      };
+      if (dateFilterMap[newFilter]) {
+        setFilter(dateFilterMap[newFilter]);
+      } else {
+        // It's a status filter
+        const formattedFilter = newFilter.charAt(0).toUpperCase() + newFilter.slice(1);
+        setFilter(formattedFilter);
+      }
     } else if (!newFilter && filter !== 'All') {
       setFilter('All');
     }
@@ -329,22 +344,19 @@ const Customers = () => {
     try {
       setLoading(prev => ({ ...prev, fetch: true }));
 
-      // Build URL with query parameters
       let url = `${API}/getallusers`;
       const params = new URLSearchParams();
 
-      // Check both state filter and URL filter
-      const activeFilter = filter !== 'All' ? filter.toLowerCase() : null;
-      if (activeFilter === 'today') {
+      // Handle date-based filters
+      if (filter === 'Today') {
         params.append('filter', 'today');
-      }
-      // Add more filter types as needed
-      else if (activeFilter === 'week') {
+      } else if (filter === 'Week') {
         params.append('filter', 'week');
-      }
-      else if (activeFilter === 'month') {
+      } else if (filter === 'Month') {
         params.append('filter', 'month');
       }
+      // For status filters, we don't add any query param
+      // We'll filter client-side
 
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
@@ -362,29 +374,41 @@ const Customers = () => {
   useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
   useEffect(() => { setCurrentPage(1); }, [filter, searchTerm, sortConfig]);
 
-  // ── Filtered + sorted data (memoized — no re-creation on every render) ──
+  // ── Filtered + sorted data ──────────────────────────────────────────────
   const filteredAndSorted = useMemo(() => {
-    let list = filter === 'All' ? customers : customers.filter(c => c.status === filter);
-
+    let list = customers;
+    
+    // Only apply status filtering for non-date filters
+    if (filter !== 'All' && !dateFilters.includes(filter)) {
+      list = list.filter(c => c.status === filter);
+    }
+    
+    // Apply search filtering
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
       list = list.filter(c =>
         (c.name || '').toLowerCase().includes(q) ||
         (c.mobileNumber?.toString() || '').toLowerCase().includes(q) ||
-        (c.hostelId?.name || '').toLowerCase().includes(q)
+        (c.hostelId?.name || '').toLowerCase().includes(q) ||
+        (c.hostelName || '').toLowerCase().includes(q)
       );
     }
 
+    // Apply sorting
     return [...list].sort((a, b) => {
       let aVal, bVal;
       if (sortConfig.key === 'hostelId') {
-        aVal = a.hostelId?.name || ''; bVal = b.hostelId?.name || '';
+        aVal = a.hostelId?.name || ''; 
+        bVal = b.hostelId?.name || '';
       } else if (sortConfig.key === 'createdAt') {
-        aVal = new Date(a.createdAt).getTime(); bVal = new Date(b.createdAt).getTime();
+        aVal = new Date(a.createdAt).getTime(); 
+        bVal = new Date(b.createdAt).getTime();
       } else if (sortConfig.key === 'mobileNumber') {
-        aVal = a.mobileNumber?.toString() || ''; bVal = b.mobileNumber?.toString() || '';
+        aVal = a.mobileNumber?.toString() || ''; 
+        bVal = b.mobileNumber?.toString() || '';
       } else {
-        aVal = a[sortConfig.key] || ''; bVal = b[sortConfig.key] || '';
+        aVal = a[sortConfig.key] || ''; 
+        bVal = b[sortConfig.key] || '';
       }
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
@@ -399,10 +423,11 @@ const Customers = () => {
     return filteredAndSorted.slice(start, start + itemsPerPage);
   }, [filteredAndSorted, currentPage, itemsPerPage]);
 
-  const uniqueFilters = useMemo(
-    () => ['All', 'today', ...new Set(customers.map(c => c.status).filter(Boolean))],
-    [customers]
-  );
+  // Get unique statuses for filter buttons
+  const filterButtons = useMemo(() => {
+    const statuses = ['All', ...dateFilters, ...new Set(customers.map(c => c.status).filter(Boolean))];
+    return statuses;
+  }, [customers]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleSort = useCallback((key) => {
@@ -448,9 +473,17 @@ const Customers = () => {
 
   const handleUpdateCustomer = useCallback(async (userId, formData) => {
     const result = await Swal.fire({
-      title: 'Update Customer?', text: 'Are you sure you want to update this customer?', icon: 'question', showCancelButton: true,
-      background: '#0f172a', color: '#fff',
-      customClass: { popup: 'rounded-2xl', confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' }
+      title: 'Update Customer?', 
+      text: 'Are you sure you want to update this customer?', 
+      icon: 'question', 
+      showCancelButton: true,
+      background: '#0f172a', 
+      color: '#fff',
+      customClass: { 
+        popup: 'rounded-2xl', 
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      }
     });
     if (!result.isConfirmed) return;
     try {
@@ -458,7 +491,9 @@ const Customers = () => {
       await axios.put(`${API}/updateuser/${userId}`, formData);
       showAlert('success', 'Updated!', 'Customer has been updated successfully', 2000);
       fetchCustomers();
-      setShowModal(false); setEditMode(false); setSelectedCustomer(null);
+      setShowModal(false); 
+      setEditMode(false); 
+      setSelectedCustomer(null);
     } catch (error) {
       showAlert('error', 'Update failed', error.response?.data?.message || "Could not update customer");
     } finally {
@@ -468,9 +503,17 @@ const Customers = () => {
 
   const handleDelete = useCallback(async (userId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?', text: "You won't be able to revert this!", icon: 'warning', showCancelButton: true,
-      background: '#0f172a', color: '#fff',
-      customClass: { popup: 'rounded-2xl', confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' }
+      title: 'Are you sure?', 
+      text: "You won't be able to revert this!", 
+      icon: 'warning', 
+      showCancelButton: true,
+      background: '#0f172a', 
+      color: '#fff',
+      customClass: { 
+        popup: 'rounded-2xl', 
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      }
     });
     if (!result.isConfirmed) return;
     try {
@@ -479,7 +522,10 @@ const Customers = () => {
       showAlert('success', 'Deleted!', 'Customer has been deleted', 2000);
       fetchCustomers();
       setSelectedCustomers(prev => prev.filter(id => id !== userId));
-      if (selectedCustomer?._id === userId) { setShowModal(false); setSelectedCustomer(null); }
+      if (selectedCustomer?._id === userId) { 
+        setShowModal(false); 
+        setSelectedCustomer(null); 
+      }
     } catch (error) {
       showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete customer");
     } finally {
@@ -488,18 +534,30 @@ const Customers = () => {
   }, [fetchCustomers, selectedCustomer]);
 
   const handleBulkDelete = useCallback(async () => {
-    if (selectedCustomers.length === 0) { showAlert('warning', 'No selection', 'Please select customers to delete'); return; }
+    if (selectedCustomers.length === 0) { 
+      showAlert('warning', 'No selection', 'Please select customers to delete'); 
+      return; 
+    }
     const result = await Swal.fire({
-      title: 'Delete Selected?', text: `You are about to delete ${selectedCustomers.length} customers`, icon: 'warning', showCancelButton: true,
-      background: '#0f172a', color: '#fff',
-      customClass: { popup: 'rounded-2xl', confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' }
+      title: 'Delete Selected?', 
+      text: `You are about to delete ${selectedCustomers.length} customers`, 
+      icon: 'warning', 
+      showCancelButton: true,
+      background: '#0f172a', 
+      color: '#fff',
+      customClass: { 
+        popup: 'rounded-2xl', 
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      }
     });
     if (!result.isConfirmed) return;
     try {
       setLoading(prev => ({ ...prev, delete: true }));
       for (const id of selectedCustomers) await axios.delete(`${API}/deleteuser/${id}`);
       showAlert('success', 'Deleted!', `${selectedCustomers.length} customers deleted`, 2000);
-      fetchCustomers(); setSelectedCustomers([]);
+      fetchCustomers(); 
+      setSelectedCustomers([]);
     } catch (error) {
       showAlert('error', 'Delete failed', 'Could not delete some customers');
     } finally {
@@ -510,9 +568,13 @@ const Customers = () => {
   const exportToCSV = useCallback(() => {
     const headers = ['Name', 'Mobile Number', 'Status', 'Verified', 'Associated Hostel', 'Joined Date', 'Last Updated'];
     const rows = filteredAndSorted.map(c => [
-      c.name || 'N/A', c.mobileNumber || 'N/A', c.status || 'active',
-      c.isVerified ? 'Yes' : 'No', c.hostelId?.name || 'None',
-      new Date(c.createdAt).toLocaleDateString(), new Date(c.updatedAt).toLocaleDateString()
+      c.name || 'N/A', 
+      c.mobileNumber || 'N/A', 
+      c.status || 'active',
+      c.isVerified ? 'Yes' : 'No', 
+      c.hostelId?.name || 'None',
+      new Date(c.createdAt).toLocaleDateString(), 
+      new Date(c.updatedAt).toLocaleDateString()
     ]);
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
     const a = document.createElement('a');
@@ -578,7 +640,7 @@ const Customers = () => {
         ))}
       </div>
 
-      {/* Action Bar — search input lives HERE, not inside a nested component */}
+      {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-3 mb-6">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
@@ -633,18 +695,24 @@ const Customers = () => {
           <Filter size={16} className="text-emerald-400" />
           <span className="font-medium">Filter by:</span>
         </div>
-        {uniqueFilters.map(status => (
+        {filterButtons.map(status => (
           <button
             key={status}
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
               ${filter === status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
             {status === 'active' ? <CheckCircle size={14} /> :
-              status === 'inactive' ? <XCircle size={14} /> :
-                status === 'deleted' ? <Trash2 size={14} /> :
-                  status === 'today' ? <Clock size={14} /> :
-                    <Filter size={14} />}
-            {status === 'today' ? "Today's Users" : status}
+             status === 'inactive' ? <XCircle size={14} /> :
+             status === 'deleted' ? <Trash2 size={14} /> :
+             status === 'Today' ? <Clock size={14} /> :
+             status === 'Week' ? <Calendar size={14} /> :
+             status === 'Month' ? <Calendar size={14} /> :
+             <Filter size={14} />}
+            {status === 'Today' ? "Today's Users" : 
+             status === 'Week' ? "This Week" :
+             status === 'Month' ? "This Month" :
+             status === 'All' ? 'All Users' :
+             status}
           </button>
         ))}
       </div>
@@ -902,10 +970,18 @@ const Customers = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Users' : filter === 'today' ? "Today's Users" : `${filter} Users`}
+                  {filter === 'All' ? 'Total Users' : 
+                   filter === 'Today' ? "Today's Users" :
+                   filter === 'Week' ? "This Week's Users" :
+                   filter === 'Month' ? "This Month's Users" :
+                   `${filter} Users`}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {filter === 'All' ? 'Across all statuses' : filter === 'today' ? 'Users joined today' : 'Filtered by status'}
+                  {filter === 'All' ? 'Across all statuses' : 
+                   filter === 'Today' ? 'Users joined today' :
+                   filter === 'Week' ? 'Users joined this week' :
+                   filter === 'Month' ? 'Users joined this month' :
+                   'Filtered by status'}
                   {searchTerm && ` • Search: "${searchTerm}"`}
                 </p>
               </div>
