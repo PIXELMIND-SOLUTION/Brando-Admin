@@ -650,9 +650,9 @@ const TableView = ({ paginatedHostels, selectedHostels, sortConfig, loadingDelet
               <td className="px-4 py-4">
                 <div className="flex items-center justify-end gap-2">
                   <button onClick={() => onDiscount(hostel)}
-                    className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:shadow-lg transition-all"
+                    className="p-2 rounded-lg bg-gradient-to-r from-orange-500 to-rose-500 text-white hover:shadow-lg transition-all"
                     title="Set Discount">
-                    <Percent size={14} />
+                    <MdDiscount size={14} />
                   </button>
                   <button onClick={() => onView(hostel._id)}
                     className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:shadow-lg transition-all"
@@ -694,8 +694,8 @@ const GridView = ({ paginatedHostels, selectedHostels, loadingDelete, onToggleSe
           <img src={hostel.images?.[0]} alt={hostel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           <div className="absolute top-2 right-2 flex gap-1.5">
             <button onClick={() => onDiscount(hostel)}
-              className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-purple-400 hover:bg-black/80">
-              <Percent size={14} />
+              className="p-1.5 sm:p-2 bg-gradient-to-r from-orange-500 to-rose-500 backdrop-blur-sm rounded-lg text-white hover:bg-black/80">
+              <MdDiscount size={14} />
             </button>
             <button onClick={() => onView(hostel._id)}
               className="p-1.5 sm:p-2 bg-black/60 backdrop-blur-sm rounded-lg text-blue-400 hover:bg-black/80">

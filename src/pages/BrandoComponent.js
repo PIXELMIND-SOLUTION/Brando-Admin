@@ -414,12 +414,12 @@ const BrandoComponent = () => {
                     route: "/dashboard/create-product",
                     ic: "teal",
                 },
-                // {
-                //     label: "Discount",
-                //     icon: FaPercentage,
-                //     route: "/dashboard/vendor-discount",
-                //     ic: "blue",
-                // },
+                {
+                    label: "Discount",
+                    icon: FaPercentage,
+                    route: "/dashboard/hostels",
+                    ic: "blue",
+                },
             ],
         },
     };
