@@ -840,13 +840,26 @@ const Customers = () => {
                         <span className="text-sm">{customer.mobileNumber || 'N/A'}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    <td className="px-3 sm:px-4 py-3 sm:py-4">
                       {customer.hostelId ? (
-                        <div>
-                          <p className="text-sm text-white font-medium">{customer.hostelId.name || customer.hostelId}</p>
-                          <p className="text-xs text-gray-500">{customer.hostelName}</p>
+                        <div className="max-w-[180px] sm:max-w-[240px] lg:max-w-xs">
+                          <p
+                            className="text-xs sm:text-sm font-semibold text-white truncate"
+                            title={customer.hostelName}
+                          >
+                            {customer.hostelName || "N/A"}
+                          </p>
+
+                          <p
+                            className="text-[10px] sm:text-xs text-gray-400 break-all mt-1"
+                            title={customer.hostelId}
+                          >
+                            {customer.hostelId}
+                          </p>
                         </div>
-                      ) : <span className="text-sm text-gray-500">None</span>}
+                      ) : (
+                        <span className="text-xs sm:text-sm text-gray-500">None</span>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <StatusBadge status={customer.status} isVerified={customer.isVerified} />
@@ -949,10 +962,17 @@ const Customers = () => {
                   <StatusBadge status={customer.status} isVerified={customer.isVerified} />
                 </div>
                 {customer.hostelId && (
-                  <div className="mt-3 p-2 bg-white/5 rounded-lg">
-                    <p className="text-xs text-emerald-400 font-semibold mb-1">Associated Hostel</p>
-                    <p className="text-sm text-white">{customer.hostelId.name}</p>
-                    <p className="text-xs text-gray-500 line-clamp-1">{customer.hostelId.address}</p>
+                  <div className="mt-3 rounded-lg bg-white/5 p-3 border border-white/10">
+                    <p className="text-[10px] sm:text-xs font-semibold text-emerald-400 uppercase tracking-wide">
+                      Associated Hostel
+                    </p>
+
+                    <p
+                      className="mt-1 text-sm sm:text-base font-medium text-white break-words"
+                      title={customer.hostelName}
+                    >
+                      {customer.hostelName}
+                    </p>
                   </div>
                 )}
                 <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs">
