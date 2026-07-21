@@ -242,20 +242,42 @@ const CustomerModal = memo(({
                 )}
               </div>
               {selectedCustomer.hostelId && (
-                <div className="bg-white/5 rounded-lg p-4 mb-6">
-                  <p className="text-sm font-semibold text-emerald-400 mb-2 flex items-center gap-2">
-                    <Building2 size={14} /> Associated Hostel
-                  </p>
-                  <p className="text-white font-medium">{selectedCustomer.hostelId.name}</p>
-                  <p className="text-sm text-gray-400 mt-1">{selectedCustomer.hostelId.address}</p>
-                  <div className="flex items-center gap-4 mt-2">
-                    <div className="flex items-center gap-1">
-                      <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                      <span className="text-sm text-white">{selectedCustomer.hostelId.rating}</span>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Building2 size={18} className="text-emerald-400" />
+                    <h3 className="text-base font-semibold text-emerald-400">
+                      Associated Hostel
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Hostel Name</p>
+                      <p className="text-sm sm:text-base font-medium text-white break-words">
+                        {selectedCustomer.hostelName || "N/A"}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <IndianRupee size={12} className="text-emerald-400" />
-                      <span className="text-sm text-white">Advance: ₹{selectedCustomer.hostelId.monthlyAdvance}</span>
+
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Hostel ID</p>
+                      <p className="text-xs sm:text-sm text-gray-300 break-all">
+                        {selectedCustomer.hostelId}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Customer Status</p>
+                      <StatusBadge
+                        status={selectedCustomer.status}
+                        isVerified={selectedCustomer.isVerified}
+                      />
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Joined On</p>
+                      <p className="text-sm text-white">
+                        {new Date(selectedCustomer.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -377,12 +399,12 @@ const Customers = () => {
   // ── Filtered + sorted data ──────────────────────────────────────────────
   const filteredAndSorted = useMemo(() => {
     let list = customers;
-    
+
     // Only apply status filtering for non-date filters
     if (filter !== 'All' && !dateFilters.includes(filter)) {
       list = list.filter(c => c.status === filter);
     }
-    
+
     // Apply search filtering
     if (searchTerm.trim()) {
       const q = searchTerm.toLowerCase();
@@ -398,16 +420,16 @@ const Customers = () => {
     return [...list].sort((a, b) => {
       let aVal, bVal;
       if (sortConfig.key === 'hostelId') {
-        aVal = a.hostelId?.name || ''; 
+        aVal = a.hostelId?.name || '';
         bVal = b.hostelId?.name || '';
       } else if (sortConfig.key === 'createdAt') {
-        aVal = new Date(a.createdAt).getTime(); 
+        aVal = new Date(a.createdAt).getTime();
         bVal = new Date(b.createdAt).getTime();
       } else if (sortConfig.key === 'mobileNumber') {
-        aVal = a.mobileNumber?.toString() || ''; 
+        aVal = a.mobileNumber?.toString() || '';
         bVal = b.mobileNumber?.toString() || '';
       } else {
-        aVal = a[sortConfig.key] || ''; 
+        aVal = a[sortConfig.key] || '';
         bVal = b[sortConfig.key] || '';
       }
       if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -473,16 +495,16 @@ const Customers = () => {
 
   const handleUpdateCustomer = useCallback(async (userId, formData) => {
     const result = await Swal.fire({
-      title: 'Update Customer?', 
-      text: 'Are you sure you want to update this customer?', 
-      icon: 'question', 
+      title: 'Update Customer?',
+      text: 'Are you sure you want to update this customer?',
+      icon: 'question',
       showCancelButton: true,
-      background: '#0f172a', 
+      background: '#0f172a',
       color: '#fff',
-      customClass: { 
-        popup: 'rounded-2xl', 
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
     if (!result.isConfirmed) return;
@@ -491,8 +513,8 @@ const Customers = () => {
       await axios.put(`${API}/updateuser/${userId}`, formData);
       showAlert('success', 'Updated!', 'Customer has been updated successfully', 2000);
       fetchCustomers();
-      setShowModal(false); 
-      setEditMode(false); 
+      setShowModal(false);
+      setEditMode(false);
       setSelectedCustomer(null);
     } catch (error) {
       showAlert('error', 'Update failed', error.response?.data?.message || "Could not update customer");
@@ -503,16 +525,16 @@ const Customers = () => {
 
   const handleDelete = useCallback(async (userId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?', 
-      text: "You won't be able to revert this!", 
-      icon: 'warning', 
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
       showCancelButton: true,
-      background: '#0f172a', 
+      background: '#0f172a',
       color: '#fff',
-      customClass: { 
-        popup: 'rounded-2xl', 
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
     if (!result.isConfirmed) return;
@@ -522,9 +544,9 @@ const Customers = () => {
       showAlert('success', 'Deleted!', 'Customer has been deleted', 2000);
       fetchCustomers();
       setSelectedCustomers(prev => prev.filter(id => id !== userId));
-      if (selectedCustomer?._id === userId) { 
-        setShowModal(false); 
-        setSelectedCustomer(null); 
+      if (selectedCustomer?._id === userId) {
+        setShowModal(false);
+        setSelectedCustomer(null);
       }
     } catch (error) {
       showAlert('error', 'Delete failed', error.response?.data?.message || "Could not delete customer");
@@ -534,21 +556,21 @@ const Customers = () => {
   }, [fetchCustomers, selectedCustomer]);
 
   const handleBulkDelete = useCallback(async () => {
-    if (selectedCustomers.length === 0) { 
-      showAlert('warning', 'No selection', 'Please select customers to delete'); 
-      return; 
+    if (selectedCustomers.length === 0) {
+      showAlert('warning', 'No selection', 'Please select customers to delete');
+      return;
     }
     const result = await Swal.fire({
-      title: 'Delete Selected?', 
-      text: `You are about to delete ${selectedCustomers.length} customers`, 
-      icon: 'warning', 
+      title: 'Delete Selected?',
+      text: `You are about to delete ${selectedCustomers.length} customers`,
+      icon: 'warning',
       showCancelButton: true,
-      background: '#0f172a', 
+      background: '#0f172a',
       color: '#fff',
-      customClass: { 
-        popup: 'rounded-2xl', 
-        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold', 
-        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold' 
+      customClass: {
+        popup: 'rounded-2xl',
+        confirmButton: 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-xl font-semibold',
+        cancelButton: 'bg-gray-700 text-white px-6 py-2 rounded-xl font-semibold'
       }
     });
     if (!result.isConfirmed) return;
@@ -556,7 +578,7 @@ const Customers = () => {
       setLoading(prev => ({ ...prev, delete: true }));
       for (const id of selectedCustomers) await axios.delete(`${API}/deleteuser/${id}`);
       showAlert('success', 'Deleted!', `${selectedCustomers.length} customers deleted`, 2000);
-      fetchCustomers(); 
+      fetchCustomers();
       setSelectedCustomers([]);
     } catch (error) {
       showAlert('error', 'Delete failed', 'Could not delete some customers');
@@ -568,12 +590,12 @@ const Customers = () => {
   const exportToCSV = useCallback(() => {
     const headers = ['Name', 'Mobile Number', 'Status', 'Verified', 'Associated Hostel', 'Joined Date', 'Last Updated'];
     const rows = filteredAndSorted.map(c => [
-      c.name || 'N/A', 
-      c.mobileNumber || 'N/A', 
+      c.name || 'N/A',
+      c.mobileNumber || 'N/A',
       c.status || 'active',
-      c.isVerified ? 'Yes' : 'No', 
+      c.isVerified ? 'Yes' : 'No',
       c.hostelId?.name || 'None',
-      new Date(c.createdAt).toLocaleDateString(), 
+      new Date(c.createdAt).toLocaleDateString(),
       new Date(c.updatedAt).toLocaleDateString()
     ]);
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
@@ -702,17 +724,17 @@ const Customers = () => {
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2
               ${filter === status ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg' : 'bg-white/10 text-gray-300 hover:bg-white/20'}`}>
             {status === 'active' ? <CheckCircle size={14} /> :
-             status === 'inactive' ? <XCircle size={14} /> :
-             status === 'deleted' ? <Trash2 size={14} /> :
-             status === 'Today' ? <Clock size={14} /> :
-             status === 'Week' ? <Calendar size={14} /> :
-             status === 'Month' ? <Calendar size={14} /> :
-             <Filter size={14} />}
-            {status === 'Today' ? "Today's Users" : 
-             status === 'Week' ? "This Week" :
-             status === 'Month' ? "This Month" :
-             status === 'All' ? 'All Users' :
-             status}
+              status === 'inactive' ? <XCircle size={14} /> :
+                status === 'deleted' ? <Trash2 size={14} /> :
+                  status === 'Today' ? <Clock size={14} /> :
+                    status === 'Week' ? <Calendar size={14} /> :
+                      status === 'Month' ? <Calendar size={14} /> :
+                        <Filter size={14} />}
+            {status === 'Today' ? "Today's Users" :
+              status === 'Week' ? "This Week" :
+                status === 'Month' ? "This Month" :
+                  status === 'All' ? 'All Users' :
+                    status}
           </button>
         ))}
       </div>
@@ -947,7 +969,7 @@ const Customers = () => {
                   )}
                 </div>
               </div>
-            </div>    
+            </div>
           ))}
         </div>
       )}
@@ -970,18 +992,18 @@ const Customers = () => {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">
-                  {filter === 'All' ? 'Total Users' : 
-                   filter === 'Today' ? "Today's Users" :
-                   filter === 'Week' ? "This Week's Users" :
-                   filter === 'Month' ? "This Month's Users" :
-                   `${filter} Users`}
+                  {filter === 'All' ? 'Total Users' :
+                    filter === 'Today' ? "Today's Users" :
+                      filter === 'Week' ? "This Week's Users" :
+                        filter === 'Month' ? "This Month's Users" :
+                          `${filter} Users`}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {filter === 'All' ? 'Across all statuses' : 
-                   filter === 'Today' ? 'Users joined today' :
-                   filter === 'Week' ? 'Users joined this week' :
-                   filter === 'Month' ? 'Users joined this month' :
-                   'Filtered by status'}
+                  {filter === 'All' ? 'Across all statuses' :
+                    filter === 'Today' ? 'Users joined today' :
+                      filter === 'Week' ? 'Users joined this week' :
+                        filter === 'Month' ? 'Users joined this month' :
+                          'Filtered by status'}
                   {searchTerm && ` • Search: "${searchTerm}"`}
                 </p>
               </div>
