@@ -947,7 +947,7 @@ const Customers = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </div>    
           ))}
         </div>
       )}
