@@ -14,7 +14,7 @@ import {
 import { MdDiscount } from "react-icons/md";
 import { BiRupee } from "react-icons/bi";
 
-const API = "https://api.brando.org.in/api/Admin";
+const API = "https://api.brando.org.in/api/admin";
 
 const showAlert = (icon, title, text, timer) => Swal.fire({
   icon, title, text, timer,
@@ -814,7 +814,7 @@ const Hostels = () => {
     if (!result.isConfirmed) return;
     try {
       setLoading(prev => ({ ...prev, delete: true }));
-      await axios.delete(`${API}/deleteHostel/${id}`);
+      await axios.delete(`${API}/hostel/${id}`);
       showAlert('success', 'Deleted!', 'Hostel has been deleted', 2000);
       fetchHostels();
       setSelectedHostels(prev => prev.filter(sid => sid !== id));
